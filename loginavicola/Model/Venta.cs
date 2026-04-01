@@ -88,7 +88,14 @@ namespace loginavicola.Model
             {
                 _costoTotal = value;
                 OnPropertyChanged(nameof(CostoTotal));
+                OnPropertyChanged(nameof(Total)); // Notifica que Total también cambió
             }
+        }
+
+        // 🔹 Esta propiedad soluciona el error de Binding
+        public decimal Total
+        {
+            get => _costoTotal;
         }
 
         public string Estado

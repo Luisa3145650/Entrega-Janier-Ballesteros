@@ -19,6 +19,8 @@ using Emgu.CV.CvEnum;
 
 using loginavicola.Database;
 using loginavicola.Model;
+using Point = System.Drawing.Point;
+
 
 namespace loginavicola.View
 {
@@ -28,6 +30,11 @@ namespace loginavicola.View
         private VideoCaptureDevice fuenteVideo;
         private bool camaraConectada = false;
         private double factorConversion = 0.1;
+        private int totalHuevos = 0;
+        private int huevosBuenos = 0;
+        private int lotesActivos = 1;
+        private DateTime ultimaDeteccion = DateTime.MinValue;
+        private int intervaloDeteccionMs = 1200; // 1.2 segundos entre huevos
 
         // BASE DE DATOS
         private ClasificacionProduccionDatabase database;
@@ -50,6 +57,7 @@ namespace loginavicola.View
             CargarHistorial();
         }
 
+
         private void InitializeComponentEventHandlers()
         {
             btnConectarCamara.Click += (s, e) => ConectarCamaraUSB();
@@ -62,17 +70,12 @@ namespace loginavicola.View
 
         private void btnClasificacionManual_Click(object sender, RoutedEventArgs e)
         {
-            ManualView ventanaManual = new ManualView();
-            if (ventanaManual.ShowDialog() == true)
-            {
-                ActualizarEstadisticas();
-                CargarHistorial();
-            }
+            ManualView ventana = new ManualView();
+            ventana.Owner = Window.GetWindow(this); 
+            ventana.ShowDialog();
         }
 
-        // ─────────────────────────────────────────────────────────────
         // CORREGIDO: ahora muestra errores detallados al cargar cámaras
-        // ─────────────────────────────────────────────────────────────
         private void CargarCamarasUSB()
         {
             try
@@ -119,9 +122,9 @@ namespace loginavicola.View
             }
         }
 
-        // ─────────────────────────────────────────────────────────────
+        
         // CORREGIDO: ahora tiene try-catch y valida que haya item seleccionado
-        // ─────────────────────────────────────────────────────────────
+        
         private void ConectarCamaraUSB()
         {
             try
@@ -221,43 +224,106 @@ namespace loginavicola.View
         {
             try
             {
-                using (var gris = imagen.Convert<Gray, byte>().SmoothGaussian(5))
-                using (var binaria = gris.ThresholdBinaryInv(new Gray(150), new Gray(255)))
+                // Zona de detección
+                Rectangle zonaVerde = new Rectangle(100, 100, 400, 300);
+                CvInvoke.Rectangle(imagen, zonaVerde, new MCvScalar(0, 255, 0), 2);
+
+                Image<Bgr, byte> region = imagen.Copy(zonaVerde);
+
+                using (var gris = region.Convert<Gray, byte>().SmoothGaussian(5))
+                using (var binaria = gris.ThresholdBinaryInv(new Gray(140), new Gray(255)))
                 using (var contornos = new Emgu.CV.Util.VectorOfVectorOfPoint())
                 {
+                    CvInvoke.Erode(binaria, binaria, null, new Point(-1, -1), 1, BorderType.Default, default);
+                    CvInvoke.Dilate(binaria, binaria, null, new Point(-1, -1), 2, BorderType.Default, default);
+
                     CvInvoke.FindContours(binaria, contornos, null, RetrType.External, ChainApproxMethod.ChainApproxSimple);
 
                     for (int i = 0; i < contornos.Size; i++)
                     {
-                        if (CvInvoke.ContourArea(contornos[i]) > 3000)
+                        double area = CvInvoke.ContourArea(contornos[i]);
+
+                        // Filtrar objetos muy pequeños o muy grandes
+                        if (area < 2000 || area > 15000)
+                            continue;
+
+                        if (contornos[i].Size < 5)
+                            continue;
+
+                        Rectangle rect = CvInvoke.BoundingRectangle(contornos[i]);
+
+                        double relacion = (double)rect.Width / rect.Height;
+
+                        // Filtrar formas que no parecen huevo
+                        if (relacion < 0.6 || relacion > 1.4)
+                            continue;
+
+                        // Ajustar elipse (forma del huevo)
+                        RotatedRect elipse = CvInvoke.FitEllipse(contornos[i]);
+
+                        Point centroGlobal = new Point(
+                            (int)elipse.Center.X + zonaVerde.X,
+                            (int)elipse.Center.Y + zonaVerde.Y
+                        );
+
+                        RotatedRect elipseGlobal = new RotatedRect(
+                            centroGlobal,
+                            elipse.Size,
+                            elipse.Angle
+                        );
+
+                        CvInvoke.Ellipse(imagen, elipseGlobal, new MCvScalar(0, 255, 255), 2);
+
+                        Rectangle rectGlobal = new Rectangle(
+                            rect.X + zonaVerde.X,
+                            rect.Y + zonaVerde.Y,
+                            rect.Width,
+                            rect.Height
+                        );
+
+                        CvInvoke.Rectangle(imagen, rectGlobal, new MCvScalar(0, 0, 255), 2);
+
+                        // Calcular radio
+                        double radioPixeles = (elipse.Size.Width + elipse.Size.Height) / 4.0;
+
+                        double radioReal = radioPixeles * factorConversion;
+
+                        // Calcular volumen
+                        double volumen = (4.0 / 3.0) * Math.PI * Math.Pow(radioReal, 3);
+
+                        // Estimar peso
+                        double pesoEstimado = volumen * 1.03;
+
+                        string categoria = ClasificarPorPeso(pesoEstimado);
+
+                        // Evitar conteo repetido
+                        if ((DateTime.Now - ultimaDeteccion).TotalMilliseconds > intervaloDeteccionMs)
                         {
-                            RotatedRect elipse = CvInvoke.FitEllipse(contornos[i]);
+                            ultimaDeteccion = DateTime.Now;
 
-                            double largo = Math.Max(elipse.Size.Width, elipse.Size.Height) * factorConversion;
-                            double ancho = Math.Min(elipse.Size.Width, elipse.Size.Height) * factorConversion;
-                            double vol = ((4.0 / 3.0) * Math.PI * Math.Pow(ancho / 2.0, 2) * (largo / 2.0)) / 1000.0;
-
-                            double pesoEstimado = vol * 1.03;
-
-                            string categoria = ClasificarPorPeso(pesoEstimado);
-
-                            // CORREGIDO: actualizar contadores en hilo principal
-                            Dispatcher.BeginInvoke(new Action(() => IncrementarContador(categoria)));
-
-                            Bgr color = ObtenerColorCategoria(categoria);
-                            imagen.Draw(elipse, color, 2);
-
-                            System.Drawing.Point pos = new System.Drawing.Point(
-                                (int)elipse.Center.X, (int)elipse.Center.Y - 10);
-                            CvInvoke.PutText(imagen, $"{categoria}: {pesoEstimado:F1}g", pos,
-                                FontFace.HersheySimplex, 0.6, new MCvScalar(255, 255, 255), 2);
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                IncrementarContador(categoria);
+                            }));
                         }
+
+                        Point texto = new Point(rectGlobal.X, rectGlobal.Y - 10);
+
+                        CvInvoke.PutText(
+                            imagen,
+                            $"{categoria} | V:{volumen:F2}",
+                            texto,
+                            FontFace.HersheySimplex,
+                            0.6,
+                            new MCvScalar(255, 255, 255),
+                            2
+                        );
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[ERROR ProcesarLogicaHuevo] {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"ERROR cámara: {ex.Message}");
             }
         }
 
@@ -300,9 +366,7 @@ namespace loginavicola.View
             }
         }
 
-        // ─────────────────────────────────────────────────────────────
         // GUARDAR CLASIFICACIÓN AUTOMÁTICA
-        // ─────────────────────────────────────────────────────────────
         private void BtnGuardarClasificacionAutomatica_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -337,11 +401,11 @@ namespace loginavicola.View
                 if (database.InsertarClasificacion(clasificacion))
                 {
                     MessageBox.Show(
-                        $"✅ Clasificación Automática Guardada\n\n" +
-                        $"📅 Fecha: {clasificacion.Fecha:dd/MM/yyyy}\n" +
-                        $"🕐 Hora: {clasificacion.Hora:hh\\:mm\\:ss}\n" +
-                        $"🤖 Tipo: Automática\n\n" +
-                        $"🥚 Total: {total} huevos\n\n" +
+                        $"Clasificación Automática Guardada\n\n" +
+                        $"Fecha: {clasificacion.Fecha:dd/MM/yyyy}\n" +
+                        $"Hora: {clasificacion.Hora:hh\\:mm\\:ss}\n" +
+                        $"Tipo: Automática\n\n" +
+                        $"Total: {total} huevos\n\n" +
                         $"Jumbo: {contadorJumbo} | AAA: {contadorAAA} | AA: {contadorAA}\n" +
                         $"A: {contadorA} | B: {contadorB} | C: {contadorC}",
                         "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -404,9 +468,7 @@ namespace loginavicola.View
             }
         }
 
-        // ─────────────────────────────────────────────────────────────
         // MÉTODOS DE CONVERSIÓN
-        // ─────────────────────────────────────────────────────────────
         private Image<Bgr, byte> BitmapToImage(Bitmap bmp)
         {
             BitmapData data = bmp.LockBits(
@@ -452,9 +514,7 @@ namespace loginavicola.View
         [DllImport("gdi32.dll")]
         public static extern bool DeleteObject(IntPtr hObject);
 
-        // ─────────────────────────────────────────────────────────────
         // CORREGIDO: ahora espera a que el hilo se detenga completamente
-        // ─────────────────────────────────────────────────────────────
         private void DesconectarCamaraUSB()
         {
             try

@@ -49,10 +49,12 @@ namespace loginavicola.ViewModel
 
             Categorias = new ObservableCollection<string>
             {
-                "Primera",
-                "Segunda",
-                "Tercera",
-                "Estándar"
+                "Jumbo", 
+                "AAA",
+                "AA",
+                "A",
+                "B", 
+                "C"
             };
 
             Presentaciones = new ObservableCollection<string>

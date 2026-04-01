@@ -23,7 +23,7 @@
 
         <!-- Estilo para el botón verde principal -->
         <Style x:Key="GreenButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#2ECC71"/>
+            <Setter Property="Background" Value="#4CAF50"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="20,12"/>

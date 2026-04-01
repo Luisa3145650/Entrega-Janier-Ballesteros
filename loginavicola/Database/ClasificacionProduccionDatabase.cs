@@ -84,6 +84,15 @@ namespace loginavicola.Database
                         command.Parameters.AddWithValue("@Observaciones", clasificacion.Observaciones ?? string.Empty);
 
                         command.ExecuteNonQuery();
+
+                        // NUEVO: Al guardar clasificación, actualizar inventario automáticamente
+                        var invDb = new InventarioDatabase();
+                        if (clasificacion.Jumbo > 0) invDb.SumarStockDesdeProduccion("Jumbo", clasificacion.Jumbo);
+                        if (clasificacion.AAA > 0) invDb.SumarStockDesdeProduccion("AAA", clasificacion.AAA);
+                        if (clasificacion.AA > 0) invDb.SumarStockDesdeProduccion("AA", clasificacion.AA);
+                        if (clasificacion.A > 0) invDb.SumarStockDesdeProduccion("A", clasificacion.A);
+                        if (clasificacion.B > 0) invDb.SumarStockDesdeProduccion("B", clasificacion.B);
+                        if (clasificacion.C > 0) invDb.SumarStockDesdeProduccion("C", clasificacion.C);
                     }
                 }
                 return true;

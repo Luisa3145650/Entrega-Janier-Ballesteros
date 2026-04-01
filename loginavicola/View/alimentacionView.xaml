@@ -24,7 +24,7 @@
 
         <!-- Estilo para el botón verde principal -->
         <Style x:Key="GreenButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#2ECC71"/>
+            <Setter Property="Background" Value="#4CAF50"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="20,12"/>
@@ -169,7 +169,7 @@
 
                     <!-- Alimento disponible -->
                     <Border Grid.Column="2" Style="{StaticResource StatCardStyle}" 
-                            Background="#2ECC71">
+                            Background="#4CAF50">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -362,7 +362,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- Header del Modal -->
-                    <Grid Grid.Row="0" Background="#2ECC71">
+                    <Grid Grid.Row="0" Background="#4CAF50">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>

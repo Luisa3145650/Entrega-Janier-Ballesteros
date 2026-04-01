@@ -58,7 +58,7 @@
 
         <!-- Estilo para botones de las tarjetas -->
         <Style x:Key="CardButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#2ECC71"/>
+            <Setter Property="Background" Value="#4CAF50"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="15,8"/>
@@ -80,7 +80,7 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#27AE60"/>
+                    <Setter Property="Background" Value="#4CAF50"/>
                 </Trigger>
             </Style.Triggers>
         </Style>

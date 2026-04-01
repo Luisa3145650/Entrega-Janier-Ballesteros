@@ -101,6 +101,36 @@ namespace loginavicola.Database
             return ventas;
         }
 
+        // NUEVO: Descontar stock al registrar una venta
+public void DescontarStockHuevos(string categoria, int cantidad)
+{
+    if (cantidad <= 0) return;
+
+    try
+    {
+        using (var connection = new SQLiteConnection(connectionString))
+        {
+            connection.Open();
+            string query = @"
+                UPDATE Inventario 
+                SET CantidadStock = MAX(0, CantidadStock - @Cantidad)
+                WHERE Nombre = 'Huevos' AND Categoria = @Categoria";
+
+            using (var command = new SQLiteCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Cantidad",  cantidad);
+                command.Parameters.AddWithValue("@Categoria", categoria);
+                command.ExecuteNonQuery();
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"Error al descontar stock: {ex.Message}",
+            "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+    }
+}
+
         public bool InsertarVenta(Venta venta)
         {
             try
@@ -108,11 +138,32 @@ namespace loginavicola.Database
                 using (var connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
+
+                    // NUEVO: Validar stock antes de insertar (solo para ventas de huevos)
+                    if (!string.IsNullOrEmpty(venta.Categoria) && venta.Cantidad > 0)
+                    {
+                        var invDb = new InventarioDatabase();
+                        int stockDisponible = invDb.ObtenerStockHuevosPorCategoria(venta.Categoria);
+
+                        if (stockDisponible < venta.Cantidad)
+                        {
+                            MessageBox.Show(
+                                $"Stock insuficiente para categoría '{venta.Categoria}'.\n" +
+                                $"Disponible: {stockDisponible} unidades\n" +
+                                $"Solicitado: {venta.Cantidad} unidades",
+                                "Stock insuficiente",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+                            return false;
+                        }
+                    }
+
+                    // Insertar la venta
                     string query = @"
-                        INSERT INTO Ventas 
-                        (Fecha, Cliente, TipoVenta, Categoria, Cantidad, CostoTotal, Estado, Observaciones)
-                        VALUES 
-                        (@Fecha, @Cliente, @TipoVenta, @Categoria, @Cantidad, @CostoTotal, @Estado, @Observaciones)";
+                INSERT INTO Ventas 
+                (Fecha, Cliente, TipoVenta, Categoria, Cantidad, CostoTotal, Estado, Observaciones)
+                VALUES 
+                (@Fecha, @Cliente, @TipoVenta, @Categoria, @Cantidad, @CostoTotal, @Estado, @Observaciones)";
 
                     using (var command = new SQLiteCommand(query, connection))
                     {
@@ -126,6 +177,13 @@ namespace loginavicola.Database
                         command.Parameters.AddWithValue("@Observaciones", venta.Observaciones ?? string.Empty);
 
                         command.ExecuteNonQuery();
+                    }
+
+                    // NUEVO: Descontar del inventario tras insertar exitosamente
+                    if (!string.IsNullOrEmpty(venta.Categoria) && venta.Cantidad > 0)
+                    {
+                        var invDb = new InventarioDatabase();
+                        invDb.DescontarStockHuevos(venta.Categoria, venta.Cantidad);
                     }
                 }
                 return true;

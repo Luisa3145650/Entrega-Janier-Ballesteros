@@ -23,7 +23,7 @@
 
         <!-- Estilo para el botón verde principal -->
         <Style x:Key="GreenButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#2ECC71"/>
+            <Setter Property="Background" Value="#4CAF50"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="20,12"/>
@@ -183,7 +183,7 @@
 
                     <!-- Casos Resueltos -->
                     <Border Grid.Column="2" Style="{StaticResource StatCardStyle}" 
-                            Background="#2ECC71">
+                            Background="#4CAF50">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -381,7 +381,7 @@
                                                         <Setter Property="Background" Value="#E74C3C"/>
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding Estado}" Value="Resuelto">
-                                                                <Setter Property="Background" Value="#2ECC71"/>
+                                                                <Setter Property="Background" Value="#4CAF50"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>

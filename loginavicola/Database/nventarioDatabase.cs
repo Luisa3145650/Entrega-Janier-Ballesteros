@@ -332,5 +332,130 @@ namespace loginavicola.Database
                 return 0;
             }
         }
+
+
+        // NUEVO: Obtener stock disponible de huevos por categoría de clasificación
+        public int ObtenerStockHuevosPorCategoria(string categoria)
+        {
+            try
+            {
+                using (var connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+                    string query = @"
+                SELECT COALESCE(SUM(CantidadStock), 0) 
+                FROM Inventario 
+                WHERE Nombre = 'Huevos' AND Categoria = @Categoria";
+
+                    using (var command = new SQLiteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Categoria", categoria);
+                        return Convert.ToInt32(command.ExecuteScalar());
+                    }
+                }
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        // NUEVO: Llamado desde ClasficacionProduccionDatabase al guardar una clasificación
+        // Suma huevos al inventario por cada categoría. Si no existe el registro, lo crea.
+        public void SumarStockDesdeProduccion(string categoria, int cantidad)
+        {
+            if (cantidad <= 0) return;
+
+            try
+            {
+                using (var connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+
+                    // Verificar si ya existe un item de Huevos con esa categoría
+                    string queryBuscar = @"
+                SELECT IdItem FROM Inventario 
+                WHERE Nombre = 'Huevos' AND Categoria = @Categoria
+                LIMIT 1";
+
+                    int idItem = 0;
+                    using (var cmd = new SQLiteCommand(queryBuscar, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@Categoria", categoria);
+                        var result = cmd.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                            idItem = Convert.ToInt32(result);
+                    }
+
+                    if (idItem > 0)
+                    {
+                        // Ya existe → solo sumar
+                        string queryUpdate = @"
+                    UPDATE Inventario 
+                    SET CantidadStock = CantidadStock + @Cantidad
+                    WHERE IdItem = @IdItem";
+
+                        using (var cmd = new SQLiteCommand(queryUpdate, connection))
+                        {
+                            cmd.Parameters.AddWithValue("@Cantidad", cantidad);
+                            cmd.Parameters.AddWithValue("@IdItem", idItem);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    else
+                    {
+                        // No existe → crear registro automáticamente
+                        string queryInsert = @"
+                    INSERT INTO Inventario 
+                    (Nombre, Categoria, CostoUnitario, Ubicacion, StockMinimo, StockMaximo, CantidadStock, Observaciones)
+                    VALUES 
+                    ('Huevos', @Categoria, 0, 'Producción', 0, 999999, @Cantidad, 'Generado automáticamente desde producción')";
+
+                        using (var cmd = new SQLiteCommand(queryInsert, connection))
+                        {
+                            cmd.Parameters.AddWithValue("@Categoria", categoria);
+                            cmd.Parameters.AddWithValue("@Cantidad", cantidad);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al actualizar stock desde producción: {ex.Message}",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    
+
+    // NUEVO: Descontar stock al registrar una venta
+public void DescontarStockHuevos(string categoria, int cantidad)
+        {
+            if (cantidad <= 0) return;
+
+            try
+            {
+                using (var connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+                    string query = @"
+                UPDATE Inventario 
+                SET CantidadStock = MAX(0, CantidadStock - @Cantidad)
+                WHERE Nombre = 'Huevos' AND Categoria = @Categoria";
+
+                    using (var command = new SQLiteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Cantidad", cantidad);
+                        command.Parameters.AddWithValue("@Categoria", categoria);
+                        command.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al descontar stock: {ex.Message}",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
     }
-}
+    }

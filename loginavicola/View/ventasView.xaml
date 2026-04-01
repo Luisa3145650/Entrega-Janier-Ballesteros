@@ -259,7 +259,7 @@
                     </Border>
 
                     <Button Grid.Column="1" 
-                            Content="REGISTRAR ENTREGA" 
+                            Content=" + REGISTRAR ENTREGA" 
                             Command="{Binding AbrirModalCommand}"
                             Style="{StaticResource GreenButtonStyle}"/>
                 </Grid>

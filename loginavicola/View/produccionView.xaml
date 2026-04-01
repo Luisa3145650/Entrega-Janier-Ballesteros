@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:loginavicola.View"
              mc:Ignorable="d" 
-             d:DesignHeight="900" d:DesignWidth="1200"
+             d:DesignHeight="1000" d:DesignWidth="1200"
              Background="Transparent">
 
     <UserControl.Resources>
@@ -25,7 +25,7 @@
         </Style>
 
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#28A745"/>
+            <Setter Property="Background" Value="#4CAF50"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="20,10"/>
@@ -96,7 +96,11 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="0" FontSize="32" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock 
+                                x:Name="lblProduccionHoy"
+                                Text="0" FontSize="32" 
+                                FontWeight="Bold" 
+                                Foreground="White"/>
                             <TextBlock Text="Producción Hoy" FontSize="12" Foreground="White" Opacity="0.9"/>
                         </StackPanel>
                         <Border Grid.Column="1" Background="#33FFFFFF" CornerRadius="12" Width="50" Height="50" VerticalAlignment="Center">
@@ -115,8 +119,19 @@
                             <TextBlock Text="0" FontSize="32" FontWeight="Bold" Foreground="White"/>
                             <TextBlock Text="Lotes activos" FontSize="12" Foreground="White" Opacity="0.9"/>
                         </StackPanel>
-                        <Border Grid.Column="1" Background="#33FFFFFF" CornerRadius="12" Width="50" Height="50" VerticalAlignment="Center">
-                            <TextBlock Text="📦" FontSize="28" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border Grid.Column="1" 
+                                Background="#33FFFFFF" 
+                                CornerRadius="12" 
+                                Width="50" 
+                                Height="50"
+                                VerticalAlignment="Center">
+                            <TextBlock 
+                                x:Name="lblLotesActivos"
+                                Text="📦" 
+                                FontSize="28" 
+                                Foreground="White" 
+                                HorizontalAlignment="Center" 
+                                VerticalAlignment="Center"/>
                         </Border>
                     </Grid>
                 </Border>
@@ -132,7 +147,13 @@
                             <TextBlock Text="Eficiencia" FontSize="12" Foreground="White" Opacity="0.9"/>
                         </StackPanel>
                         <Border Grid.Column="1" Background="#33FFFFFF" CornerRadius="12" Width="50" Height="50" VerticalAlignment="Center">
-                            <TextBlock Text="✓" FontSize="28" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,6"/>
+                            <TextBlock 
+                                x:Name="lblEficiencia"
+                                Text="✓" 
+                                FontSize="28" Foreground="White" 
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Bottom" 
+                                Margin="0,0,0,6"/>
                         </Border>
                     </Grid>
                 </Border>
