@@ -15,7 +15,8 @@ namespace loginavicola.Database
 
         public UsuarioDatabase()
         {
-            dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sistema_avicola.db");
+            // Ruta automática para evitar pérdidas de archivo
+            dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sistema_avícola.db");
             connectionString = $"Data Source={dbPath};Version=3;";
 
             CrearBaseDeDatos();
@@ -87,14 +88,16 @@ namespace loginavicola.Database
         {
             try
             {
-                string checkQuery = "SELECT COUNT(*) FROM Usuario WHERE Email = 'admin@avicola.com'";
+                string checkQuery = "SELECT COUNT(*) FROM Usuario WHERE Email = 'admin@avicola.com' OR Username = 'admin'";
                 using (var command = new SQLiteCommand(checkQuery, connection))
                 {
                     long count = (long)command.ExecuteScalar();
 
                     if (count == 0)
                     {
+                        // Contraseña por defecto: admin123
                         string passwordHash = HashPassword("admin123");
+
                         string insertQuery = @"
                             INSERT INTO Usuario 
                             (Nombres, Apellidos, Username, Documento, Telefono, Direccion, Email, Password, Rol, 
@@ -140,12 +143,13 @@ namespace loginavicola.Database
                 using (var connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
-                    string query = "SELECT * FROM Usuario WHERE Username = @Username AND Password = @Password AND Activo = 1";
+                    // Busca por Username o Email para que sea más flexible
+                    string query = "SELECT * FROM Usuario WHERE (Username = @User OR Email = @User) AND Password = @Pass AND Activo = 1";
 
                     using (var command = new SQLiteCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@Username", username);
-                        command.Parameters.AddWithValue("@Password", passwordHash);
+                        command.Parameters.AddWithValue("@User", username);
+                        command.Parameters.AddWithValue("@Pass", passwordHash);
 
                         using (var reader = command.ExecuteReader())
                         {
@@ -164,58 +168,6 @@ namespace loginavicola.Database
             return null;
         }
 
-        public List<Usuario> ObtenerTodosLosUsuarios()
-        {
-            var usuarios = new List<Usuario>();
-            try
-            {
-                using (var connection = new SQLiteConnection(connectionString))
-                {
-                    connection.Open();
-                    string query = "SELECT * FROM Usuario WHERE Activo = 1 ORDER BY FechaCreacion DESC";
-
-                    using (var command = new SQLiteCommand(query, connection))
-                    using (var reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            usuarios.Add(MapearUsuario(reader));
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Windows.MessageBox.Show($"Error al obtener usuarios: {ex.Message}");
-            }
-            return usuarios;
-        }
-
-        // ✅ Método auxiliar para evitar repetir código de mapeo
-        private Usuario MapearUsuario(SQLiteDataReader reader)
-        {
-            return new Usuario
-            {
-                IdUsuario = Convert.ToInt32(reader["IdUsuario"]),
-                Nombres = reader["Nombres"]?.ToString() ?? string.Empty,
-                Apellidos = reader["Apellidos"]?.ToString() ?? string.Empty,
-                Username = reader["Username"]?.ToString() ?? string.Empty,
-                Documento = reader["Documento"]?.ToString() ?? string.Empty,
-                Telefono = reader["Telefono"]?.ToString() ?? string.Empty,
-                Direccion = reader["Direccion"]?.ToString() ?? string.Empty,
-                Email = reader["Email"]?.ToString() ?? string.Empty,
-                Rol = reader["Rol"]?.ToString() ?? string.Empty,
-                PermisoInicio = Convert.ToBoolean(reader["PermisoInicio"]),
-                PermisoLotes = Convert.ToBoolean(reader["PermisoLotes"]),
-                PermisoProduccion = Convert.ToBoolean(reader["PermisoProduccion"]),
-                PermisoAlimentacion = Convert.ToBoolean(reader["PermisoAlimentacion"]),
-                PermisoEntregas = Convert.ToBoolean(reader["PermisoEntregas"]),
-                PermisoDiagnostico = Convert.ToBoolean(reader["PermisoDiagnostico"]),
-                PermisoInventario = Convert.ToBoolean(reader["PermisoInventario"]),
-                PermisoGestionUsuarios = Convert.ToBoolean(reader["PermisoGestionUsuarios"])
-            };
-        }
-
         public bool InsertarUsuario(Usuario usuario, string password)
         {
             try
@@ -225,7 +177,9 @@ namespace loginavicola.Database
                     connection.Open();
                     string passwordHash = HashPassword(password);
 
-                    // ✅ Corregido el orden y la sintaxis del INSERT
+                    // Si el Username está vacío, usa el Email
+                    string usernameReal = string.IsNullOrEmpty(usuario.Username) ? usuario.Email : usuario.Username;
+
                     string query = @"
                         INSERT INTO Usuario 
                         (Nombres, Apellidos, Username, Documento, Telefono, Direccion, Email, Password, Rol,
@@ -240,7 +194,7 @@ namespace loginavicola.Database
                     {
                         command.Parameters.AddWithValue("@Nombres", usuario.Nombres);
                         command.Parameters.AddWithValue("@Apellidos", usuario.Apellidos);
-                        command.Parameters.AddWithValue("@Username", usuario.Username); // Usamos Username
+                        command.Parameters.AddWithValue("@Username", usernameReal);
                         command.Parameters.AddWithValue("@Documento", usuario.Documento);
                         command.Parameters.AddWithValue("@Telefono", usuario.Telefono ?? string.Empty);
                         command.Parameters.AddWithValue("@Direccion", usuario.Direccion ?? string.Empty);
@@ -309,6 +263,57 @@ namespace loginavicola.Database
                 System.Windows.MessageBox.Show($"Error al actualizar permisos: {ex.Message}");
                 return false;
             }
+        }
+
+        public List<Usuario> ObtenerTodosLosUsuarios()
+        {
+            var usuarios = new List<Usuario>();
+            try
+            {
+                using (var connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+                    string query = "SELECT * FROM Usuario WHERE Activo = 1 ORDER BY FechaCreacion DESC";
+
+                    using (var command = new SQLiteCommand(query, connection))
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            usuarios.Add(MapearUsuario(reader));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error al obtener usuarios: {ex.Message}");
+            }
+            return usuarios;
+        }
+
+        private Usuario MapearUsuario(SQLiteDataReader reader)
+        {
+            return new Usuario
+            {
+                IdUsuario = Convert.ToInt32(reader["IdUsuario"]),
+                Nombres = reader["Nombres"]?.ToString() ?? string.Empty,
+                Apellidos = reader["Apellidos"]?.ToString() ?? string.Empty,
+                Username = reader["Username"]?.ToString() ?? string.Empty,
+                Documento = reader["Documento"]?.ToString() ?? string.Empty,
+                Telefono = reader["Telefono"]?.ToString() ?? string.Empty,
+                Direccion = reader["Direccion"]?.ToString() ?? string.Empty,
+                Email = reader["Email"]?.ToString() ?? string.Empty,
+                Rol = reader["Rol"]?.ToString() ?? string.Empty,
+                PermisoInicio = Convert.ToBoolean(reader["PermisoInicio"]),
+                PermisoLotes = Convert.ToBoolean(reader["PermisoLotes"]),
+                PermisoProduccion = Convert.ToBoolean(reader["PermisoProduccion"]),
+                PermisoAlimentacion = Convert.ToBoolean(reader["PermisoAlimentacion"]),
+                PermisoEntregas = Convert.ToBoolean(reader["PermisoEntregas"]),
+                PermisoDiagnostico = Convert.ToBoolean(reader["PermisoDiagnostico"]),
+                PermisoInventario = Convert.ToBoolean(reader["PermisoInventario"]),
+                PermisoGestionUsuarios = Convert.ToBoolean(reader["PermisoGestionUsuarios"])
+            };
         }
     }
 }
