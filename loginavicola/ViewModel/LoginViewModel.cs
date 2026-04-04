@@ -10,8 +10,19 @@ namespace loginavicola.ViewModel
     {
         private readonly UsuarioDatabase database = new UsuarioDatabase();
 
-        public string Username { get; set; }
-        public string Password { get; set; }
+        private string _username;
+        public string Username
+        {
+            get => _username;
+            set { _username = value; OnPropertyChanged(); }
+        }
+
+        private string _password;
+        public string Password
+        {
+            get => _password;
+            set { _password = value; OnPropertyChanged(); }
+        }
 
         public ICommand LoginCommand { get; }
 
@@ -22,9 +33,11 @@ namespace loginavicola.ViewModel
 
         private void ExecuteLoginCommand(object obj)
         {
-            // Usamos la función que ya existe en tu UsuarioDatabase
-            // Ella se encarga de encriptar la clave y buscar al usuario
-            var usuario = database.ValidarLogin(Username, Password);
+            // 🔥 LIMPIAR ESPACIOS (CLAVE)
+            string user = Username?.Trim();
+            string pass = Password?.Trim();
+
+            var usuario = database.ValidarLogin(user, pass);
 
             if (usuario != null)
             {
@@ -33,7 +46,7 @@ namespace loginavicola.ViewModel
                 var mainWin = new MainWindow();
                 mainWin.Show();
 
-                // Cerramos la ventana de Login
+                // cerrar ventana login
                 foreach (Window item in Application.Current.Windows)
                 {
                     if (item.DataContext == this)
@@ -45,17 +58,18 @@ namespace loginavicola.ViewModel
                 MessageBox.Show("Usuario o contraseña incorrectos");
             }
         }
-
-        // Ya no necesitamos el método ValidarUsuario aquí porque 
-        // usamos directamente database.ValidarLogin arriba.
     }
 
     public class ViewModelCommand : ICommand
     {
         private readonly Action<object> _execute;
+
         public ViewModelCommand(Action<object> execute) => _execute = execute;
+
         public bool CanExecute(object parameter) => true;
+
         public void Execute(object parameter) => _execute(parameter);
+
         public event EventHandler CanExecuteChanged { add { } remove { } }
     }
 

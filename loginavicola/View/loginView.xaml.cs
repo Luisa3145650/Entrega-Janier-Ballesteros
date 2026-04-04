@@ -1,10 +1,7 @@
-﻿using loginavicola;
+﻿using loginavicola.Database;
 using loginavicola.Model;
-using loginavícola.Model;
 using loginavicola.View;
 using System;
-using System.Data;
-using System.Data.SQLite;
 using System.Windows;
 using System.Windows.Input;
 
@@ -12,13 +9,12 @@ namespace loginavicola.View
 {
     public partial class loginView : Window
     {
-        private DatabaseModel dbModel;
+        private UsuarioDatabase db;
 
         public loginView()
         {
             InitializeComponent();
-            dbModel = new DatabaseModel();
-            dbModel.InicializarBaseDeDatos();
+            db = new UsuarioDatabase();
         }
 
         private void Window_MouseDown(object sender, MouseEventArgs e)
@@ -39,35 +35,23 @@ namespace loginavicola.View
 
         private void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
-            string usuario = txtUser.Text;
-            string clave = txtPassword.Password;
+            string usuario = txtUser.Text.Trim();
+            string clave = txtPassword.Password.Trim();
 
             if (string.IsNullOrEmpty(usuario) || string.IsNullOrEmpty(clave))
             {
-                MessageBox.Show("Por favor, ingresa usuario y contraseña", "Campos vacíos", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Por favor, ingresa usuario y contraseña");
                 return;
             }
 
             try
             {
-                // --- EL CAMBIO ESTÁ AQUÍ ---
-                // Encriptamos la clave que escribió el usuario para que coincida con la de la DB
-                string claveEncriptada = dbModel.EncriptarSHA256(clave);
+                // 🔥 AQUÍ USAMOS TU MÉTODO REAL
+                Usuario usuarioLogeado = db.ValidarLogin(usuario, clave);
 
-                string query = "SELECT * FROM usuarios WHERE username = @username AND password = @password";
-
-                SQLiteParameter[] parameters = new SQLiteParameter[]
+                if (usuarioLogeado != null)
                 {
-                    new SQLiteParameter("@username", usuario),
-                    new SQLiteParameter("@password", claveEncriptada) // Enviamos la encriptada
-                };
-
-                DataTable result = dbModel.ExecuteQuery(query, parameters);
-
-                if (result.Rows.Count > 0)
-                {
-                    string nombreUsuario = result.Rows[0]["nombre"].ToString();
-                    MessageBox.Show($"¡Bienvenido {nombreUsuario}!", "Login exitoso", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"¡Bienvenido {usuarioLogeado.Nombres}!");
 
                     MainWindow main = new MainWindow();
                     main.Show();
@@ -75,12 +59,12 @@ namespace loginavicola.View
                 }
                 else
                 {
-                    MessageBox.Show("Usuario o contraseña incorrectos", "Error de login", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Usuario o contraseña incorrectos");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al conectar con la base de datos: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error: {ex.Message}");
             }
         }
 
