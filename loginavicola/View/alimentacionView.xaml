@@ -99,7 +99,7 @@
 
                     <!-- Consumo del día -->
                     <Border Grid.Column="0" Style="{StaticResource StatCardStyle}" 
-                            Background="#5BC0BE">
+                            Background="#17A2B8">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>

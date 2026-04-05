@@ -89,7 +89,7 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,20">
-                <Border Style="{StaticResource StatCardStyle}" Background="#FFC107">
+                <Border Style="{StaticResource StatCardStyle}" Background="#F39C12">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -189,7 +189,9 @@
                             <Image x:Name="imgCamara" Stretch="Uniform"/>
                         </Border>
 
-                        <Button x:Name="btnCapturarFoto" Content="Capturar foto" Style="{StaticResource PurpleButtonStyle}" HorizontalAlignment="Center"/>
+                        <Button x:Name="btnCapturarFoto" 
+                                Content="Capturar foto" Style="{StaticResource PurpleButtonStyle}" 
+                                HorizontalAlignment="Center"/>
                         <TextBlock x:Name="txtEstadoCamara" Text="2 cámara(s) detectada(s)" FontSize="11" Foreground="#666" HorizontalAlignment="Center" Margin="0,10,0,0"/>
                     </StackPanel>
                 </Border>

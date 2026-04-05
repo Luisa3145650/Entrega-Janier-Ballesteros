@@ -1,4 +1,13 @@
-﻿using System;
+﻿// LIBRERÍAS DE VIDEO
+using AForge.Video;
+using AForge.Video.DirectShow;
+// LIBRERÍAS DE VISIÓN
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
+using loginavicola.Database;
+using loginavicola.Model;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -7,18 +16,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
-
-// LIBRERÍAS DE VIDEO
-using AForge.Video;
-using AForge.Video.DirectShow;
-
-// LIBRERÍAS DE VISIÓN
-using Emgu.CV;
-using Emgu.CV.Structure;
-using Emgu.CV.CvEnum;
-
-using loginavicola.Database;
-using loginavicola.Model;
+using System.Windows.Threading;
 using Point = System.Drawing.Point;
 
 
@@ -33,8 +31,6 @@ namespace loginavicola.View
         private int totalHuevos = 0;
         private int huevosBuenos = 0;
         private int lotesActivos = 1;
-        private DateTime ultimaDeteccion = DateTime.MinValue;
-        private int intervaloDeteccionMs = 1200; // 1.2 segundos entre huevos
 
         // BASE DE DATOS
         private ClasificacionProduccionDatabase database;
@@ -46,6 +42,14 @@ namespace loginavicola.View
         private int contadorA = 0;
         private int contadorB = 0;
         private int contadorC = 0;
+        // --- AGREGAR ESTAS LÍNEAS AQUÍ ABAJO DE LA CLASE ---
+        private FilterInfoCollection misDispositivos;
+        private VideoCaptureDevice miWebCam;
+
+        // Variables para evitar duplicados al registrar
+        private DateTime ultimaDeteccion = DateTime.MinValue;
+        private int intervaloDeteccionMs = 2000; // Espera 2 segundos entre huevos
+        private object volumenCm3;
 
         public produccionView()
         {
@@ -195,6 +199,7 @@ namespace loginavicola.View
         {
             try
             {
+                // El 'using' asegura que el frame se destruya después de usarse, liberando RAM
                 using (Bitmap bitmap = (Bitmap)eventArgs.Frame.Clone())
                 {
                     using (Image<Bgr, byte> emguImage = BitmapToImage(bitmap))
@@ -204,19 +209,18 @@ namespace loginavicola.View
                         using (Bitmap procesado = ImageToBitmap(emguImage))
                         {
                             var bsource = ConvertBitmapToBitmapSource(procesado);
-                            if (bsource != null)
-                            {
-                                bsource.Freeze();
-                                Dispatcher.BeginInvoke(new Action(() => imgCamara.Source = bsource));
-                            }
+
+                            // Actualiza la UI de forma asíncrona pero segura
+                            Dispatcher.BeginInvoke(new Action(() => {
+                                if (camaraConectada) imgCamara.Source = bsource;
+                            }), DispatcherPriority.Render);
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                // CORREGIDO: antes el catch estaba vacío y ocultaba errores de procesamiento
-                System.Diagnostics.Debug.WriteLine($"[ERROR VideoSource_NewFrame] {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error en frame: {ex.Message}");
             }
         }
 
@@ -224,109 +228,86 @@ namespace loginavicola.View
         {
             try
             {
-                // Zona de detección
+                // 1. Definir y dibujar la zona de interés
                 Rectangle zonaVerde = new Rectangle(100, 100, 400, 300);
                 CvInvoke.Rectangle(imagen, zonaVerde, new MCvScalar(0, 255, 0), 2);
 
-                Image<Bgr, byte> region = imagen.Copy(zonaVerde);
-
-                using (var gris = region.Convert<Gray, byte>().SmoothGaussian(5))
-                using (var binaria = gris.ThresholdBinaryInv(new Gray(140), new Gray(255)))
-                using (var contornos = new Emgu.CV.Util.VectorOfVectorOfPoint())
+                using (Image<Bgr, byte> region = imagen.Copy(zonaVerde))
+                using (UMat gris = new UMat())
+                using (UMat binaria = new UMat())
                 {
-                    CvInvoke.Erode(binaria, binaria, null, new Point(-1, -1), 1, BorderType.Default, default);
-                    CvInvoke.Dilate(binaria, binaria, null, new Point(-1, -1), 2, BorderType.Default, default);
+                    // 2. Pre-procesamiento
+                    CvInvoke.CvtColor(region, gris, ColorConversion.Bgr2Gray);
+                    CvInvoke.GaussianBlur(gris, gris, new System.Drawing.Size(5, 5), 1.5);
 
-                    CvInvoke.FindContours(binaria, contornos, null, RetrType.External, ChainApproxMethod.ChainApproxSimple);
+                    // 3. Umbral dinámico (Ajustado a 115 según tu última prueba exitosa)
+                    CvInvoke.Threshold(gris, binaria, 110, 255, ThresholdType.BinaryInv);
 
-                    for (int i = 0; i < contornos.Size; i++)
+                    // 4. Limpieza Morfológica
+                    CvInvoke.Erode(binaria, binaria, null, new Point(-1, -1), 2, BorderType.Default, new MCvScalar(0));
+                    CvInvoke.Dilate(binaria, binaria, null, new Point(-1, -1), 2, BorderType.Default, new MCvScalar(0));
+
+                    using (var contornos = new Emgu.CV.Util.VectorOfVectorOfPoint())
                     {
-                        double area = CvInvoke.ContourArea(contornos[i]);
+                        CvInvoke.FindContours(binaria, contornos, null, RetrType.External, ChainApproxMethod.ChainApproxSimple);
 
-                        // Filtrar objetos muy pequeños o muy grandes
-                        if (area < 2000 || area > 15000)
-                            continue;
-
-                        if (contornos[i].Size < 5)
-                            continue;
-
-                        Rectangle rect = CvInvoke.BoundingRectangle(contornos[i]);
-
-                        double relacion = (double)rect.Width / rect.Height;
-
-                        // Filtrar formas que no parecen huevo
-                        if (relacion < 0.6 || relacion > 1.4)
-                            continue;
-
-                        // Ajustar elipse (forma del huevo)
-                        RotatedRect elipse = CvInvoke.FitEllipse(contornos[i]);
-
-                        Point centroGlobal = new Point(
-                            (int)elipse.Center.X + zonaVerde.X,
-                            (int)elipse.Center.Y + zonaVerde.Y
-                        );
-
-                        RotatedRect elipseGlobal = new RotatedRect(
-                            centroGlobal,
-                            elipse.Size,
-                            elipse.Angle
-                        );
-
-                        CvInvoke.Ellipse(imagen, elipseGlobal, new MCvScalar(0, 255, 255), 2);
-
-                        Rectangle rectGlobal = new Rectangle(
-                            rect.X + zonaVerde.X,
-                            rect.Y + zonaVerde.Y,
-                            rect.Width,
-                            rect.Height
-                        );
-
-                        CvInvoke.Rectangle(imagen, rectGlobal, new MCvScalar(0, 0, 255), 2);
-
-                        // Calcular radio
-                        double radioPixeles = (elipse.Size.Width + elipse.Size.Height) / 4.0;
-
-                        double radioReal = radioPixeles * factorConversion;
-
-                        // Calcular volumen
-                        double volumen = (4.0 / 3.0) * Math.PI * Math.Pow(radioReal, 3);
-
-                        // Estimar peso
-                        double pesoEstimado = volumen * 1.03;
-
-                        string categoria = ClasificarPorPeso(pesoEstimado);
-
-                        // Evitar conteo repetido
-                        if ((DateTime.Now - ultimaDeteccion).TotalMilliseconds > intervaloDeteccionMs)
+                        for (int i = 0; i < contornos.Size; i++)
                         {
-                            ultimaDeteccion = DateTime.Now;
+                            if (contornos[i].Size < 10) continue;
 
-                            Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                IncrementarContador(categoria);
-                            }));
+                            double area = CvInvoke.ContourArea(contornos[i]);
+                            if (area < 2500 || area > 8000) continue;
+
+                            RotatedRect elipse = CvInvoke.FitEllipse(contornos[i]);
+
+                            double largo = Math.Max(elipse.Size.Width, elipse.Size.Height);
+                            double ancho = Math.Min(elipse.Size.Width, elipse.Size.Height);
+                            double relacionAspecto = largo / ancho;
+
+                            if (relacionAspecto > 1.5) continue;
+
+                            // --- NUEVA LÓGICA DE CÁLCULO INTEGRADA ---
+
+                            // factorEscala: Ajusta este valor según la distancia de tu cámara.
+                            // Representa cuántos cm mide un píxel.
+                            double factorEscala = 0.035;
+
+                            // Convertimos radios de píxeles a centímetros
+                            double radioMayorCm = (largo * factorEscala) / 2.0;
+                            double radioMenorCm = (ancho * factorEscala) / 2.0;
+
+                            // Fórmula del esferoide prolate (forma del huevo): V = (4/3) * π * a * b²
+                            double volumenCm3 = (4.0 / 3.0) * Math.PI * radioMayorCm * Math.Pow(radioMenorCm, 2);
+
+                            // ------------------------------------------
+
+                            // 5. Posicionamiento Global para dibujo
+                            RotatedRect elipseGlobal = new RotatedRect(
+                                new PointF(elipse.Center.X + zonaVerde.X, elipse.Center.Y + zonaVerde.Y),
+                                elipse.Size,
+                                elipse.Angle
+                            );
+
+                            // 6. Dibujo de resultados
+                            CvInvoke.Ellipse(imagen, elipseGlobal, new MCvScalar(0, 255, 255), 2);
+
+                            CvInvoke.PutText(imagen, $"{volumenCm3:F1} cm3",
+                                new Point((int)elipseGlobal.Center.X - 45, (int)elipseGlobal.Center.Y),
+                                FontFace.HersheySimplex, 0.6, new MCvScalar(255, 0, 0), 2);
+
+                            // 7. Actualizar Interfaz
+                            Dispatcher.Invoke(() => {
+                                lblPesoPromedio.Text = $"{volumenCm3:F1} Cm3";
+                            });
                         }
-
-                        Point texto = new Point(rectGlobal.X, rectGlobal.Y - 10);
-
-                        CvInvoke.PutText(
-                            imagen,
-                            $"{categoria} | V:{volumen:F2}",
-                            texto,
-                            FontFace.HersheySimplex,
-                            0.6,
-                            new MCvScalar(255, 255, 255),
-                            2
-                        );
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ERROR cámara: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error Visión: {ex.Message}");
             }
         }
-
         // NUEVO: método separado para incrementar contadores de forma segura
         private void IncrementarContador(string categoria)
         {
@@ -471,13 +452,11 @@ namespace loginavicola.View
         // MÉTODOS DE CONVERSIÓN
         private Image<Bgr, byte> BitmapToImage(Bitmap bmp)
         {
-            BitmapData data = bmp.LockBits(
-                new Rectangle(0, 0, bmp.Width, bmp.Height),
-                ImageLockMode.ReadOnly,
-                PixelFormat.Format24bppRgb);
+            // Bloquea los bits para una conversión segura y rápida
+            BitmapData data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
             Image<Bgr, byte> img = new Image<Bgr, byte>(bmp.Width, bmp.Height, data.Stride, data.Scan0);
             bmp.UnlockBits(data);
-            return img.Clone();
+            return img.Clone(); // Retorna una copia limpia
         }
 
         private Bitmap ImageToBitmap(Image<Bgr, byte> img)
@@ -485,13 +464,13 @@ namespace loginavicola.View
             using (var mat = img.Mat)
             {
                 Bitmap bmp = new Bitmap(mat.Width, mat.Height, PixelFormat.Format24bppRgb);
-                BitmapData data = bmp.LockBits(
-                    new Rectangle(0, 0, bmp.Width, bmp.Height),
-                    ImageLockMode.WriteOnly,
-                    PixelFormat.Format24bppRgb);
-                byte[] buffer = new byte[mat.Step * mat.Rows];
+                BitmapData data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
+
+                int bytes = mat.Step * mat.Rows;
+                byte[] buffer = new byte[bytes];
                 mat.CopyTo(buffer);
-                Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
+                Marshal.Copy(buffer, 0, data.Scan0, bytes);
+
                 bmp.UnlockBits(data);
                 return bmp;
             }
@@ -502,12 +481,14 @@ namespace loginavicola.View
             IntPtr hBitmap = bitmap.GetHbitmap();
             try
             {
-                return System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                var bsource = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
                     hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                bsource.Freeze(); // ESTO ES VITAL: Permite que la imagen pase del hilo de la cámara a la UI
+                return bsource;
             }
             finally
             {
-                DeleteObject(hBitmap);
+                DeleteObject(hBitmap); // Libera memoria GDI
             }
         }
 

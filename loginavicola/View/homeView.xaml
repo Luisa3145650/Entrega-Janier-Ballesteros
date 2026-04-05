@@ -74,8 +74,8 @@
                     <Border Grid.Column="0" Style="{StaticResource ColorCardStyle}">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                <GradientStop Color="#FDB913" Offset="0"/>
-                                <GradientStop Color="#FCCC3D" Offset="1"/>
+                                <GradientStop Color="#F39C12" Offset="0"/>
+                                <GradientStop Color="#F39C12" Offset="1"/>
                             </LinearGradientBrush>
                         </Border.Background>
                         <Grid>
@@ -105,8 +105,8 @@
                     <Border Grid.Column="1" Style="{StaticResource ColorCardStyle}">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                <GradientStop Color="#4ECDC4" Offset="0"/>
-                                <GradientStop Color="#6FE0D8" Offset="1"/>
+                                <GradientStop Color="#17A2B8" Offset="0"/>
+                                <GradientStop Color="#17A2B8" Offset="1"/>
                             </LinearGradientBrush>
                         </Border.Background>
                         <Grid>
@@ -135,8 +135,8 @@
                     <Border Grid.Column="2" Style="{StaticResource ColorCardStyle}">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                <GradientStop Color="#A855F7" Offset="0"/>
-                                <GradientStop Color="#C084FC" Offset="1"/>
+                                <GradientStop Color="#9C59B6" Offset="0"/>
+                                <GradientStop Color="#9C59B6" Offset="1"/>
                             </LinearGradientBrush>
                         </Border.Background>
                         <Grid>

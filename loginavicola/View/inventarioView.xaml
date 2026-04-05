@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:loginavicola.View"
              mc:Ignorable="d" 
-             d:DesignHeight="800" d:DesignWidth="1000"
+             d:DesignHeight="1000" d:DesignWidth="1000"
              Background="Transparent">
 
     <UserControl.Resources>
@@ -113,7 +113,7 @@
 
                     <!-- Total Productos -->
                     <Border Grid.Column="0" Style="{StaticResource StatCardStyle}" 
-                            Background="#5BC0BE">
+                            Background="#17A2B8">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -319,106 +319,116 @@
                                   Foreground="#333333"
                                   Margin="0,0,0,15"/>
 
-                        <DataGrid Grid.Row="1" 
-                                 ItemsSource="{Binding ItemsInventario}" 
-                                 AutoGenerateColumns="False"
-                                 CanUserAddRows="False" 
-                                 IsReadOnly="True"
-                                 HeadersVisibility="Column"
-                                 GridLinesVisibility="Horizontal"
-                                 HorizontalGridLinesBrush="#F0F0F0"
-                                 BorderThickness="0"
-                                 Background="Transparent"
-                                 RowBackground="White"
-                                 AlternatingRowBackground="#FAFAFA"
-                                 RowHeight="40"
-                                 MinHeight="300">
+                        <!-- ✅ ScrollViewer con scroll horizontal habilitado -->
+                        <ScrollViewer Grid.Row="1"
+                                      HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Auto">
 
-                            <DataGrid.ColumnHeaderStyle>
-                                <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background" Value="#F5F5F5"/>
-                                    <Setter Property="Foreground" Value="#666666"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="FontSize" Value="12"/>
-                                    <Setter Property="Padding" Value="12,10"/>
-                                    <Setter Property="BorderThickness" Value="0,0,0,2"/>
-                                    <Setter Property="BorderBrush" Value="#E0E0E0"/>
-                                </Style>
-                            </DataGrid.ColumnHeaderStyle>
+                            <DataGrid ItemsSource="{Binding ItemsInventario}" 
+                                     AutoGenerateColumns="False"
+                                     CanUserAddRows="False" 
+                                     IsReadOnly="True"
+                                     HeadersVisibility="Column"
+                                     GridLinesVisibility="Horizontal"
+                                     HorizontalGridLinesBrush="#F0F0F0"
+                                     BorderThickness="0"
+                                     Background="Transparent"
+                                     RowBackground="White"
+                                     AlternatingRowBackground="#FAFAFA"
+                                     RowHeight="40"
+                                     MinHeight="300"
+                                     HorizontalScrollBarVisibility="Hidden"
+                                     VerticalScrollBarVisibility="Hidden">
 
-                            <DataGrid.CellStyle>
-                                <Style TargetType="DataGridCell">
-                                    <Setter Property="BorderThickness" Value="0"/>
-                                    <Setter Property="Padding" Value="12,8"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                </Style>
-                            </DataGrid.CellStyle>
+                                <DataGrid.ColumnHeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="Background" Value="#F5F5F5"/>
+                                        <Setter Property="Foreground" Value="#666666"/>
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="FontSize" Value="12"/>
+                                        <Setter Property="Padding" Value="12,10"/>
+                                        <Setter Property="BorderThickness" Value="0,0,0,2"/>
+                                        <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                                    </Style>
+                                </DataGrid.ColumnHeaderStyle>
 
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="ID producto" 
-                                                   Binding="{Binding IdItem}" 
-                                                   Width="100"/>
-                                <DataGridTextColumn Header="Nombre" 
-                                                   Binding="{Binding Nombre}" 
-                                                   Width="150"/>
-                                <DataGridTextColumn Header="Categoría" 
-                                                   Binding="{Binding Categoria}" 
-                                                   Width="120"/>
-                                <DataGridTextColumn Header="Costo unitario" 
-                                                   Binding="{Binding CostoUnitario, StringFormat=C}" 
-                                                   Width="110"/>
-                                <DataGridTextColumn Header="Ubicación" 
-                                                   Binding="{Binding Ubicacion}" 
-                                                   Width="100"/>
-                                <DataGridTextColumn Header="Fecha caducidad" 
-                                                   Binding="{Binding FechaCaducidad, StringFormat=dd/MM/yyyy}" 
-                                                   Width="120"/>
-                                <DataGridTextColumn Header="Stock mínimo" 
-                                                   Binding="{Binding StockMinimo}" 
-                                                   Width="100"/>
-                                <DataGridTextColumn Header="Stock máximo" 
-                                                   Binding="{Binding StockMaximo}" 
-                                                   Width="100"/>
-                                <DataGridTextColumn Header="Stock actual" 
-                                                   Binding="{Binding CantidadStock}" 
-                                                   Width="100"/>
-                                <DataGridTextColumn Header="Observaciones" 
-                                                   Binding="{Binding Observaciones}" 
-                                                   Width="*"/>
-                                <DataGridTemplateColumn Header="Acciones" Width="180">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                <Button Content="✏️"
-                                                        Command="{Binding DataContext.EditarItemCommand, 
-                                                                 RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                        CommandParameter="{Binding}"
-                                                        Background="#3498DB"
-                                                        Foreground="White"
-                                                        BorderThickness="0"
-                                                        Margin="2" 
-                                                        Padding="8,4"
-                                                        Cursor="Hand"
-                                                        ToolTip="Editar producto"
-                                                        Click="BtnEditar_Click"/>
+                                <DataGrid.CellStyle>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                        <Setter Property="Padding" Value="12,8"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                    </Style>
+                                </DataGrid.CellStyle>
 
-                                                <Button Content="🗑️"
-                                                        Command="{Binding DataContext.EliminarItemCommand, 
-                                                                 RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                        CommandParameter="{Binding}"
-                                                        Background="#E74C3C"
-                                                        Foreground="White"
-                                                        BorderThickness="0"
-                                                        Margin="2" 
-                                                        Padding="8,4"
-                                                        Cursor="Hand"
-                                                        ToolTip="Eliminar producto"/>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="ID producto" 
+                                                       Binding="{Binding IdItem}" 
+                                                       Width="100"/>
+                                    <DataGridTextColumn Header="Nombre" 
+                                                       Binding="{Binding Nombre}" 
+                                                       Width="150"/>
+                                    <DataGridTextColumn Header="Categoría" 
+                                                       Binding="{Binding Categoria}" 
+                                                       Width="120"/>
+                                    <DataGridTextColumn Header="Costo unitario" 
+                                                       Binding="{Binding CostoUnitario, StringFormat=C}" 
+                                                       Width="110"/>
+                                    <DataGridTextColumn Header="Ubicación" 
+                                                       Binding="{Binding Ubicacion}" 
+                                                       Width="100"/>
+                                    <DataGridTextColumn Header="Fecha caducidad" 
+                                                       Binding="{Binding FechaCaducidad, StringFormat=dd/MM/yyyy}" 
+                                                       Width="120"/>
+                                    <DataGridTextColumn Header="Stock mínimo" 
+                                                       Binding="{Binding StockMinimo}" 
+                                                       Width="100"/>
+                                    <DataGridTextColumn Header="Stock máximo" 
+                                                       Binding="{Binding StockMaximo}" 
+                                                       Width="100"/>
+                                    <DataGridTextColumn Header="Stock actual" 
+                                                       Binding="{Binding CantidadStock}" 
+                                                       Width="100"/>
+                                    <DataGridTextColumn Header="Observaciones" 
+                                                       Binding="{Binding Observaciones}" 
+                                                       Width="200"/>
+                                    <DataGridTemplateColumn Header="Acciones" Width="180">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <Button Content="✏️"
+                                                            Command="{Binding DataContext.EditarItemCommand, 
+                                                                     RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                            CommandParameter="{Binding}"
+                                                            Background="#3498DB"
+                                                            Foreground="White"
+                                                            BorderThickness="0"
+                                                            Margin="2" 
+                                                            Padding="8,4"
+                                                            Cursor="Hand"
+                                                            ToolTip="Editar producto"
+                                                            Click="BtnEditar_Click"/>
+
+                                                    <Button Content="🗑️"
+                                                            Command="{Binding DataContext.EliminarItemCommand, 
+                                                                     RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                            CommandParameter="{Binding}"
+                                                            Background="#E74C3C"
+                                                            Foreground="White"
+                                                            BorderThickness="0"
+                                                            Margin="2" 
+                                                            Padding="8,4"
+                                                            Cursor="Hand"
+                                                            ToolTip="Eliminar producto"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                        </ScrollViewer>
+                        <!-- Fin ScrollViewer tabla -->
+
                     </Grid>
                 </Border>
             </StackPanel>
@@ -558,7 +568,7 @@
                                 </StackPanel>
                             </Grid>
 
-                            <!-- Stock actual -->
+                            <!-- Stock mínimo y máximo -->
                             <Grid Margin="0,0,0,15">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -577,10 +587,10 @@
                                 </StackPanel>
                             </Grid>
 
-                            <!-- NUEVO: Stock actual -->
+                            <!-- Stock actual -->
                             <TextBlock Text="Stock actual" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding ItemActual.CantidadStock}"
-         Style="{StaticResource ModalTextBoxStyle}"/>
+                                    Style="{StaticResource ModalTextBoxStyle}"/>
 
                             <!-- Observaciones -->
                             <TextBlock Text="Observaciones" 

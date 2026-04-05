@@ -104,7 +104,7 @@
 
                     <!-- Total Entregas -->
                     <Border Grid.Column="0" Style="{StaticResource StatCardStyle}" 
-                            Background="#5BC0BE">
+                            Background="#17A2B8">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -191,7 +191,7 @@
 
                     <!-- Entregadas -->
                     <Border Grid.Column="3" Style="{StaticResource StatCardStyle}" 
-                            Background="#FDD835">
+                            Background="#F39C12">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -222,8 +222,8 @@
                 <!-- Barra de búsqueda y botón -->
                 <Grid Margin="0,0,0,20">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="321*"/>
+                        <ColumnDefinition Width="59*"/>
                     </Grid.ColumnDefinitions>
 
                     <Border Grid.Column="0" 
@@ -417,7 +417,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                </DataGrid.Columns>
+                            </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
                 </Border>
