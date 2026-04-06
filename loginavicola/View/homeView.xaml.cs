@@ -26,8 +26,8 @@ namespace loginavicola.View
         public homeView()
         {
             InitializeComponent();
-            CargarGraficaTorta();
-            CargarGraficaEstadoAves();
+            //CargarGraficaTorta();
+            //CargarGraficaEstadoAves();
             this.DataContext = new homeViewModel();
         }
 

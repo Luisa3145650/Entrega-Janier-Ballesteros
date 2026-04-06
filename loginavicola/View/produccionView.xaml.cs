@@ -63,6 +63,7 @@ namespace loginavicola.View
             CargarCamarasUSB();
             ActualizarEstadisticas();
             CargarHistorial();
+            this.DataContext = new loginavicola.ViewModel.homeViewModel();
 
             // Inicialización optimizada:
             ocrEngine = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default);
@@ -83,9 +84,19 @@ namespace loginavicola.View
 
         private void btnClasificacionManual_Click(object sender, RoutedEventArgs e)
         {
+            // 1. Instanciar la ventana
             ManualView ventana = new ManualView();
             ventana.Owner = Window.GetWindow(this);
-            ventana.ShowDialog();
+
+            // 2. Abrir como Dialog y capturar la respuesta
+            // Esto detiene la ejecución aquí hasta que la ventana se cierra
+            if (ventana.ShowDialog() == true)
+            {
+                // 3. ¡ESTO ES LO VITAL! 
+                // Si el DialogResult fue true, refrescamos los datos del Huila
+                CargarHistorial();
+                ActualizarEstadisticas();
+            }
         }
 
         // CORREGIDO: ahora muestra errores detallados al cargar cámaras

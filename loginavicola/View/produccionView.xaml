@@ -116,7 +116,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="0" FontSize="32" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="{Binding LotesActivos}" FontSize="32" FontWeight="Bold" Foreground="White"/>
                             <TextBlock Text="Lotes activos" FontSize="12" Foreground="White" Opacity="0.9"/>
                         </StackPanel>
                         <Border Grid.Column="1" 

@@ -9,6 +9,7 @@ using LiveCharts.Wpf;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Runtime.CompilerServices;
+using System.Windows.Media;
 
 namespace loginavicola.ViewModel
 {
@@ -65,45 +66,65 @@ namespace loginavicola.ViewModel
 
         public void ActualizarCards()
         {
-            // 1. Obtener datos base
+            // 1. Obtener datos base de lotes
             TotalLotes = database.ObtenerTotalLotes();
             LotesActivos = database.ObtenerLotesActivos();
             TotalAves = database.ObtenerTotalAves();
 
-            // 2. Lógica de Salud de Aves
+            // 2. Lógica Dinámica de Salud de Aves (Agrupada por Tipo de ComboBox)
             var listaDiagnosticos = diagDb.ObtenerTodosDiagnosticos();
-            int avesEnfermas = 0;
+            var series = new SeriesCollection();
+            int totalAvesConDiagnostico = 0;
 
             if (listaDiagnosticos != null)
             {
-                avesEnfermas = listaDiagnosticos
-                    .Where(d => d.Estado == "Activo" && d.Tipo == "Enfermedad")
-                    .Sum(d => d.GallinasAfectadas);
+                // Filtramos solo los casos que siguen "Activos"
+                var casosActivos = listaDiagnosticos.Where(d => d.Estado == "Activo").ToList();
+
+                // Agrupamos por el texto del ComboBox (Tipo)
+                var gruposPorTipo = casosActivos
+                    .GroupBy(d => d.Tipo)
+                    .Select(g => new {
+                        NombreTipo = g.Key,
+                        SumaAves = g.Sum(d => d.GallinasAfectadas)
+                    });
+
+                foreach (var grupo in gruposPorTipo)
+                {
+                    var color = grupo.NombreTipo == "Enfermedad" ? Brushes.Red :
+                                grupo.NombreTipo == "Prevención" ? Brushes.Orange :
+                                Brushes.DodgerBlue;
+
+                    series.Add(new PieSeries
+                    {
+                        Title = grupo.NombreTipo,
+                        Values = new ChartValues<int> { grupo.SumaAves },
+                        DataLabels = true,
+                        Fill = color, // Asigna el color aquí
+                        LabelPoint = p => $"{p.Y} aves"
+                    });
+                    totalAvesConDiagnostico += grupo.SumaAves;
+                }
             }
 
-            int avesSanas = TotalAves - avesEnfermas;
+            // 3. Calcular las aves Sanas (Total - todas las afectadas por cualquier diagnóstico)
+            int avesSanas = TotalAves - totalAvesConDiagnostico;
             if (avesSanas < 0) avesSanas = 0;
 
-            // Actualizamos la serie de la torta
-            EstadoAvesSeries = new SeriesCollection
-    {
-        new PieSeries
-        {
-            Title = "Sanas",
-            Values = new ChartValues<int> { avesSanas },
-            Fill = System.Windows.Media.Brushes.MediumSeaGreen,
-            DataLabels = true
-        },
-        new PieSeries
-        {
-            Title = "Enfermas",
-            Values = new ChartValues<int> { avesEnfermas },
-            Fill = System.Windows.Media.Brushes.IndianRed,
-            DataLabels = true
-        }
-    };
+            // Añadimos siempre la rebanada de "Sanas" al final
+            series.Add(new PieSeries
+            {
+                Title = "Sanas",
+                Values = new ChartValues<int> { avesSanas },
+                Fill = System.Windows.Media.Brushes.MediumSeaGreen,
+                DataLabels = true,
+                LabelPoint = p => $"{p.Y} aves"
+            });
 
-            // 3. Lógica de Inventario de Alimento
+            // Asignamos la colección completa a la propiedad que escucha el XAML
+            EstadoAvesSeries = series;
+
+            // 4. Lógica de Inventario de Alimento (Igual que antes)
             var listaItems = inventarioDb.ObtenerTodosItems();
             if (listaItems != null)
             {
