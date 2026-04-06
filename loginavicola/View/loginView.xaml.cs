@@ -1,39 +1,20 @@
-﻿using loginavicola;
-using loginavicola.Model;  // Sin tilde para coincidir con el espacio de nombres real
-using loginavícola.Model;
+﻿using loginavicola.Database;
+using loginavicola.Model;
 using loginavicola.View;
 using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SQLite;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace loginavicola.View
 {
-    /// <summary>
-    /// Lógica de interacción para loginView.xaml
-    /// </summary>
     public partial class loginView : Window
     {
-        private DatabaseModel dbModel;
+        private UsuarioDatabase db;
 
         public loginView()
         {
             InitializeComponent();
-            dbModel = new DatabaseModel();
-
-            // INICIALIZAR LA BASE DE DATOS
-            dbModel.InicializarBaseDeDatos();
+            db = new UsuarioDatabase();
         }
 
         private void Window_MouseDown(object sender, MouseEventArgs e)
@@ -54,62 +35,36 @@ namespace loginavicola.View
 
         private void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
-            string usuario = txtUser.Text;
-            string clave = txtPassword.Password;
+            string usuario = txtUser.Text.Trim();
+            string clave = txtPassword.Password.Trim();
 
-            // Validar campos vacíos
             if (string.IsNullOrEmpty(usuario) || string.IsNullOrEmpty(clave))
             {
-                MessageBox.Show("Por favor, ingresa usuario y contraseña",
-                                "Campos vacíos",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Warning);
+                MessageBox.Show("Por favor, ingresa usuario y contraseña");
                 return;
             }
 
             try
             {
-                // CONSULTA A LA BASE DE DATOS
-                string query = "SELECT * FROM usuarios WHERE username = @username AND password = @password";
+                // 🔥 AQUÍ USAMOS TU MÉTODO REAL
+                Usuario usuarioLogeado = db.ValidarLogin(usuario, clave);
 
-                SQLiteParameter[] parameters = new SQLiteParameter[]
+                if (usuarioLogeado != null)
                 {
-                    new SQLiteParameter("@username", usuario),   // Corregido: usuario en lugar de usuarioIngresado
-                    new SQLiteParameter("@password", clave)      // Corregido: clave en lugar de claveIngresada
-                };
+                    MessageBox.Show($"¡Bienvenido {usuarioLogeado.Nombres}!");
 
-                DataTable result = dbModel.ExecuteQuery(query, parameters);
-
-                if (result.Rows.Count > 0)
-                {
-                    // Login exitoso
-                    string nombreUsuario = result.Rows[0]["nombre"].ToString();
-                    string rol = result.Rows[0]["rol"].ToString();
-
-                    MessageBox.Show($"¡Bienvenido {nombreUsuario}!",
-                                    "Login exitoso",
-                                    MessageBoxButton.OK,
-                                    MessageBoxImage.Information);
-
-                    // Navegar a la ventana principal
                     MainWindow main = new MainWindow();
                     main.Show();
                     this.Close();
                 }
                 else
                 {
-                    MessageBox.Show("Usuario o contraseña incorrectos",
-                                    "Error de login",
-                                    MessageBoxButton.OK,
-                                    MessageBoxImage.Error);
+                    MessageBox.Show("Usuario o contraseña incorrectos");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al conectar con la base de datos: {ex.Message}",
-                                "Error",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Error);
+                MessageBox.Show($"Error: {ex.Message}");
             }
         }
 
