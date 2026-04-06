@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
+using System.Text;
 using System.Windows;
 using Microsoft.Win32;
 
@@ -15,11 +13,10 @@ namespace loginavicola.Helpers
         {
             try
             {
-                // Mostrar diálogo para guardar archivo
                 SaveFileDialog saveDialog = new SaveFileDialog
                 {
-                    FileName = $"{nombreArchivo}_{DateTime.Now:yyyyMMdd_HHmmss}.csv",
-                    Filter = "Archivos CSV (*.csv)|*.csv|Todos los archivos (*.*)|*.*",
+                    FileName = $"{nombreArchivo}_{DateTime.Now:yyyyMMdd_HHmm}.csv",
+                    Filter = "Archivos CSV (*.csv)|*.csv",
                     DefaultExt = "csv"
                 };
 
@@ -27,39 +24,27 @@ namespace loginavicola.Helpers
                 {
                     using (StreamWriter writer = new StreamWriter(saveDialog.FileName, false, Encoding.UTF8))
                     {
-                        // Escribir encabezados
-                        writer.WriteLine(string.Join(",", encabezados));
+                        writer.WriteLine(string.Join(";", encabezados));
 
-                        // Escribir datos
                         foreach (var item in datos)
                         {
                             string[] valores = obtenerValores(item);
-
-                            // Escapar comillas y comas en los valores
                             for (int i = 0; i < valores.Length; i++)
                             {
-                                if (valores[i].Contains(",") || valores[i].Contains("\""))
-                                {
-                                    valores[i] = $"\"{valores[i].Replace("\"", "\"\"")}\"";
-                                }
+                                string val = valores[i]?.Replace("\r", "").Replace("\n", " ") ?? "";
+                                if (val.Contains(";") || val.Contains("\""))
+                                    val = $"\"{val.Replace("\"", "\"\"")}\"";
+                                valores[i] = val;
                             }
-
-                            writer.WriteLine(string.Join(",", valores));
+                            writer.WriteLine(string.Join(";", valores));
                         }
                     }
-
-                    MessageBox.Show($"Archivo exportado exitosamente:\n{saveDialog.FileName}",
-                        "Exportación Exitosa",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                    MessageBox.Show("Reporte generado con éxito.", "AvícolaSena", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al exportar: {ex.Message}",
-                    "Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                MessageBox.Show($"Error crítico: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

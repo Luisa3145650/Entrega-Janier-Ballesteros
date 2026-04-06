@@ -1,17 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using loginavicola.ViewModel;
 
 namespace loginavicola.View
@@ -23,12 +11,14 @@ namespace loginavicola.View
         public diagnosticoView()
         {
             InitializeComponent();
+            // Asignamos el ViewModel
             viewModel = new DiagnosticoViewModel();
             this.DataContext = viewModel;
         }
 
         private void BtnRegistrarDiagnostico_Click(object sender, RoutedEventArgs e)
         {
+            // Limpia el formulario antes de mostrarlo
             viewModel.LimpiarFormulario();
             ModalOverlay.Visibility = Visibility.Visible;
         }
@@ -40,15 +30,29 @@ namespace loginavicola.View
 
         private void BtnGuardar_Click(object sender, RoutedEventArgs e)
         {
+            // Ejecuta la lógica de guardado del ViewModel
             if (viewModel.GuardarDiagnostico())
             {
+                // Si se guardó con éxito, cerramos el modal
                 ModalOverlay.Visibility = Visibility.Collapsed;
+
+                // Forzamos el refresco de la tabla para que aparezca el nombre del medicamento
+                viewModel.CargarDatos();
             }
         }
 
-        private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void BtnExportarExcel_Click(object sender, RoutedEventArgs e)
         {
-
+            // Usamos el Helper que creamos para exportar
+            if (viewModel.Diagnosticos.Count > 0)
+            {
+                var listaExportar = new System.Collections.Generic.List<Model.Diagnostico>(viewModel.Diagnosticos);
+                Helpers.ExcelHelper.ExportarAExcel(listaExportar, "Historial_Diagnosticos");
+            }
+            else
+            {
+                MessageBox.Show("No hay datos para exportar.");
+            }
         }
     }
 }

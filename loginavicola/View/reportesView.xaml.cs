@@ -1,22 +1,11 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System;
-using System.IO;
-using Microsoft.Win32;
 using loginavicola.Database;
 using loginavicola.Helpers;
+using loginavicola.Model;
 
 namespace loginavicola.View
 {
@@ -30,24 +19,22 @@ namespace loginavicola.View
             database = new ReportesDatabase();
         }
 
+        // 1. EXPORTAR CLASIFICACIÓN / PRODUCCIÓN (Usa la tabla ClasificacionProduccion)
         private void BtnExportarClasificacion_Click(object sender, RoutedEventArgs e)
         {
             var datos = database.ObtenerClasificaciones();
 
             if (datos.Count == 0)
             {
-                MessageBox.Show("No hay datos de clasificación para exportar",
-                    "Sin Datos", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("No hay datos de producción para exportar.", "Sin Datos", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            string[] encabezados = {
-                "ID", "Fecha", "Recolector", "Jumbo", "AAA", "AA", "A", "B", "C", "Total"
-            };
+            string[] encabezados = { "ID", "Fecha", "Recolector", "Jumbo", "AAA", "AA", "A", "B", "C", "Total" };
 
             CsvExporter.ExportarACSV(
                 datos,
-                "Clasificacion_Huevos",
+                "Reporte_Produccion_Huevos",
                 encabezados,
                 item => new string[] {
                     item.IdClasificacion.ToString(),
@@ -59,149 +46,88 @@ namespace loginavicola.View
                     item.A.ToString(),
                     item.B.ToString(),
                     item.C.ToString(),
-                    item.Total.ToString()
+                    item.Total.ToString() // Usa la propiedad calculada de tu modelo
                 }
             );
         }
 
+        // 2. EXPORTAR INVENTARIO (Usa la tabla Alimento)
         private void BtnExportarInventario_Click(object sender, RoutedEventArgs e)
         {
-            var datos = database.ObtenerAlimentos();
-
+            var datos = database.ObtenerInventario();
             if (datos.Count == 0)
             {
-                MessageBox.Show("No hay datos de inventario para exportar",
-                    "Sin Datos", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("No hay datos en el inventario para exportar.", "Sin Datos");
                 return;
             }
 
-            string[] encabezados = { "ID", "Nombre", "Stock Disponible (kg)" };
+            string[] encabezados = { "ID", "Nombre", "Categoría", "Stock Actual" };
 
-            CsvExporter.ExportarACSV(
-                datos,
-                "Inventario_Alimentos",
-                encabezados,
+            CsvExporter.ExportarACSV(datos, "Inventario_Alimentos", encabezados,
                 item => new string[] {
-                    item.IdAlimento.ToString(),
+                    item.IdItem.ToString(),
                     item.Nombre,
-                    item.StockDisponible.ToString("F2")
-                }
-            );
+                    item.Categoria,
+                    item.CantidadStock.ToString()
+                });
         }
 
+        // 3. EXPORTAR DIAGNÓSTICOS (Salud de las aves)
         private void BtnExportarInsumos_Click(object sender, RoutedEventArgs e)
         {
-            var datos = database.ObtenerConsumos();
-
+            var datos = database.ObtenerDiagnosticos();
             if (datos.Count == 0)
             {
-                MessageBox.Show("No hay datos de consumo para exportar",
-                    "Sin Datos", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("No hay registros de diagnósticos médicos.", "Sin Datos");
                 return;
             }
 
-            string[] encabezados = {
-                "ID", "Fecha", "Lote", "Alimento", "Cantidad", "Unidad", "Turno", "Observaciones"
-            };
+            string[] encabezados = { "Fecha", "Diagnóstico", "Tratamiento", "Afectadas", "Veterinario" };
 
-            CsvExporter.ExportarACSV(
-                datos,
-                "Consumo_Alimentos",
-                encabezados,
+            CsvExporter.ExportarACSV(datos, "Reporte_Sanitario", encabezados,
                 item => new string[] {
-                    item.IdConsumo.ToString(),
-                    item.FechaConsumo.ToString("dd/MM/yyyy"),
-                    item.IdLoteGallinas.ToString(),
-                    item.NombreAlimento,
-                    item.CantidadConsumida.ToString("F2"),
-                    item.UnidadMedida,
-                    item.Turno,
-                    item.Observaciones
-                }
-            );
+                    item.FechaDiagnostico.ToString("dd/MM/yyyy"),
+                    item.DiagnosticoMedico,
+                    item.Tratamiento,
+                    item.GallinasAfectadas.ToString(),
+                    item.Veterinario
+                });
         }
 
+        // 4. EXPORTAR LOTES
         private void BtnExportarLotes_Click(object sender, RoutedEventArgs e)
         {
             var datos = database.ObtenerLotes();
+            if (datos.Count == 0) return;
 
-            if (datos.Count == 0)
-            {
-                MessageBox.Show("No hay datos de lotes para exportar",
-                    "Sin Datos", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
+            string[] encabezados = { "ID", "Raza", "Cantidad", "Fecha Inc.", "Estado" };
 
-            string[] encabezados = {
-                "ID", "Raza", "Cantidad", "Fecha Incorporación", "Granja Origen", "Estado", "Observaciones"
-            };
-
-            CsvExporter.ExportarACSV(
-                datos,
-                "Lotes_Gallinas",
-                encabezados,
+            CsvExporter.ExportarACSV(datos, "Lotes_Gallinas", encabezados,
                 item => new string[] {
                     item.IdLote.ToString(),
                     item.Raza,
                     item.CantidadGallinas.ToString(),
                     item.FechaIncorporacion.ToString("dd/MM/yyyy"),
-                    item.GranjaOrigen,
-                    item.Estado,
-                    item.Observaciones
-                }
-            );
+                    item.Estado
+                });
         }
 
+        // 5. EXPORTAR PRODUCCIÓN (Redirige al mismo de clasificación para evitar errores)
         private void BtnExportarProduccion_Click(object sender, RoutedEventArgs e)
         {
-            var datos = database.ObtenerProduccion();
-
-            if (datos.Count == 0)
-            {
-                MessageBox.Show("No hay datos de producción para exportar",
-                    "Sin Datos", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            string[] encabezados = {
-                "ID", "Fecha", "Lote", "Raza", "Cantidad Huevos", "% Producción", "Observaciones"
-            };
-
-            CsvExporter.ExportarACSV(
-                datos,
-                "Produccion_Diaria",
-                encabezados,
-                item => new string[] {
-                    item.IdProduccion.ToString(),
-                    item.Fecha.ToString("dd/MM/yyyy"),
-                    item.IdLote.ToString(),
-                    item.Raza,
-                    item.CantidadHuevos.ToString(),
-                    item.PorcentajeProduccion.ToString("F2") + "%",
-                    item.Observaciones
-                }
-            );
+            BtnExportarClasificacion_Click(sender, e);
         }
 
+        // 6. EXPORTAR TODO
         private void BtnExportarTodo_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(
-                "¿Desea exportar TODOS los datos del sistema?\n\n" +
-                "Se generarán múltiples archivos CSV.",
-                "Confirmar Exportación Completa",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
+            var result = MessageBox.Show("¿Desea exportar todos los reportes disponibles?", "Confirmar", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
                 BtnExportarClasificacion_Click(sender, e);
                 BtnExportarLotes_Click(sender, e);
                 BtnExportarInventario_Click(sender, e);
                 BtnExportarInsumos_Click(sender, e);
-                BtnExportarProduccion_Click(sender, e);
-
-                MessageBox.Show("Exportación completa finalizada",
-                    "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
     }

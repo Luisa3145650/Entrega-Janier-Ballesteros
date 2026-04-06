@@ -17,7 +17,6 @@ namespace loginavicola.Database
 
         public DiagnosticoDatabase()
         {
-            // Usar la misma base de datos
             dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sistema_avicola.db");
             connectionString = $"Data Source={dbPath};Version=3;";
 
@@ -80,13 +79,16 @@ namespace loginavicola.Database
                             FechaDiagnostico DATE NOT NULL,
                             Tipo VARCHAR(50) NOT NULL,
                             IdLote INTEGER NOT NULL,
+                            IdMedicamento INTEGER,
+                            CantidadMedicamentoUsado INTEGER DEFAULT 0,
                             DiagnosticoMedico TEXT NOT NULL,
                             Tratamiento TEXT,
                             GallinasAfectadas INTEGER DEFAULT 0,
                             Veterinario VARCHAR(100),
                             Observaciones TEXT,
                             Estado VARCHAR(20) DEFAULT 'Activo',
-                            FOREIGN KEY (IdLote) REFERENCES Lote(IdLote)
+                            FOREIGN KEY (IdLote) REFERENCES Lote(IdLote),
+                            FOREIGN KEY (IdMedicamento) REFERENCES Inventario(IdItem)
                         )";
 
                     using (var command = new SQLiteCommand(createTable, connection))
@@ -109,7 +111,6 @@ namespace loginavicola.Database
             }
         }
 
-        // OBTENER TODOS LOS DIAGNÓSTICOS
         public List<Diagnostico> ObtenerTodosDiagnosticos()
         {
             var diagnosticos = new List<Diagnostico>();
@@ -121,6 +122,7 @@ namespace loginavicola.Database
                     connection.Open();
                     string query = @"
                         SELECT IdDiagnostico, FechaDiagnostico, Tipo, IdLote, 
+                               IdMedicamento, CantidadMedicamentoUsado,
                                DiagnosticoMedico, Tratamiento, GallinasAfectadas,
                                Veterinario, Observaciones, Estado
                         FROM Diagnostico
@@ -137,6 +139,10 @@ namespace loginavicola.Database
                                 FechaDiagnostico = Convert.ToDateTime(reader["FechaDiagnostico"]),
                                 Tipo = reader["Tipo"]?.ToString() ?? string.Empty,
                                 IdLote = Convert.ToInt32(reader["IdLote"]),
+                                // Nuevos campos mapeados
+                                IdMedicamento = reader["IdMedicamento"] != DBNull.Value ? Convert.ToInt32(reader["IdMedicamento"]) : (int?)null,
+                                CantidadMedicamentoUsado = Convert.ToInt32(reader["CantidadMedicamentoUsado"]),
+
                                 DiagnosticoMedico = reader["DiagnosticoMedico"]?.ToString() ?? string.Empty,
                                 Tratamiento = reader["Tratamiento"]?.ToString() ?? string.Empty,
                                 GallinasAfectadas = Convert.ToInt32(reader["GallinasAfectadas"]),
@@ -156,7 +162,6 @@ namespace loginavicola.Database
             return diagnosticos;
         }
 
-        // INSERTAR NUEVO DIAGNÓSTICO
         public bool InsertarDiagnostico(Diagnostico diagnostico)
         {
             try
@@ -166,17 +171,23 @@ namespace loginavicola.Database
                     connection.Open();
                     string query = @"
                         INSERT INTO Diagnostico 
-                        (FechaDiagnostico, Tipo, IdLote, DiagnosticoMedico, Tratamiento, 
-                         GallinasAfectadas, Veterinario, Observaciones, Estado)
+                        (FechaDiagnostico, Tipo, IdLote, IdMedicamento, CantidadMedicamentoUsado, 
+                         DiagnosticoMedico, Tratamiento, GallinasAfectadas, Veterinario, 
+                         Observaciones, Estado)
                         VALUES 
-                        (@FechaDiagnostico, @Tipo, @IdLote, @DiagnosticoMedico, @Tratamiento,
-                         @GallinasAfectadas, @Veterinario, @Observaciones, @Estado)";
+                        (@FechaDiagnostico, @Tipo, @IdLote, @IdMedicamento, @CantidadMedicamentoUsado, 
+                         @DiagnosticoMedico, @Tratamiento, @GallinasAfectadas, @Veterinario, 
+                         @Observaciones, @Estado)";
 
                     using (var command = new SQLiteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@FechaDiagnostico", diagnostico.FechaDiagnostico);
                         command.Parameters.AddWithValue("@Tipo", diagnostico.Tipo);
                         command.Parameters.AddWithValue("@IdLote", diagnostico.IdLote);
+                        // Parámetros del medicamento
+                        command.Parameters.AddWithValue("@IdMedicamento", (object)diagnostico.IdMedicamento ?? DBNull.Value);
+                        command.Parameters.AddWithValue("@CantidadMedicamentoUsado", diagnostico.CantidadMedicamentoUsado);
+
                         command.Parameters.AddWithValue("@DiagnosticoMedico", diagnostico.DiagnosticoMedico);
                         command.Parameters.AddWithValue("@Tratamiento", diagnostico.Tratamiento ?? string.Empty);
                         command.Parameters.AddWithValue("@GallinasAfectadas", diagnostico.GallinasAfectadas);
@@ -196,7 +207,6 @@ namespace loginavicola.Database
             }
         }
 
-        // ACTUALIZAR DIAGNÓSTICO
         public bool ActualizarDiagnostico(Diagnostico diagnostico)
         {
             try
@@ -209,6 +219,8 @@ namespace loginavicola.Database
                             FechaDiagnostico = @FechaDiagnostico,
                             Tipo = @Tipo,
                             IdLote = @IdLote,
+                            IdMedicamento = @IdMedicamento,
+                            CantidadMedicamentoUsado = @CantidadMedicamentoUsado,
                             DiagnosticoMedico = @DiagnosticoMedico,
                             Tratamiento = @Tratamiento,
                             GallinasAfectadas = @GallinasAfectadas,
@@ -223,6 +235,8 @@ namespace loginavicola.Database
                         command.Parameters.AddWithValue("@FechaDiagnostico", diagnostico.FechaDiagnostico);
                         command.Parameters.AddWithValue("@Tipo", diagnostico.Tipo);
                         command.Parameters.AddWithValue("@IdLote", diagnostico.IdLote);
+                        command.Parameters.AddWithValue("@IdMedicamento", (object)diagnostico.IdMedicamento ?? DBNull.Value);
+                        command.Parameters.AddWithValue("@CantidadMedicamentoUsado", diagnostico.CantidadMedicamentoUsado);
                         command.Parameters.AddWithValue("@DiagnosticoMedico", diagnostico.DiagnosticoMedico);
                         command.Parameters.AddWithValue("@Tratamiento", diagnostico.Tratamiento ?? string.Empty);
                         command.Parameters.AddWithValue("@GallinasAfectadas", diagnostico.GallinasAfectadas);
@@ -242,7 +256,6 @@ namespace loginavicola.Database
             }
         }
 
-        // ELIMINAR DIAGNÓSTICO
         public bool EliminarDiagnostico(int idDiagnostico)
         {
             try
@@ -267,7 +280,8 @@ namespace loginavicola.Database
             }
         }
 
-        // ESTADÍSTICAS
+        // --- MÉTODOS DE ESTADÍSTICAS MANTENIDOS ---
+
         public int ObtenerTotalDiagnosticos()
         {
             try
@@ -276,17 +290,13 @@ namespace loginavicola.Database
                 {
                     connection.Open();
                     string query = "SELECT COUNT(*) FROM Diagnostico";
-
                     using (var command = new SQLiteCommand(query, connection))
                     {
                         return Convert.ToInt32(command.ExecuteScalar());
                     }
                 }
             }
-            catch
-            {
-                return 0;
-            }
+            catch { return 0; }
         }
 
         public int ObtenerCasosActivos()
@@ -297,17 +307,13 @@ namespace loginavicola.Database
                 {
                     connection.Open();
                     string query = "SELECT COUNT(*) FROM Diagnostico WHERE Estado = 'Activo'";
-
                     using (var command = new SQLiteCommand(query, connection))
                     {
                         return Convert.ToInt32(command.ExecuteScalar());
                     }
                 }
             }
-            catch
-            {
-                return 0;
-            }
+            catch { return 0; }
         }
 
         public int ObtenerCasosResueltos()
@@ -318,17 +324,13 @@ namespace loginavicola.Database
                 {
                     connection.Open();
                     string query = "SELECT COUNT(*) FROM Diagnostico WHERE Estado = 'Resuelto'";
-
                     using (var command = new SQLiteCommand(query, connection))
                     {
                         return Convert.ToInt32(command.ExecuteScalar());
                     }
                 }
             }
-            catch
-            {
-                return 0;
-            }
+            catch { return 0; }
         }
 
         public int ObtenerTotalAvesAfectadas()
@@ -339,17 +341,13 @@ namespace loginavicola.Database
                 {
                     connection.Open();
                     string query = "SELECT COALESCE(SUM(GallinasAfectadas), 0) FROM Diagnostico WHERE Estado = 'Activo'";
-
                     using (var command = new SQLiteCommand(query, connection))
                     {
                         return Convert.ToInt32(command.ExecuteScalar());
                     }
                 }
             }
-            catch
-            {
-                return 0;
-            }
+            catch { return 0; }
         }
     }
 }

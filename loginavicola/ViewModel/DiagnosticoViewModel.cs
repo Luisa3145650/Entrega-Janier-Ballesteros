@@ -40,10 +40,12 @@ namespace loginavicola.ViewModel
                 "Revisión"
             };
 
+            // Inicialización de Comandos
             MarcarComoResueltoCommand = new RelayCommand(MarcarComoResuelto);
             ReabrirCasoCommand = new RelayCommand(ReabrirCaso);
             EliminarDiagnosticoCommand = new RelayCommand(EliminarDiagnostico);
 
+            // Carga inicial de datos
             CargarDatos();
             CargarLotesActivos();
             CargarMedicamentos();
@@ -60,7 +62,7 @@ namespace loginavicola.ViewModel
         public ObservableCollection<string> TiposDiagnostico { get; set; }
         public ObservableCollection<ItemInventario> MedicamentosDisponibles { get; set; }
 
-        // ✅ PROPIEDADES NUEVAS (Para solucionar los errores de Binding)
+        // ✅ PROPIEDADES DE BÚSQUEDA Y FILTRADO
         private string _textoBusqueda = string.Empty;
         public string TextoBusqueda
         {
@@ -69,13 +71,14 @@ namespace loginavicola.ViewModel
             {
                 _textoBusqueda = value;
                 OnPropertyChanged(nameof(TextoBusqueda));
-                FiltrarDiagnosticos(); // Llamamos al método de filtrado
+                FiltrarDiagnosticos();
             }
         }
 
         private void FiltrarDiagnosticos()
         {
             var listaCompleta = database.ObtenerTodosDiagnosticos();
+            var inventario = inventarioDatabase.ObtenerTodosItems();
             Diagnosticos.Clear();
 
             var filtrados = listaCompleta.Where(d =>
@@ -85,11 +88,22 @@ namespace loginavicola.ViewModel
             );
 
             foreach (var d in filtrados)
+            {
+                // Cruce de nombre de medicamento en el filtrado
+                if (d.IdMedicamento.HasValue)
+                {
+                    var med = inventario.FirstOrDefault(i => i.IdItem == d.IdMedicamento.Value);
+                    d.NombreMedicamento = med != null ? med.Nombre : "ID no encontrado";
+                }
+                else { d.NombreMedicamento = "N/A"; }
+
                 Diagnosticos.Add(d);
+            }
 
             ActualizarEstadisticas();
         }
 
+        // ✅ ESTADÍSTICAS
         private int _totalDiagnosticos;
         public int TotalDiagnosticos
         {
@@ -118,7 +132,7 @@ namespace loginavicola.ViewModel
             set { _avesAfectadas = value; OnPropertyChanged(nameof(AvesAfectadas)); }
         }
 
-        // ✅ PROPIEDADES EXISTENTES
+        // ✅ PROPIEDAD PARA EL FORMULARIO
         private Diagnostico _diagnosticoActual = new Diagnostico
         {
             FechaDiagnostico = DateTime.Now,
@@ -131,27 +145,37 @@ namespace loginavicola.ViewModel
             set { _diagnosticoActual = value; OnPropertyChanged(nameof(DiagnosticoActual)); }
         }
 
-        // ============================================================
-        // ACTUALIZAR ESTADÍSTICAS
-        // ============================================================
+        // ✅ MÉTODOS DE ACTUALIZACIÓN Y CARGA
         private void ActualizarEstadisticas()
         {
             TotalDiagnosticos = Diagnosticos.Count;
             CasosActivos = Diagnosticos.Count(d => d.Estado == "Activo");
             CasosResueltos = Diagnosticos.Count(d => d.Estado == "Resuelto");
-AvesAfectadas = Diagnosticos.Where(d => d.Estado == "Activo").Sum(d => d.GallinasAfectadas);        }
+            AvesAfectadas = Diagnosticos.Where(d => d.Estado == "Activo").Sum(d => d.GallinasAfectadas);
+        }
 
-        // ============================================================
-        // MÉTODOS DE CARGA
-        // ============================================================
         public void CargarDatos()
         {
             Diagnosticos.Clear();
             var lista = database.ObtenerTodosDiagnosticos();
-            foreach (var d in lista)
-                Diagnosticos.Add(d);
+            var inventario = inventarioDatabase.ObtenerTodosItems();
 
-            ActualizarEstadisticas(); // Actualizamos los números de la interfaz
+            foreach (var d in lista)
+            {
+                // Cruce de datos para obtener el nombre real del medicamento
+                if (d.IdMedicamento.HasValue)
+                {
+                    var item = inventario.FirstOrDefault(i => i.IdItem == d.IdMedicamento.Value);
+                    d.NombreMedicamento = item != null ? item.Nombre : "ID Inexistente";
+                }
+                else
+                {
+                    d.NombreMedicamento = "Sin Medicamento";
+                }
+                Diagnosticos.Add(d);
+            }
+
+            ActualizarEstadisticas();
         }
 
         private void CargarMedicamentos()
@@ -168,24 +192,24 @@ AvesAfectadas = Diagnosticos.Where(d => d.Estado == "Activo").Sum(d => d.Gallina
         private void CargarLotesActivos()
         {
             LotesActivos.Clear();
-            foreach (var l in loteDatabase.ObtenerTodosLosLotes().Where(l => l.CantidadGallinas > 0))
+            var lotes = loteDatabase.ObtenerTodosLosLotes().Where(l => l.CantidadGallinas > 0);
+            foreach (var l in lotes)
                 LotesActivos.Add(l);
         }
 
-        // ============================================================
-        // GUARDAR DIAGNOSTICO
-        // ============================================================
+        // ✅ LÓGICA DE GUARDADO
         public bool GuardarDiagnostico()
         {
             if (!ValidarDiagnostico()) return false;
 
+            // Lógica de descuento de inventario
             if (DiagnosticoActual.IdMedicamento.HasValue && DiagnosticoActual.CantidadMedicamentoUsado > 0)
             {
                 var medicamento = inventarioDatabase.ObtenerTodosItems()
                     .FirstOrDefault(i => i.IdItem == DiagnosticoActual.IdMedicamento.Value);
 
                 if (medicamento == null) { MessageBox.Show("Medicamento no encontrado"); return false; }
-                if (medicamento.CantidadStock < DiagnosticoActual.CantidadMedicamentoUsado) { MessageBox.Show("Stock insuficiente"); return false; }
+                if (medicamento.CantidadStock < DiagnosticoActual.CantidadMedicamentoUsado) { MessageBox.Show("Stock insuficiente en inventario"); return false; }
 
                 medicamento.CantidadStock -= DiagnosticoActual.CantidadMedicamentoUsado;
                 inventarioDatabase.ActualizarItem(medicamento);
@@ -194,9 +218,8 @@ AvesAfectadas = Diagnosticos.Where(d => d.Estado == "Activo").Sum(d => d.Gallina
             bool resultado = database.InsertarDiagnostico(DiagnosticoActual);
             if (resultado)
             {
-                MessageBox.Show("Diagnóstico guardado correctamente");
-                CargarDatos();
-                CargarMedicamentos();
+                CargarDatos(); // Recargar la tabla con nombres cruzados
+                CargarMedicamentos(); // Actualizar stock visual
                 LimpiarFormulario();
                 return true;
             }
@@ -211,6 +234,7 @@ AvesAfectadas = Diagnosticos.Where(d => d.Estado == "Activo").Sum(d => d.Gallina
             return true;
         }
 
+        // ✅ ACCIONES DE LA TABLA (COMANDOS)
         private void MarcarComoResuelto(object parameter)
         {
             if (parameter is Diagnostico diagnostico)
@@ -235,8 +259,12 @@ AvesAfectadas = Diagnosticos.Where(d => d.Estado == "Activo").Sum(d => d.Gallina
         {
             if (parameter is Diagnostico diagnostico)
             {
-                database.EliminarDiagnostico(diagnostico.IdDiagnostico);
-                CargarDatos();
+                var result = MessageBox.Show("¿Está seguro de eliminar este diagnóstico?", "Confirmar", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (result == MessageBoxResult.Yes)
+                {
+                    database.EliminarDiagnostico(diagnostico.IdDiagnostico);
+                    CargarDatos();
+                }
             }
         }
 
@@ -249,7 +277,8 @@ AvesAfectadas = Diagnosticos.Where(d => d.Estado == "Activo").Sum(d => d.Gallina
             };
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        // ✅ NOTIFICACIÓN DE CAMBIOS
+        public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

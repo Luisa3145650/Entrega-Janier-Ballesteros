@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Input;
 using loginavicola.Database;
 using loginavicola.Model;
+using loginavicola.Helpers; // Agregado para usar ExcelHelper
 
 namespace loginavicola.ViewModel
 {
@@ -28,12 +29,15 @@ namespace loginavicola.ViewModel
                 "Deficiente"
             };
 
-            // Inicializar comandos
+            // Inicializar comandos existentes
             AbrirModalCommand = new RelayCommand(AbrirModal);
             CerrarModalCommand = new RelayCommand(CerrarModal);
             RegistrarCommand = new RelayCommand(RegistrarLote);
             EditarCommand = new RelayCommand(EditarLote);
             EliminarCommand = new RelayCommand(EliminarLote);
+
+            // Inicializar nuevo comando de exportación
+            ExportarExcelCommand = new RelayCommand(o => ExportarALotesExcel());
 
             // Cargar datos
             CargarDatos();
@@ -99,6 +103,7 @@ namespace loginavicola.ViewModel
         public ICommand RegistrarCommand { get; }
         public ICommand EditarCommand { get; }
         public ICommand EliminarCommand { get; }
+        public ICommand ExportarExcelCommand { get; } // Nuevo comando
 
         // Métodos
         private void CargarDatos()
@@ -119,6 +124,21 @@ namespace loginavicola.ViewModel
             TotalLotes = database.ObtenerTotalLotes();
             LotesActivos = database.ObtenerLotesActivos();
             TotalAves = database.ObtenerTotalAves();
+        }
+
+        // Nuevo método para la exportación
+        private void ExportarALotesExcel()
+        {
+            if (LotesRegistrados != null && LotesRegistrados.Count > 0)
+            {
+                // Exporta la lista actual (si hay filtros aplicados, solo exportará lo visible)
+                ExcelHelper.ExportarAExcel(LotesRegistrados.ToList(), "Lotes Registrados");
+            }
+            else
+            {
+                MessageBox.Show("No hay datos disponibles para exportar.", "Atención",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         private void AbrirModal(object parameter)
@@ -228,14 +248,12 @@ namespace loginavicola.ViewModel
 
         private void FiltrarLotes()
         {
-            // Obtenemos todos los datos una sola vez o trabajamos sobre lo ya cargado
             var todosLosLotes = database.ObtenerTodosLosLotes();
 
             if (string.IsNullOrWhiteSpace(TextoBusqueda))
             {
                 LotesRegistrados.Clear();
                 foreach (var l in todosLosLotes) LotesRegistrados.Add(l);
-                ActualizarEstadisticas();
                 return;
             }
 
@@ -251,7 +269,7 @@ namespace loginavicola.ViewModel
             foreach (var lote in filtrados) LotesRegistrados.Add(lote);
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -262,26 +280,26 @@ namespace loginavicola.ViewModel
     public class RelayCommand : ICommand
     {
         private readonly Action<object> _execute;
-        private readonly Func<object, bool>? _canExecute;
+        private readonly Func<object, bool> _canExecute;
 
-        public RelayCommand(Action<object> execute, Func<object, bool>? canExecute = null)
+        public RelayCommand(Action<object> execute, Func<object, bool> canExecute = null)
         {
             _execute = execute ?? throw new ArgumentNullException(nameof(execute));
             _canExecute = canExecute;
         }
 
-        public event EventHandler? CanExecuteChanged
+        public event EventHandler CanExecuteChanged
         {
             add { CommandManager.RequerySuggested += value; }
             remove { CommandManager.RequerySuggested -= value; }
         }
 
-        public bool CanExecute(object? parameter)
+        public bool CanExecute(object parameter)
         {
             return _canExecute == null || _canExecute(parameter);
         }
 
-        public void Execute(object? parameter)
+        public void Execute(object parameter)
         {
             _execute(parameter);
         }

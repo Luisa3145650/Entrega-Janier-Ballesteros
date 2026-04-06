@@ -5,39 +5,37 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:loginavicola.View"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="900"
+             d:DesignHeight="800" d:DesignWidth="900"
              Background="Transparent">
 
     <UserControl.Resources>
-        <!-- Estilo para las tarjetas de reportes -->
         <Style x:Key="ReportCardStyle" TargetType="Border">
             <Setter Property="Background" Value="#E8E8E8"/>
             <Setter Property="CornerRadius" Value="16"/>
-            <Setter Property="Padding" Value="30,25"/>
-            <Setter Property="Margin" Value="12"/>
-            <Setter Property="Width" Value="200"/>
-            <Setter Property="Height" Value="160"/>
+            <Setter Property="Padding" Value="20,15"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="Width" Value="220"/>
+            <Setter Property="Height" Value="Auto"/>
+            <Setter Property="MinHeight" Value="180"/>
         </Style>
 
-        <!-- Estilo para el botón verde de exportar -->
         <Style x:Key="ExportButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#28A745"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="30,8"/>
+            <Setter Property="Padding" Value="20,6"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,15,0,0"/>
+            <Setter Property="Margin" Value="0,12,0,5"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="20"
+                                CornerRadius="15"
                                 Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" 
-                                            VerticalAlignment="Center"/>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -49,217 +47,100 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Estilo para el contenedor de iconos -->
         <Style x:Key="IconContainerStyle" TargetType="Border">
-            <Setter Property="Width" Value="50"/>
-            <Setter Property="Height" Value="50"/>
-            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Width" Value="45"/>
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
-            <Setter Property="Margin" Value="0,0,0,15"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
         </Style>
     </UserControl.Resources>
 
     <Grid Background="Transparent">
-        <ScrollViewer VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Margin="50,30">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="40,20">
 
-                <!-- Título y descripción -->
-                <StackPanel Margin="0,0,0,25">
-                    <TextBlock Text="Exportar Datos" 
-                              FontSize="22" 
-                              FontWeight="Bold" 
-                              Foreground="White"
-                              Margin="0,0,0,5"/>
-                    <TextBlock Text="Descargue la informacion del sistema en formato CSV" 
-                              FontSize="12" 
-                              Foreground="White"
-                              Margin="0,0,0,15"/>
-                    <TextBlock Text="Seleccion el tipo de datos a exportar:" 
-                              FontSize="11" 
-                              Foreground="White"/>
+                <StackPanel Margin="0,0,0,20">
+                    <TextBlock Text="Exportar Datos" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,0,0,5"/>
+                    <TextBlock Text="Descargue la información del sistema en formato CSV" FontSize="13" Foreground="White" Margin="0,0,0,10"/>
                 </StackPanel>
 
-                <!-- Grid de tarjetas de reportes -->
-                <Grid>
+                <Grid HorizontalAlignment="Center">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Clasificación de Huevos -->
-                    <Border Grid.Row="0" Grid.Column="0" 
-                            Style="{StaticResource ReportCardStyle}">
+                    <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource ReportCardStyle}">
                         <StackPanel>
-                            <Border Style="{StaticResource IconContainerStyle}"
-                                   Background="#4CAF50">
-                                <TextBlock Text="📋" 
-                                          FontSize="26" 
-                                          Foreground="White"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center" RenderTransformOrigin="6.015,18.556"/>
+                            <Border Style="{StaticResource IconContainerStyle}" Background="#4CAF50">
+                                <TextBlock Text="📋" FontSize="22" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
-
-                            <TextBlock Text="Clasificación de Huevos" 
-                                      FontSize="10" 
-                                      FontWeight="Bold"
-                                      Foreground="#1A1A1A"
-                                      TextWrapping="Wrap"
-                                      Margin="0,0,0,0"/>
-
-                            <TextBlock Text="Exporte registros de clasificacion y categorizacion" 
-                                      FontSize="10" 
-                                      Foreground="#666666"
-                                      TextWrapping="Wrap"
-                                      LineHeight="15"
-                                      Margin="0,0,0,5"/>
-
-                            <Button Content="EXPORTAR"
-                                   Style="{StaticResource ExportButtonStyle}"
-                                   x:Name="BtnExportarClasificacion"
-                                   Click="BtnExportarClasificacion_Click"/>
+                            <TextBlock Text="Clasificación de Huevos" FontSize="12" FontWeight="Bold" Foreground="#333"/>
+                            <TextBlock Text="Registros de categorización" FontSize="10" Foreground="#666" TextWrapping="Wrap"/>
+                            <Button Content="EXPORTAR" Style="{StaticResource ExportButtonStyle}" x:Name="BtnExportarClasificacion" Click="BtnExportarClasificacion_Click"/>
                         </StackPanel>
                     </Border>
 
-                    <!-- Inventario -->
-                    <Border Grid.Row="0" Grid.Column="1" 
-                            Style="{StaticResource ReportCardStyle}">
+                    <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource ReportCardStyle}">
                         <StackPanel>
-                            <Border Style="{StaticResource IconContainerStyle}"
-                                   Background="#00BCD4">
-                                <TextBlock Text="📦" 
-                                          FontSize="26" 
-                                          Foreground="White"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"/>
+                            <Border Style="{StaticResource IconContainerStyle}" Background="#00BCD4">
+                                <TextBlock Text="📦" FontSize="22" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
-
-                            <TextBlock Text="Inventario" 
-                                      FontSize="10" 
-                                      FontWeight="Bold"
-                                      Foreground="#1A1A1A"
-                                      Margin="0,0,10,5"/>
-
-                            <TextBlock Text="Exporte datos de inventario y stock" 
-                                      FontSize="10" 
-                                      Foreground="#666666"
-                                      TextWrapping="Wrap"
-                                      LineHeight="10"
-                                      Margin="0,0,0,0"/>
-
-                            <Button Content="EXPORTAR"
-                                   Style="{StaticResource ExportButtonStyle}"
-                                   x:Name="BtnExportarInventario"
-                                   Click="BtnExportarInventario_Click"/>
+                            <TextBlock Text="Inventario" FontSize="12" FontWeight="Bold" Foreground="#333"/>
+                            <TextBlock Text="Stock y suministros" FontSize="10" Foreground="#666" TextWrapping="Wrap"/>
+                            <Button Content="EXPORTAR" Style="{StaticResource ExportButtonStyle}" x:Name="BtnExportarInventario" Click="BtnExportarInventario_Click"/>
                         </StackPanel>
                     </Border>
 
-                    <!-- Insumos -->
-                    <Border Grid.Row="0" Grid.Column="2" 
-                            Style="{StaticResource ReportCardStyle}">
+                    <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource ReportCardStyle}">
                         <StackPanel>
-                            <Border Style="{StaticResource IconContainerStyle}"
-                                   Background="#FFC107">
-                                <TextBlock Text="💰" 
-                                          FontSize="26"
-                                          Foreground="White"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"/>
+                            <Border Style="{StaticResource IconContainerStyle}" Background="#FFC107">
+                                <TextBlock Text="💰" FontSize="22" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
-
-                            <TextBlock Text="Insumos" 
-                                      FontSize="10" 
-                                      FontWeight="Bold"
-                                      Foreground="#1A1A1A"
-                                      Margin="0,0,0,5"/>
-
-                            <TextBlock Text="Exporte registro de insumos" 
-                                      FontSize="10" 
-                                      Foreground="#666666"
-                                      TextWrapping="Wrap"
-                                      LineHeight="15"
-                                      Margin="0,0,0,5"/>
-
-                            <Button Content="EXPORTAR"
-                                   Style="{StaticResource ExportButtonStyle}"
-                                   x:Name="BtnExportarInsumos"
-                                   Click="BtnExportarInsumos_Click"/>
+                            <TextBlock Text="Insumos" FontSize="12" FontWeight="Bold" Foreground="#333"/>
+                            <TextBlock Text="Registro de gastos/insumos" FontSize="10" Foreground="#666" TextWrapping="Wrap"/>
+                            <Button Content="EXPORTAR" Style="{StaticResource ExportButtonStyle}" x:Name="BtnExportarInsumos" Click="BtnExportarInsumos_Click"/>
                         </StackPanel>
                     </Border>
 
-                    <!-- Lotes de Gallinas -->
-                    <Border Grid.Row="1" Grid.Column="0" 
-                            Style="{StaticResource ReportCardStyle}">
+                    <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource ReportCardStyle}">
                         <StackPanel>
-                            <Border Style="{StaticResource IconContainerStyle}"
-                                   Background="#9C27B0">
-                                <TextBlock Text="📋" 
-                                          FontSize="26"
-                                          Foreground="White"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"/>
+                            <Border Style="{StaticResource IconContainerStyle}" Background="#9C27B0">
+                                <TextBlock Text="🐔" FontSize="22" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
-
-                            <TextBlock Text="Lotes de Gallinas" 
-                                      FontSize="10" 
-                                      FontWeight="Bold"
-                                      Foreground="#1A1A1A"
-                                      Margin="0,0,0,5"/>
-
-                            <TextBlock Text="Exporte información de lotes avicolas" 
-                                      FontSize="10" 
-                                      Foreground="#666666"
-                                      TextWrapping="Wrap"
-                                      LineHeight="15"
-                                      Margin="0,0,0,5"/>
-
-                            <Button Content="EXPORTAR"
-                                   Style="{StaticResource ExportButtonStyle}"
-                                   x:Name="BtnExportarLotes"
-                                   Click="BtnExportarLotes_Click"/>
+                            <TextBlock Text="Lotes de Gallinas" FontSize="12" FontWeight="Bold" Foreground="#333"/>
+                            <TextBlock Text="Información de aves" FontSize="10" Foreground="#666" TextWrapping="Wrap"/>
+                            <Button Content="EXPORTAR" Style="{StaticResource ExportButtonStyle}" x:Name="BtnExportarLotes" Click="BtnExportarLotes_Click"/>
                         </StackPanel>
                     </Border>
 
-                    <!-- Todos los Datos -->
-                    <Border Grid.Row="1" Grid.Column="1" 
-                            Style="{StaticResource ReportCardStyle}">
+                    <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource ReportCardStyle}">
                         <StackPanel>
-                            <Border Style="{StaticResource IconContainerStyle}"
-                                   Background="#F44336">
-                                <TextBlock Text="📋" 
-                                          FontSize="26" 
-                                          Foreground="White"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"/>
+                            <Border Style="{StaticResource IconContainerStyle}" Background="#D35400">
+                                <TextBlock Text="📈" FontSize="22" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
-
-                            <TextBlock Text="Todos los Datos" 
-                                      FontSize="10" 
-                                      FontWeight="Bold"
-                                      Foreground="#1A1A1A"
-                                      Margin="0,0,0,5"/>
-
-                            <TextBlock Text="Exporte informacion completa del sistema" 
-                                      FontSize="10" 
-                                      Foreground="#666666"
-                                      TextWrapping="Wrap"
-                                      LineHeight="15"
-                                      Margin="0,0,0,5"/>
-
-                            <Button Content="EXPORTAR"
-                                   Style="{StaticResource ExportButtonStyle}"
-                                   x:Name="BtnExportarTodo"
-                                   Click="BtnExportarTodo_Click"/>
+                            <TextBlock Text="Producción Diaria" FontSize="12" FontWeight="Bold" Foreground="#333"/>
+                            <TextBlock Text="Control de producción" FontSize="10" Foreground="#666" TextWrapping="Wrap"/>
+                            <Button Content="EXPORTAR" Style="{StaticResource ExportButtonStyle}" x:Name="BtnExportarProduccion" Click="BtnExportarProduccion_Click"/>
                         </StackPanel>
                     </Border>
 
-                    <!-- Espacio vacío (oculto en la imagen original) -->
-                    <!-- Producción removido para coincidir con la imagen -->
+                    <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource ReportCardStyle}">
+                        <StackPanel>
+                            <Border Style="{StaticResource IconContainerStyle}" Background="#F44336">
+                                <TextBlock Text="📊" FontSize="22" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Resumen Total" FontSize="12" FontWeight="Bold" Foreground="#333"/>
+                            <TextBlock Text="Exportación masiva" FontSize="10" Foreground="#666" TextWrapping="Wrap"/>
+                            <Button Content="EXPORTAR" Style="{StaticResource ExportButtonStyle}" x:Name="BtnExportarTodo" Click="BtnExportarTodo_Click"/>
+                        </StackPanel>
+                    </Border>
                 </Grid>
 
             </StackPanel>
