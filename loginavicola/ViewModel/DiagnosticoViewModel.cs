@@ -61,7 +61,7 @@ namespace loginavicola.ViewModel
         public ObservableCollection<ItemInventario> MedicamentosDisponibles { get; set; }
 
         // ✅ PROPIEDADES NUEVAS (Para solucionar los errores de Binding)
-        private string _textoBusqueda;
+        private string _textoBusqueda = string.Empty;
         public string TextoBusqueda
         {
             get => _textoBusqueda;
@@ -69,8 +69,25 @@ namespace loginavicola.ViewModel
             {
                 _textoBusqueda = value;
                 OnPropertyChanged(nameof(TextoBusqueda));
-                // Aquí podrías filtrar la lista si lo deseas
+                FiltrarDiagnosticos(); // Llamamos al método de filtrado
             }
+        }
+
+        private void FiltrarDiagnosticos()
+        {
+            var listaCompleta = database.ObtenerTodosDiagnosticos();
+            Diagnosticos.Clear();
+
+            var filtrados = listaCompleta.Where(d =>
+                string.IsNullOrEmpty(TextoBusqueda) ||
+                d.DiagnosticoMedico.ToLower().Contains(TextoBusqueda.ToLower()) ||
+                d.Tipo.ToLower().Contains(TextoBusqueda.ToLower())
+            );
+
+            foreach (var d in filtrados)
+                Diagnosticos.Add(d);
+
+            ActualizarEstadisticas();
         }
 
         private int _totalDiagnosticos;

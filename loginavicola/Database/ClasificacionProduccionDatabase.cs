@@ -26,22 +26,25 @@ namespace loginavicola.Database
                 using (var connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
+                    // Dentro de ClasificacionProduccionDatabase.cs -> Método CrearTabla()
                     string createTable = @"
-                        CREATE TABLE IF NOT EXISTS ClasificacionProduccion (
-                            IdClasificacion INTEGER PRIMARY KEY AUTOINCREMENT,
-                            Fecha          DATE         NOT NULL,
-                            Hora           VARCHAR(20)  NOT NULL,
-                            Recolector     VARCHAR(200) NOT NULL,
-                            TipoClasificacion VARCHAR(50) NOT NULL,
-                            Jumbo          INTEGER DEFAULT 0,
-                            AAA            INTEGER DEFAULT 0,
-                            AA             INTEGER DEFAULT 0,
-                            A              INTEGER DEFAULT 0,
-                            B              INTEGER DEFAULT 0,
-                            C              INTEGER DEFAULT 0,
-                            Total          INTEGER DEFAULT 0,
-                            Observaciones  TEXT
-                        )";
+                           CREATE TABLE IF NOT EXISTS ClasificacionProduccion (
+                               IdClasificacion INTEGER PRIMARY KEY AUTOINCREMENT,
+                               Fecha           DATE         NOT NULL,
+                               Hora            VARCHAR(20)  NOT NULL,
+                               Recolector      VARCHAR(200) NOT NULL,
+                               TipoClasificacion VARCHAR(50) NOT NULL,
+                               Jumbo           INTEGER DEFAULT 0,
+                               AAA             INTEGER DEFAULT 0,
+                               AA              INTEGER DEFAULT 0,
+                               A               INTEGER DEFAULT 0,
+                               B               INTEGER DEFAULT 0,
+                               C               INTEGER DEFAULT 0,
+                               Peso            REAL DEFAULT 0,    -- <--- NUEVA COLUMNA
+                               Volumen         REAL DEFAULT 0,    -- <--- NUEVA COLUMNA
+                               Total           INTEGER DEFAULT 1,
+                               Observaciones   TEXT
+                           )";
 
                     using (var command = new SQLiteCommand(createTable, connection))
                         command.ExecuteNonQuery();
@@ -51,6 +54,59 @@ namespace loginavicola.Database
             {
                 MessageBox.Show($"Error al crear tabla: {ex.Message}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        public void RegistrarHuevoIndividual(string categoria, double peso, double volumen)
+        {
+            try
+            {
+                using (var connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+
+                    // Mapeo de categorías a columnas (1 para la categoría detectada, 0 para las demás)
+                    int jumbo = (categoria == "Jumbo") ? 1 : 0;
+                    int aaa = (categoria == "AAA") ? 1 : 0;
+                    int aa = (categoria == "AA") ? 1 : 0;
+                    int a = (categoria == "A") ? 1 : 0;
+                    int b = (categoria == "B") ? 1 : 0;
+                    int c = (categoria == "C") ? 1 : 0;
+
+                    // IMPORTANTE: El nombre de la tabla debe ser ClasificacionProduccion
+                    string query = @"
+                INSERT INTO ClasificacionProduccion 
+                (Fecha, Hora, Recolector, TipoClasificacion, Jumbo, AAA, AA, A, B, C, Peso, Volumen, Total)
+                VALUES 
+                (@Fecha, @Hora, 'Sistema Vision', 'Automatica', @Jumbo, @AAA, @AA, @A, @B, @C, @Peso, @Vol, 1)";
+
+                    using (var command = new SQLiteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Fecha", DateTime.Now.ToString("yyyy-MM-dd"));
+                        command.Parameters.AddWithValue("@Hora", DateTime.Now.ToString("HH:mm:ss")); // HH en mayúscula para formato 24h
+                        command.Parameters.AddWithValue("@Jumbo", jumbo);
+                        command.Parameters.AddWithValue("@AAA", aaa);
+                        command.Parameters.AddWithValue("@AA", aa);
+                        command.Parameters.AddWithValue("@A", a);
+                        command.Parameters.AddWithValue("@B", b);
+                        command.Parameters.AddWithValue("@C", c);
+                        command.Parameters.AddWithValue("@Peso", peso);
+                        command.Parameters.AddWithValue("@Vol", volumen);
+
+                        command.ExecuteNonQuery();
+                    }
+
+                    // Actualizamos inventario general
+                    var invDb = new InventarioDatabase();
+                    invDb.SumarStockDesdeProduccion(categoria, 1);
+
+                    System.Diagnostics.Debug.WriteLine($"✅ Huevo {categoria} ({peso}g) guardado correctamente.");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Esto te mostrará en la consola de Visual Studio si falta alguna columna
+                System.Diagnostics.Debug.WriteLine($"❌ ERROR CRÍTICO SQLITE: {ex.Message}");
             }
         }
 

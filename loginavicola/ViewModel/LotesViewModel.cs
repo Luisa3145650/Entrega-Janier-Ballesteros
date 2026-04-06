@@ -228,25 +228,27 @@ namespace loginavicola.ViewModel
 
         private void FiltrarLotes()
         {
+            // Obtenemos todos los datos una sola vez o trabajamos sobre lo ya cargado
+            var todosLosLotes = database.ObtenerTodosLosLotes();
+
             if (string.IsNullOrWhiteSpace(TextoBusqueda))
             {
-                CargarDatos();
+                LotesRegistrados.Clear();
+                foreach (var l in todosLosLotes) LotesRegistrados.Add(l);
+                ActualizarEstadisticas();
                 return;
             }
 
-            var lotesFiltrados = database.ObtenerTodosLosLotes()
-                .Where(l =>
-                    l.Raza.ToLower().Contains(TextoBusqueda.ToLower()) ||
-                    l.GranjaOrigen.ToLower().Contains(TextoBusqueda.ToLower()) ||
-                    l.Estado.ToLower().Contains(TextoBusqueda.ToLower()) ||
-                    l.IdLote.ToString().Contains(TextoBusqueda)
-                ).ToList();
+            var busqueda = TextoBusqueda.ToLower();
+            var filtrados = todosLosLotes.Where(l =>
+                (l.Raza?.ToLower().Contains(busqueda) ?? false) ||
+                (l.GranjaOrigen?.ToLower().Contains(busqueda) ?? false) ||
+                (l.Estado?.ToLower().Contains(busqueda) ?? false) ||
+                l.IdLote.ToString().Contains(busqueda)
+            ).ToList();
 
             LotesRegistrados.Clear();
-            foreach (var lote in lotesFiltrados)
-            {
-                LotesRegistrados.Add(lote);
-            }
+            foreach (var lote in filtrados) LotesRegistrados.Add(lote);
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

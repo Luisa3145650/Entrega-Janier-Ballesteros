@@ -186,7 +186,31 @@
                         </Grid>
 
                         <Border BorderBrush="#DDDDDD" BorderThickness="1" Background="Black" Height="450" CornerRadius="8" Margin="0,0,0,10">
-                            <Image x:Name="imgCamara" Stretch="Uniform"/>
+                            <Grid>
+
+                                <!-- Cámara -->
+                                <Image x:Name="imgCamara" Stretch="Uniform"/>
+
+                                <!-- Overlay (texto encima de la cámara con los nombres correctos para el C#) -->
+                                <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10">
+                                    <TextBlock x:Name="lblCategoria" 
+                                               Text="Categoría: --" 
+                                               FontSize="24" 
+                                               FontWeight="Bold" 
+                                               Foreground="Lime"/>
+                                               
+                                    <TextBlock x:Name="lblPesoReal" 
+                                               Text="Peso: 0.0 g" 
+                                               FontSize="20" 
+                                               Foreground="White"/>
+                                               
+                                     <TextBlock x:Name="lblVolumen" 
+                                               Text="Volumen: 0.0 cm³" 
+                                               FontSize="16" 
+                                               Foreground="#DDD"/>
+                                </StackPanel>
+
+                            </Grid>
                         </Border>
 
                         <Button x:Name="btnCapturarFoto" 

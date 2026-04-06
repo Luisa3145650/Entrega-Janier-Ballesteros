@@ -4,7 +4,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
-             mc:Ignorable="d">
+             mc:Ignorable="d"
+             Loaded="UserControl_Loaded">
 
     <UserControl.Resources>
         <!-- Estilo para tarjetas superiores (coloridas) -->
@@ -94,7 +95,7 @@
                                          Style="{StaticResource SubtitleStyle}"
                                          Foreground="White"
                                          Margin="0,0,0,8"/>
-                                <TextBlock x:Name="TotalGallinasValue" Text="1,250" 
+                                <TextBlock x:Name="TotalGallinasValue" Text="{Binding TotalAves}" 
                                          Style="{StaticResource BigValueStyle}"
                                          Foreground="White"/>
                             </StackPanel>
@@ -154,7 +155,7 @@
                                          Style="{StaticResource SubtitleStyle}"
                                          Foreground="White"
                                          Margin="0,0,0,8"/>
-                                <TextBlock x:Name="AlimentoValue" Text="4,850" 
+                                <TextBlock x:Name="AlimentoValue" Text="{Binding TotalAlimento}" 
                                          Style="{StaticResource BigValueStyle}"
                                          Foreground="White"/>
                                 <TextBlock Text="Stock disponible" 
@@ -189,9 +190,10 @@
                                          Style="{StaticResource SubtitleStyle}"
                                          Foreground="White"
                                          Margin="0,0,0,8"/>
-                                <TextBlock x:Name="LotesValue" Text="8" 
-                                         Style="{StaticResource BigValueStyle}"
-                                         Foreground="White"/>
+                                <TextBlock x:Name="LotesValue"
+                                           Text="{Binding TotalLotes}" 
+                                           Style="{StaticResource BigValueStyle}"
+                                           Foreground="White"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -293,9 +295,13 @@
                                          Foreground="#1F2937"/>
                             </StackPanel>
 
-                            <lvc:PieChart Grid.Row="1" x:Name="EstadoAvesChart" 
-                                        LegendLocation="Right" 
-                                        InnerRadius="60">
+                            <lvc:PieChart x:Name="EstadoAvesChart" 
+                                          Grid.Row="1" 
+                                          Series="{Binding EstadoAvesSeries}" 
+                                          LegendLocation="Right" 
+                                          InnerRadius="60"
+                                          Hoverable="True">
+                                <!-- El Binding a 'EstadoAvesSeries' es lo que trae los datos reales de la DB -->
                             </lvc:PieChart>
                         </Grid>
                     </Border>

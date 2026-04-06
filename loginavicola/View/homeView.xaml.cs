@@ -1,4 +1,8 @@
-﻿using System;
+﻿using LiveCharts;
+using LiveCharts.Defaults;
+using LiveCharts.Wpf;
+using loginavicola.ViewModel;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -13,9 +17,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using LiveCharts;
-using LiveCharts.Wpf;
-using LiveCharts.Defaults;
 using Separator = LiveCharts.Wpf.Separator;
 
 namespace loginavicola.View
@@ -27,6 +28,15 @@ namespace loginavicola.View
             InitializeComponent();
             CargarGraficaTorta();
             CargarGraficaEstadoAves();
+            this.DataContext = new homeViewModel();
+        }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is homeViewModel vm)
+            {
+                vm.ActualizarCards();
+            }
         }
 
         private void CargarGraficaTorta()
