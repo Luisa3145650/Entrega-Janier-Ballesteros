@@ -75,10 +75,10 @@ namespace loginavicola.Database
 
                     // IMPORTANTE: El nombre de la tabla debe ser ClasificacionProduccion
                     string query = @"
-                INSERT INTO ClasificacionProduccion 
-                (Fecha, Hora, Recolector, TipoClasificacion, Jumbo, AAA, AA, A, B, C, Peso, Volumen, Total)
-                VALUES 
-                (@Fecha, @Hora, 'Sistema Vision', 'Automatica', @Jumbo, @AAA, @AA, @A, @B, @C, @Peso, @Vol, 1)";
+                           INSERT INTO ClasificacionProduccion 
+                           (Fecha, Hora, Recolector, TipoClasificacion, Jumbo, AAA, AA, A, B, C, Peso, Volumen, Total)
+                           VALUES 
+                           (@Fecha, @Hora, 'Sistema Vision', 'Automatica', @Jumbo, @AAA, @AA, @A, @B, @C, @Peso, @Vol, 1)";
 
                     using (var command = new SQLiteCommand(query, connection))
                     {

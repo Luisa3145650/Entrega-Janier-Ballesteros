@@ -15,6 +15,7 @@ namespace loginavicola.Database
     {
         private readonly string connectionString;
         private readonly string dbPath;
+        private string cadena = "Data Source=.db;Version=3;";
 
         public ConsumoDatabase()
         {
@@ -615,6 +616,41 @@ namespace loginavicola.Database
                 using (var command = new SQLiteCommand(query, connection))
                     return Convert.ToDecimal(command.ExecuteScalar() ?? 0);
             }
+        }
+
+        public List<ConsumoGrafica> ObtenerDatosParaGrafica()
+        {
+            var lista = new List<ConsumoGrafica>();
+            using (var conexion = new SQLiteConnection(cadena))
+            {
+                conexion.Open();
+                // Consultamos los últimos 7 días de consumo
+                string consulta = @"SELECT FechaConsumo, SUM(CantidadConsumo) as Total 
+                            FROM Consumo 
+                            GROUP BY FechaConsumo 
+                            ORDER BY FechaConsumo DESC LIMIT 7";
+
+                using (var comando = new SQLiteCommand(consulta, conexion))
+                using (var reader = comando.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        lista.Add(new ConsumoGrafica
+                        {
+                            Fecha = Convert.ToDateTime(reader["FechaConsumo"]).ToString("dd/MM"),
+                            Cantidad = Convert.ToDouble(reader["Total"])
+                        });
+                    }
+                }
+            }
+            return lista;
+        }
+
+        // Clase auxiliar para el mapeo
+        public class ConsumoGrafica
+        {
+            public string Fecha { get; set; }
+            public double Cantidad { get; set; }
         }
 
         public decimal ObtenerAlimentoDisponible()

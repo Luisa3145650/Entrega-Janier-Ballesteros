@@ -5,7 +5,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              mc:Ignorable="d"
-             Loaded="UserControl_Loaded">
+             Loaded="UserControl_Loaded"
+             x:Name="RootView">
 
     <UserControl.Resources>
         <!-- Estilo para tarjetas superiores (coloridas) -->
@@ -319,20 +320,14 @@
                                 <TextBlock Text="Consumo de alimento" 
                                          Style="{StaticResource CardTitleStyle}"
                                          Foreground="#1F2937"/>
-                                <TextBlock Text="Consumo diario en Kg" 
+                                <TextBlock Text="Cantidad consumida por lote" 
                                          FontSize="10" Foreground="#6B7280"/>
                             </StackPanel>
 
-                            <lvc:CartesianChart Grid.Row="1" x:Name="ConsumoAlimentoChart">
-                                <lvc:CartesianChart.Series>
-                                    <lvc:LineSeries Values="120,125,118,130,127,122,128" 
-                                                   Stroke="#A855F7" 
-                                                   Fill="#30A855F7"
-                                                   StrokeThickness="3"
-                                                   PointGeometrySize="8"/>
-                                </lvc:CartesianChart.Series>
+                            <lvc:CartesianChart Grid.Row="1" x:Name="ConsumoAlimentoChart" >
+                                
                                 <lvc:CartesianChart.AxisX>
-                                    <lvc:Axis Labels="Lun,Mar,Mie,Jue,Vie,Sab,Dom" 
+                                    <lvc:Axis Labels="{Binding EtiquetasDias, ElementName=RootView}"
                                             FontSize="10" Foreground="#9CA3AF">
                                         <lvc:Axis.Separator>
                                             <lvc:Separator StrokeThickness="0"/>

@@ -10,16 +10,35 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
+using loginavicola.Model;
 
 namespace loginavicola.ViewModel
 {
     public class homeViewModel : INotifyPropertyChanged
     {
+        private readonly ConsumoDatabase _consumoDatabase = new ConsumoDatabase();
         private readonly LoteDatabase database;
         private readonly InventarioDatabase inventarioDb;
         private readonly DiagnosticoDatabase diagDb;
         // 1. Propiedad Total Lotes
         private int _totalLotes;
+
+        public List<Consumo> ObtenerConsumosRecientes(int cantidad = 7)
+        {
+            return _consumoDatabase.ObtenerConsumos()
+                .OrderByDescending(c => c.FechaConsumo)
+                .Take(cantidad)
+                .OrderBy(c => c.FechaConsumo)  // ascendente para la gráfica
+                .ToList();
+        }
+
+        private string[] _etiquetasDias = Array.Empty<string>();
+        public string[] EtiquetasDias
+        {
+            get => _etiquetasDias;
+            set { _etiquetasDias = value; OnPropertyChanged(); }
+        }
+
         public int TotalLotes
         {
             get => _totalLotes;
