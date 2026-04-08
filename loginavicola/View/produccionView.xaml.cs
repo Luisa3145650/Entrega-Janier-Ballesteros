@@ -20,6 +20,7 @@ using System.Windows.Threading;
 using Point = System.Drawing.Point;
 using Tesseract; // <-- AGREGAR ESTA LÍNEA
 using System.Drawing.Drawing2D;
+using System.Linq; // <-- AGREGAR ESTA LÍNEA
 
 
 namespace loginavicola.View
@@ -48,6 +49,8 @@ namespace loginavicola.View
 
         // Contadores para clasificación automática
         private int contadorJumbo = 0;
+        private Queue<double> bufferPesos = new Queue<double>();
+        private const int TAMAÑO_BUFFER = 5;
         private int contadorAAA = 0;
         private int contadorAA = 0;
         private int contadorA = 0;
@@ -150,6 +153,80 @@ namespace loginavicola.View
                 ActualizarEstado($"❌ Error al cargar cámaras");
                 System.Diagnostics.Debug.WriteLine($"[ERROR CargarCamarasUSB] {ex}");
                 MessageBox.Show(mensaje, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // ════════════════════════════════════════════════════════
+        //  MÉTODOS NUEVOS DE PROCESAMIENTO
+        // ════════════════════════════════════════════════════════
+
+        private double ObtenerPesoEstable(double nuevoPeso)
+        {
+            bufferPesos.Enqueue(nuevoPeso);
+            if (bufferPesos.Count > TAMAÑO_BUFFER) bufferPesos.Dequeue();
+
+            var lista = bufferPesos.ToList();
+            double promedio = lista.Average();
+
+            // Si todos los pesos en el buffer están a menos de 0.8g del promedio, es estable
+            if (lista.All(p => Math.Abs(p - promedio) < 0.8))
+            {
+                return Math.Round(promedio, 1);
+            }
+            return -1; // -1 indica que aún está variando (no es estable)
+        }
+
+        private string LeerPesoMejorado(Image<Gray, byte> grisPeso)
+        {
+            // 1. Aumentar resolución (Fundamental para números de display)
+            using (Image<Gray, byte> rescaled = grisPeso.Resize(3.0, Emgu.CV.CvEnum.Inter.Cubic))
+            {
+                string[] resultados = new string[2];
+
+                // MÉTODO A: CLAHE (Ecualización adaptativa) + Otsu
+                using (Image<Gray, byte> metodoA = rescaled.Clone())
+                {
+                    metodoA._EqualizeHist();
+                    CvInvoke.Threshold(metodoA, metodoA, 0, 255, ThresholdType.BinaryInv | ThresholdType.Otsu);
+                    resultados[0] = ProcesarTesseract(metodoA);
+                }
+
+                // MÉTODO B: Umbral Adaptativo Simple
+                using (Image<Gray, byte> metodoB = rescaled.Clone())
+                {
+                    CvInvoke.AdaptiveThreshold(metodoB, metodoB, 255, AdaptiveThresholdType.GaussianC, ThresholdType.BinaryInv, 15, 7);
+
+                    // Pequeña dilatación para unir los segmentos de los números LCD
+                    using (Mat kernel = new Mat(3, 3, Emgu.CV.CvEnum.DepthType.Cv8U, 1))
+                    {
+                        kernel.SetTo(new MCvScalar(1));
+                        CvInvoke.MorphologyEx(metodoB, metodoB, MorphOp.Close, kernel, new System.Drawing.Point(-1, -1), 1, BorderType.Default, new MCvScalar());
+                    }
+                    resultados[1] = ProcesarTesseract(metodoB);
+                }
+
+                // Devolver el primero que tenga sentido (que tenga números)
+                foreach (var res in resultados)
+                {
+                    if (!string.IsNullOrEmpty(res) && res.Length >= 2) return res;
+                }
+            }
+            return "";
+        }
+
+        private string ProcesarTesseract(Image<Gray, byte> imgProcesada)
+        {
+            // Opcional: Descomenta esto para ver qué lee Tesseract realmente (útil para calibrar la luz)
+            // CvInvoke.Imshow("DEBUG_OCR_PESO", imgProcesada);
+
+            using (Bitmap bmpOcr = imgProcesada.ToBitmap())
+            {
+                ocrEngine.SetVariable("tessedit_char_whitelist", "0123456789");
+                using (var page = ocrEngine.Process(bmpOcr, PageSegMode.SingleLine))
+                {
+                    string raw = page.GetText().Trim();
+                    return System.Text.RegularExpressions.Regex.Replace(raw, @"[^\d]", "");
+                }
             }
         }
 
@@ -273,118 +350,67 @@ namespace loginavicola.View
                     using (Image<Bgr, byte> regionPeso = imagen.Copy(zonaPeso))
                     using (Image<Gray, byte> grisPeso = regionPeso.Convert<Gray, byte>())
                     {
-                        // Pre-procesamiento específico para LCD: Invertir y Umbralizar
-                        // Esto hace que los números sean blancos sobre fondo negro
-                        // 1. ECUALIZAR: Ayuda a resaltar los números grises sobre el fondo verde/gris del LCD
-                        grisPeso._EqualizeHist();
+                        string textoNumero = LeerPesoMejorado(grisPeso);
 
-                        // 2. UMBRAL ADAPTATIVO: Excelente para pantallas con reflejos y bajo contraste.
-                        // Transforma los números a BLANCO y el fondo a NEGRO (BinaryInv).
-                        CvInvoke.AdaptiveThreshold(
-                            grisPeso,
-                            grisPeso,
-                            255,
-                            Emgu.CV.CvEnum.AdaptiveThresholdType.GaussianC,
-                            Emgu.CV.CvEnum.ThresholdType.BinaryInv,
-                            15, // Tamaño del bloque (debe ser impar). Aumenta si ves mucho ruido.
-                            5   // Constante a restar. Ajusta entre 2 y 10.
-                        );
-
-
-
-
-
-
-
-                        using (Image<Gray, byte> reescalada = grisPeso.Resize(3.0, Emgu.CV.CvEnum.Inter.Cubic))
+                        if (!string.IsNullOrEmpty(textoNumero) && double.TryParse(textoNumero, out double pBruto))
                         {
-                            // 1. En lugar de GetStructuringElement, creamos un kernel simple de 2x2 manualmente
-                            // Esto hace exactamente lo mismo que el Rectángulo pero sin usar el Enum problemático
-                            using (Mat kernel = new Mat(4, 4, Emgu.CV.CvEnum.DepthType.Cv8U, 1))
+                            // A veces lee "500" en vez de "50.0", aplicamos lógica para ajustar
+                            if (pBruto > 200 && pBruto < 2000) pBruto /= 10.0;
+
+                            if (pBruto >= 30 && pBruto <= 120) // Rango realista de un huevo
                             {
-                                kernel.SetTo(new MCvScalar(1)); // Lo llenamos para que actúe como un rectángulo sólido
+                                double pesoConfirmado = ObtenerPesoEstable(pBruto);
 
-                                // 2. Aplicamos la morfología usando el valor numérico 2 (que es MorphOp.Close)
-                                // Usamos el casting directo al tipo base para evitar que busque el nombre del Enum
-                                CvInvoke.Dilate(reescalada, reescalada, kernel, new System.Drawing.Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Default, new MCvScalar());
-                            }
-
-                            // Suavizado para conectar segmentos de los números digitales
-                            CvInvoke.GaussianBlur(reescalada, reescalada, new System.Drawing.Size(3, 3), 0);
-
-                            // Mostramos la ventana de depuración para ver qué está leyendo Tesseract
-                            CvInvoke.Imshow("DEBUG_OCR_PESO", reescalada);
-
-                            // --- COPIA ESTE BLOQUE DENTRO DEL USING DEL OCR ---
-                            using (Bitmap bmpOcr = reescalada.ToBitmap()) {
-                                ocrEngine.SetVariable("tessedit_char_whitelist", "0123456789");
-                            using (var page = ocrEngine.Process(bmpOcr, PageSegMode.SingleLine))
-                            {
-                                string raw = page.GetText().Trim();
-                                string soloNumeros = System.Text.RegularExpressions.Regex.Replace(raw, @"[^\d]", "");
-
-                                // Inicializamos p con 0 para evitar el error CS0165
-                                double p = 0;
-
-                                if (!string.IsNullOrEmpty(soloNumeros) && double.TryParse(soloNumeros, out p) && p >= 30 && p <= 120)
+                                if (pesoConfirmado != -1) // Si el buffer dice que es estable
                                 {
-                                    this.pesoGramos = p;
+                                    this.pesoGramos = pesoConfirmado;
 
-                                    if (Math.Abs(p - pesoAnterior) < 0.5)
-                                    {
-                                        lecturasEstables++;
-                                    }
-                                    else
-                                    {
-                                        lecturasEstables = 0;
-                                        yaRegistrado = false;
-                                    }
-
-                                    pesoAnterior = p;
-
-                                    if (lecturasEstables >= UMBRAL_ESTABILIDAD && !yaRegistrado)
+                                    if (!yaRegistrado)
                                     {
                                         yaRegistrado = true;
-                                        string categoriaDetectada = ClasificarHuevo(p);
-
-                                        // Llamamos al método que crearemos abajo
-                                        RegistrarHuevoEnBD(p, categoriaDetectada);
+                                        string categoriaDetectada = ClasificarHuevo(this.pesoGramos);
+                                        RegistrarHuevoEnBD(this.pesoGramos, categoriaDetectada);
                                     }
 
                                     Dispatcher.BeginInvoke(new Action(() => {
-                                        lblPesoReal.Text = $"{p} g";
-                                        lblCategoria.Text = ClasificarHuevo(p);
+                                        lblPesoReal.Text = $"{this.pesoGramos} g";
+                                        lblCategoria.Text = ClasificarHuevo(this.pesoGramos);
                                     }));
                                 }
-                                else
-                                {
-                                    // Si no hay lectura válida o el peso es muy bajo, reiniciamos para el siguiente huevo
-                                    if (double.TryParse(soloNumeros, out double pBajo) && pBajo < 10)
-                                    {
-                                        yaRegistrado = false;
-                                        lecturasEstables = 0;
-                                    }
-                                }
                             }
+                        }
+                        else
+                        {
+                            // Si lee basura o números bajos, reiniciamos el ciclo para el siguiente huevo
+                            if (double.TryParse(textoNumero, out double pBajo) && pBajo < 10)
+                            {
+                                yaRegistrado = false;
+                                bufferPesos.Clear(); // Limpiamos el buffer
                             }
                         }
                     }
                 }
 
                 // ══════════════════════════════════════════
-                // 2. DETECCIÓN Y VOLUMEN DEL HUEVO
+                // 2. DETECCIÓN Y VOLUMEN DEL HUEVO (HSV COLOR)
                 // ══════════════════════════════════════════
                 using (Image<Bgr, byte> regionHuevo = imagen.Copy(zonaHuevo))
-                using (Image<Gray, byte> grisHuevo = regionHuevo.Convert<Gray, byte>())
-                using (Image<Gray, byte> binaria = new Image<Gray, byte>(grisHuevo.Size))
+                using (Image<Hsv, byte> hsvImg = regionHuevo.Convert<Hsv, byte>())
+                using (Image<Gray, byte> mask = hsvImg.InRange(new Hsv(5, 40, 60), new Hsv(30, 255, 255))) // Filtro color huevo
                 {
-                    // Filtro para detectar el huevo sobre el plato (ajusta el 135 si es necesario)
-                    CvInvoke.GaussianBlur(grisHuevo, grisHuevo, new System.Drawing.Size(7, 7), 2.0);
-                    CvInvoke.Threshold(grisHuevo, binaria, 135, 255, ThresholdType.BinaryInv);
+                    // Operaciones morfológicas para limpiar ruido
+                    // Versión corregida de la creación del kernel
+                    // El cast (Emgu.CV.CvEnum.ElementShape)2 o simplemente el número si la firma lo permite
+                    // Usamos el valor numérico 2 que corresponde a 'Ellipse' en la librería base de OpenCV
+                    // Esto evita errores de nombres de espacios de nombres que no existen
+                    using (Mat kernel = CvInvoke.GetStructuringElement(0, new System.Drawing.Size(5, 5), new System.Drawing.Point(-1, -1)))
+                    {
+                        CvInvoke.MorphologyEx(mask, mask, Emgu.CV.CvEnum.MorphOp.Close, kernel, new System.Drawing.Point(-1, -1), 2, Emgu.CV.CvEnum.BorderType.Default, new MCvScalar());
+                    }
 
                     using (var contornos = new Emgu.CV.Util.VectorOfVectorOfPoint())
                     {
-                        CvInvoke.FindContours(binaria, contornos, null, RetrType.External, ChainApproxMethod.ChainApproxSimple);
+                        CvInvoke.FindContours(mask, contornos, null, RetrType.External, ChainApproxMethod.ChainApproxSimple);
 
                         int mejorIndice = -1;
                         double areaMaxima = 0;
@@ -392,7 +418,7 @@ namespace loginavicola.View
                         for (int i = 0; i < contornos.Size; i++)
                         {
                             double area = CvInvoke.ContourArea(contornos[i]);
-                            if (area > 8000 && area > areaMaxima) { areaMaxima = area; mejorIndice = i; }
+                            if (area > 5000 && area > areaMaxima) { areaMaxima = area; mejorIndice = i; }
                         }
 
                         if (mejorIndice != -1 && contornos[mejorIndice].Size >= 5)
@@ -407,46 +433,34 @@ namespace loginavicola.View
 
                             string categoria = ClasificarHuevo(this.pesoGramos);
 
-                            // Dibujar elipse en la imagen principal
                             RotatedRect elipseGlobal = new RotatedRect(
                                 new PointF(elipse.Center.X + zonaHuevo.X, elipse.Center.Y + zonaHuevo.Y),
                                 elipse.Size, elipse.Angle);
 
                             CvInvoke.Ellipse(imagen, elipseGlobal, new MCvScalar(0, 255, 255), 2);
                             CvInvoke.PutText(imagen, $"{categoria}: {this.pesoGramos}g",
-                                new Point((int)elipseGlobal.Center.X - 30, (int)elipseGlobal.Center.Y),
+                                new System.Drawing.Point((int)elipseGlobal.Center.X - 30, (int)elipseGlobal.Center.Y),
                                 FontFace.HersheySimplex, 0.6, new MCvScalar(255, 255, 0), 2);
 
-                            // Registro automático en BD cada 2.5 segundos
-                            // ══════════════════════════════════════════
-                            // 3. LÓGICA DE REGISTRO (CON CERROJO)
-                            // ══════════════════════════════════════════
-
-                            // Solo registramos si el peso es mayor a 30g (un huevo real)
+                            // Registro de control visual de bloqueos
                             if (this.pesoGramos >= 30)
                             {
-                                if (puedeRegistrar)
+                                if (puedeRegistrar && yaRegistrado)
                                 {
-                                    // 1. Bloqueamos futuros registros de este mismo huevo
                                     puedeRegistrar = false;
                                     ultimaDeteccion = DateTime.Now;
 
-                                    // 2. Calculamos categoría y volumen
-                                    // Nota: Asegúrate que la variable 'volumen' esté calculada arriba
+                                    // Guardado en detalle (opcional si ya usaste RegistrarHuevoEnBD arriba)
+                                    // GuardarRegistroHuevo(categoria, this.pesoGramos, volumen);
 
-                                    // 3. Guardar en BD (Usamos tu método existente)
-                                    database.RegistrarHuevoIndividual(categoria, this.pesoGramos, volumen);
-
-                                    // 4. Actualizar Interfaz
                                     Dispatcher.BeginInvoke(new Action(() => {
-                                        IncrementarContador(categoria);
                                         ActualizarEstado("✅ Huevo registrado. Retire para continuar.");
                                     }));
                                 }
                             }
-                            else if (this.pesoGramos < 10) // Si la báscula marca casi 0, se retiró el huevo
+                            else if (this.pesoGramos < 10)
                             {
-                                if (!puedeRegistrar) // Solo si estaba bloqueado
+                                if (!puedeRegistrar)
                                 {
                                     puedeRegistrar = true;
                                     Dispatcher.BeginInvoke(new Action(() => {
@@ -455,7 +469,6 @@ namespace loginavicola.View
                                 }
                             }
 
-                            // Actualizar UI
                             Dispatcher.BeginInvoke(new Action(() => {
                                 lblVolumen.Text = $"{volumen:F1} cm³";
                             }));

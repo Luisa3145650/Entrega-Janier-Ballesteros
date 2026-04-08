@@ -51,6 +51,7 @@ namespace loginavicola.View
 
                 if (usuarioLogeado != null)
                 {
+                    UserSession.UsuarioActual = usuarioLogeado;
                     MessageBox.Show($"¡Bienvenido {usuarioLogeado.Nombres}!");
 
                     MainWindow main = new MainWindow();

@@ -37,10 +37,10 @@ namespace loginavicola
                 Btnalimentacion.Visibility = user.PermisoAlimentacion ? Visibility.Visible : Visibility.Collapsed;
                 Btnventa.Visibility = user.PermisoEntregas ? Visibility.Visible : Visibility.Collapsed;
                 Btndiagnostico.Visibility = user.PermisoDiagnostico ? Visibility.Visible : Visibility.Collapsed;
-                Btninventario.Visibility = user.PermisoInventario ? Visibility.Visible : Visibility.Collapsed;
 
                 // Nota: Aquí usé el permiso que corresponde a reportes según tu lógica
-                Btnreportes.Visibility = user.PermisoGestionUsuarios ? Visibility.Visible : Visibility.Collapsed;
+                Btninventario.Visibility = user.PermisoInventario ? Visibility.Visible : Visibility.Collapsed;
+                Btnreportes.Visibility = user.PermisoInventario ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 

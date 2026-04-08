@@ -46,21 +46,22 @@ namespace loginavicola.View
             string password = PasswordBox.Password;
             string confirmPassword = ConfirmPasswordBox.Password;
 
-            if (viewModel.GuardarUsuario(password, confirmPassword))
+            if (viewModel.GuardarUsuario(PasswordBox.Password, ConfirmPasswordBox.Password))
             {
-                MessageBox.Show("Usuario registrado exitosamente", "Éxito",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
                 ModalRegistroOverlay.Visibility = Visibility.Collapsed;
+                PasswordBox.Clear();
+                ConfirmPasswordBox.Clear();
             }
         }
 
         private void BtnGestionarPermisos_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.Tag is Usuario usuario)
-            {
-                viewModel.UsuarioSeleccionado = usuario;
-                ModalPermisosOverlay.Visibility = Visibility.Visible;
-            }
+            // Al hacer clic en una tarjeta, asignamos el usuario seleccionado
+            var button = sender as Button;
+            var usuario = button.Tag as Usuario;
+            viewModel.UsuarioSeleccionado = usuario;
+
+            ModalPermisosOverlay.Visibility = Visibility.Visible;
         }
 
         private void BtnCerrarModalPermisos_Click(object sender, RoutedEventArgs e)

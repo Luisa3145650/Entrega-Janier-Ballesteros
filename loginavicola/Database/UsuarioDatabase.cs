@@ -167,9 +167,43 @@ namespace loginavicola.Database
             }
             return null;
         }
+        // Este es el método que falta y que quita los errores rojos
+        private void SetPermisos(Usuario u, bool inicio, bool lotes, bool prod, bool alim, bool ent, bool diag, bool inv, bool gest, bool export)
+        {
+            u.PermisoInicio = inicio;
+            u.PermisoLotes = lotes;
+            u.PermisoProduccion = prod;
+            u.PermisoAlimentacion = alim;
+            u.PermisoEntregas = ent;
+            u.PermisoDiagnostico = diag;
+            u.PermisoInventario = inv;
+            u.PermisoGestionUsuarios = gest;
+            // Si agregaste el booleano para exportar en el modelo, úsalo aquí. 
+            // Si no, puedes quitar el último parámetro 'export'
+        }
 
         public bool InsertarUsuario(Usuario usuario, string password)
         {
+
+            switch (usuario.Rol)
+            {
+                case "Administrador":
+                    // Tiene acceso a las 9 opciones del menú
+                    SetPermisos(usuario, true, true, true, true, true, true, true, true, true);
+                    break;
+
+                case "Aprendiz":
+                    // Ve todo EXCEPTO "Gestión de usuarios"
+                    // (Inicio, Lotes, Producción, Alimentación, Entregas, Diagnóstico, Inventario, Exportar)
+                    SetPermisos(usuario, true, true, true, true, true, true, true, false, true);
+                    break;
+
+                case "Visitante":
+                    // SOLO "Inicio" e "Exportar Datos" (y quizás Inventario si es solo lectura)
+                    // El resto en false para que desaparezcan del menú
+                    SetPermisos(usuario, true, false, false, false, false, false, false, false, true);
+                    break;
+            }
             try
             {
                 using (var connection = new SQLiteConnection(connectionString))

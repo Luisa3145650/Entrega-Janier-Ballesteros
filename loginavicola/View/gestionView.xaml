@@ -9,6 +9,8 @@
              Background="Transparent">
 
     <UserControl.Resources>
+
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <!-- Estilos para las tarjetas de usuario -->
         <Style x:Key="UserCardStyle" TargetType="Border">
             <Setter Property="Background" Value="White"/>
@@ -331,6 +333,19 @@
                                       Margin="0,0,0,5"/>
                             <TextBox Text="{Binding UsuarioActual.Email}"
                                     Style="{StaticResource ModalTextBoxStyle}"/>
+
+                            <TextBlock Text="Rol de Usuario" 
+                                       FontWeight="SemiBold" 
+                                       FontSize="11"
+                                       Margin="0,0,0,5"/>
+                            <ComboBox SelectedValuePath="Content" 
+                                      SelectedValue="{Binding UsuarioActual.Rol, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      Height="35"
+                                      Margin="0,0,0,15">
+                                <ComboBoxItem Content="Administrador"/>
+                                <ComboBoxItem Content="Aprendiz"/>
+                                <ComboBoxItem Content="Visitante"/>
+                            </ComboBox>
 
                             <!-- Contraseña -->
                             <TextBlock Text="Contraseña" 
