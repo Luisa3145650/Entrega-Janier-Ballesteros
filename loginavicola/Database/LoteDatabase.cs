@@ -19,6 +19,7 @@ namespace loginavicola.Database
         {
             // Usar la misma base de datos que ConsumoDatabase
             dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sistema_avicola.db");
+     
             connectionString = $"Data Source={dbPath};Version=3;";
 
             CrearBaseDeDatos();
@@ -55,7 +56,11 @@ namespace loginavicola.Database
                 {
                     connection.Open();
 
-                    // SOLO CREAR LA TABLA SI NO EXISTE (sin eliminarla)
+                    // 1. ELIMINAR LA TABLA SI EXISTE (Esto borra todos los datos viejos)
+                    //string dropTable = "DROP TABLE IF EXISTS Lote;";
+
+
+                    // 2. VOLVER A CREAR LA TABLA DESDE CERO
                     string createTable = @"
                 CREATE TABLE IF NOT EXISTS Lote (
                     IdLote INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -67,22 +72,19 @@ namespace loginavicola.Database
                     Observaciones TEXT
                 )";
 
-                    using (var command = new SQLiteCommand(createTable, connection))
+                    using (var commandCreate = new SQLiteCommand(createTable, connection))
                     {
-                        command.ExecuteNonQuery();
+                        commandCreate.ExecuteNonQuery();
                     }
-
-                    
                 }
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error al crear tabla:\n{ex.Message}",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error al reiniciar tabla: {ex.Message}");
             }
         }
 
-        
+
 
         // OBTENER TODOS LOS LOTES
         public List<Lote> ObtenerTodosLosLotes()
