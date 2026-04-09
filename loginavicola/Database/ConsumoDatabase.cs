@@ -259,7 +259,6 @@ namespace loginavicola.Database
                     using (var command = new SQLiteCommand(createConsumoTable, connection))
                         command.ExecuteNonQuery();
 
-                    InsertarDatosDeEjemplo(connection);
                 }
             }
             catch (Exception ex)
@@ -306,42 +305,7 @@ namespace loginavicola.Database
             }
         }
 
-        private void InsertarDatosDeEjemplo(SQLiteConnection connection)
-        {
-            try
-            {
-                // Solo insertar lotes de ejemplo si no existen
-                string checkLoteQuery = "SELECT COUNT(*) FROM Lote";
-                using (var command = new SQLiteCommand(checkLoteQuery, connection))
-                {
-                    long count = (long)command.ExecuteScalar();
-
-                    if (count == 0)
-                    {
-                        string insertLoteQuery = @"
-                            INSERT INTO Lote (Raza, CantidadGallinas, FechaIncorporacion, 
-                                            GranjaOrigen, Estado, Observaciones, 
-                                            CantidadActual, FechaIngreso) VALUES 
-                            ('Rhode Island', 150, '2024-01-15', 'Granja La Esperanza', 
-                             'Excelente', 'Lote inicial', 150, '2024-01-15'),
-                            ('Leghorn', 200, '2024-02-01', 'Granja San José', 
-                             'Bueno', 'Lote productivo', 200, '2024-02-01'),
-                            ('Plymouth Rock', 180, '2024-01-20', 'Granja El Roble', 
-                             'Excelente', 'Alta calidad', 180, '2024-01-20')";
-
-                        using (var insertCommand = new SQLiteCommand(insertLoteQuery, connection))
-                            insertCommand.ExecuteNonQuery();
-                    }
-                }
-
-                //  Ya NO insertamos alimentos de ejemplo en tabla Alimento
-                // porque ahora vienen del Inventario
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"No se pudieron insertar datos de ejemplo: {ex.Message}");
-            }
-        }
+        
 
         public bool ExisteRegistroSemana(int idLote, int numeroSemana, int año)
         {

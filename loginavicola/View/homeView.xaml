@@ -6,8 +6,7 @@
              xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              mc:Ignorable="d"
              Loaded="UserControl_Loaded"
-             x:Name="RootView"
-             >
+             x:Name="RootView">
 
     <UserControl.Resources>
         <!-- Estilo para tarjetas superiores (coloridas) -->
@@ -328,7 +327,7 @@
                             <lvc:CartesianChart Grid.Row="1" x:Name="ConsumoAlimentoChart" >
                                 
                                 <lvc:CartesianChart.AxisX>
-                                    <lvc:Axis Labels="{Binding EtiquetasDias, ElementName=RootView}"
+                                    <lvc:Axis Labels="{Binding EtiquetasDias}"
                                             FontSize="10" Foreground="#9CA3AF">
                                         <lvc:Axis.Separator>
                                             <lvc:Separator StrokeThickness="0"/>
