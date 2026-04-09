@@ -3,163 +3,123 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using LiveCharts;
 using LiveCharts.Wpf;
-using System.Threading.Tasks;
-using System.Windows.Controls;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
 using loginavicola.Model;
+using System.Windows.Threading;
 
 namespace loginavicola.ViewModel
 {
     public class homeViewModel : INotifyPropertyChanged
     {
         private readonly ConsumoDatabase _consumoDatabase = new ConsumoDatabase();
-        private readonly LoteDatabase database;
-        private readonly InventarioDatabase inventarioDb;
-        private readonly DiagnosticoDatabase diagDb;
-        // 1. Propiedad Total Lotes
+        private readonly LoteDatabase database = new LoteDatabase();
+        private readonly InventarioDatabase inventarioDb = new InventarioDatabase();
+        private readonly DiagnosticoDatabase diagDb = new DiagnosticoDatabase();
+        private readonly ClasificacionProduccionDatabase _produccionDb = new ClasificacionProduccionDatabase();
+
+        private DispatcherTimer _timer;
+
+        // PROPIEDADES NOTIFICABLES
         private int _totalLotes;
+        public int TotalLotes { get => _totalLotes; set { _totalLotes = value; OnPropertyChanged(); } }
+
+        private int _totalAves;
+        public int TotalAves { get => _totalAves; set { _totalAves = value; OnPropertyChanged(); } }
+
+        private decimal _totalAlimento;
+        public decimal TotalAlimento { get => _totalAlimento; set { _totalAlimento = value; OnPropertyChanged(); } }
+
+        private int _totalHuevosHoy;
+        public int TotalHuevosHoy { get => _totalHuevosHoy; set { _totalHuevosHoy = value; OnPropertyChanged(); } }
+
+        private SeriesCollection _estadoAvesSeries;
+        public SeriesCollection EstadoAvesSeries { get => _estadoAvesSeries; set { _estadoAvesSeries = value; OnPropertyChanged(); } }
+
+        private SeriesCollection _produccionCategoriaSeries;
+        public SeriesCollection ProduccionCategoriaSeries { get => _produccionCategoriaSeries; set { _produccionCategoriaSeries = value; OnPropertyChanged(); } }
+
+        private string[] _etiquetasDias = Array.Empty<string>();
+        public string[] EtiquetasDias { get => _etiquetasDias; set { _etiquetasDias = value; OnPropertyChanged(); } }
+
+        public homeViewModel()
+        {
+            ActualizarCards();
+            IniciarTimer();
+        }
+
+        private void IniciarTimer()
+        {
+            _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
+            _timer.Tick += (s, e) => ActualizarCards();
+            _timer.Start();
+        }
+
+        public void ActualizarCards()
+        {
+            TotalLotes = database.ObtenerTotalLotes();
+            TotalAves = database.ObtenerTotalAves();
+            TotalHuevosHoy = _produccionDb.ObtenerProduccionHoy(); // Suma total del día
+
+            CargarGraficaSalud();
+            CargarGraficaProduccion();
+
+            var listaItems = inventarioDb.ObtenerTodosItems();
+            TotalAlimento = listaItems?.Where(i => i.Categoria != null && i.Categoria.ToLower().Contains("alimento"))
+                            .Sum(i => (decimal)i.CantidadStock) ?? 0;
+        }
+
+        private void CargarGraficaSalud()
+        {
+            var listaDiagnosticos = diagDb.ObtenerTodosDiagnosticos();
+            var series = new SeriesCollection();
+            int afectados = 0;
+
+            if (listaDiagnosticos != null)
+            {
+                var grupos = listaDiagnosticos.Where(d => d.Estado == "Activo")
+                    .GroupBy(d => d.Tipo)
+                    .Select(g => new { Tipo = g.Key, Cantidad = g.Sum(d => d.GallinasAfectadas) });
+
+                foreach (var g in grupos)
+                {
+                    series.Add(new PieSeries { Title = g.Tipo, Values = new ChartValues<int> { g.Cantidad }, DataLabels = true });
+                    afectados += g.Cantidad;
+                }
+            }
+
+            int sanas = Math.Max(0, TotalAves - afectados);
+            series.Add(new PieSeries { Title = "Sanas", Values = new ChartValues<int> { sanas }, Fill = Brushes.MediumSeaGreen, DataLabels = true });
+            EstadoAvesSeries = series;
+        }
+
+        private void CargarGraficaProduccion()
+        {
+            var datos = _produccionDb.ObtenerProduccionPorCategorias();
+            var series = new SeriesCollection();
+
+            if (datos != null)
+            {
+                foreach (var item in datos)
+                {
+                    series.Add(new PieSeries { Title = item.Categoria, Values = new ChartValues<int> { item.Cantidad }, DataLabels = true });
+                }
+            }
+            ProduccionCategoriaSeries = series;
+        }
 
         public List<Consumo> ObtenerConsumosRecientes(int cantidad = 7)
         {
             return _consumoDatabase.ObtenerConsumos()
                 .OrderByDescending(c => c.FechaConsumo)
                 .Take(cantidad)
-                .OrderBy(c => c.FechaConsumo)  // ascendente para la gráfica
+                .OrderBy(c => c.FechaConsumo)
                 .ToList();
         }
 
-        private string[] _etiquetasDias = Array.Empty<string>();
-        public string[] EtiquetasDias
-        {
-            get => _etiquetasDias;
-            set { _etiquetasDias = value; OnPropertyChanged(); }
-        }
-
-        public int TotalLotes
-        {
-            get => _totalLotes;
-            set { _totalLotes = value; OnPropertyChanged(); }
-        }
-
-        // 2. Propiedad Lotes Activos
-        private int _lotesActivos;
-        public int LotesActivos
-        {
-            get => _lotesActivos;
-            set { _lotesActivos = value; OnPropertyChanged(); }
-        }
-
-        // 3. Propiedad Total Aves
-        private int _totalAves;
-        public int TotalAves
-        {
-            get => _totalAves;
-            set { _totalAves = value; OnPropertyChanged(); }
-        }
-
-        private decimal _totalAlimento;
-        public decimal TotalAlimento
-        {
-            get => _totalAlimento;
-            set { _totalAlimento = value; OnPropertyChanged(); }
-        }
-
-        private SeriesCollection _estadoAvesSeries;
-        public SeriesCollection EstadoAvesSeries
-        {
-            get => _estadoAvesSeries;
-            set { _estadoAvesSeries = value; OnPropertyChanged(); }
-        }
-
-        public homeViewModel()
-        {
-            database = new LoteDatabase();
-            inventarioDb = new InventarioDatabase();
-            diagDb = new DiagnosticoDatabase();
-            ActualizarCards();
-        }
-
-        public void ActualizarCards()
-        {
-            // 1. Obtener datos base de lotes
-            TotalLotes = database.ObtenerTotalLotes();
-            LotesActivos = database.ObtenerLotesActivos();
-            TotalAves = database.ObtenerTotalAves();
-
-            // 2. Lógica Dinámica de Salud de Aves (Agrupada por Tipo de ComboBox)
-            var listaDiagnosticos = diagDb.ObtenerTodosDiagnosticos();
-            var series = new SeriesCollection();
-            int totalAvesConDiagnostico = 0;
-
-            if (listaDiagnosticos != null)
-            {
-                // Filtramos solo los casos que siguen "Activos"
-                var casosActivos = listaDiagnosticos.Where(d => d.Estado == "Activo").ToList();
-
-                // Agrupamos por el texto del ComboBox (Tipo)
-                var gruposPorTipo = casosActivos
-                    .GroupBy(d => d.Tipo)
-                    .Select(g => new {
-                        NombreTipo = g.Key,
-                        SumaAves = g.Sum(d => d.GallinasAfectadas)
-                    });
-
-                foreach (var grupo in gruposPorTipo)
-                {
-                    var color = grupo.NombreTipo == "Enfermedad" ? Brushes.Red :
-                                grupo.NombreTipo == "Prevención" ? Brushes.Orange :
-                                Brushes.DodgerBlue;
-
-                    series.Add(new PieSeries
-                    {
-                        Title = grupo.NombreTipo,
-                        Values = new ChartValues<int> { grupo.SumaAves },
-                        DataLabels = true,
-                        Fill = color, // Asigna el color aquí
-                        LabelPoint = p => $"{p.Y} aves"
-                    });
-                    totalAvesConDiagnostico += grupo.SumaAves;
-                }
-            }
-
-            // 3. Calcular las aves Sanas (Total - todas las afectadas por cualquier diagnóstico)
-            int avesSanas = TotalAves - totalAvesConDiagnostico;
-            if (avesSanas < 0) avesSanas = 0;
-
-            // Añadimos siempre la rebanada de "Sanas" al final
-            series.Add(new PieSeries
-            {
-                Title = "Sanas",
-                Values = new ChartValues<int> { avesSanas },
-                Fill = System.Windows.Media.Brushes.MediumSeaGreen,
-                DataLabels = true,
-                LabelPoint = p => $"{p.Y} aves"
-            });
-
-            // Asignamos la colección completa a la propiedad que escucha el XAML
-            EstadoAvesSeries = series;
-
-            // 4. Lógica de Inventario de Alimento (Igual que antes)
-            var listaItems = inventarioDb.ObtenerTodosItems();
-            if (listaItems != null)
-            {
-                TotalAlimento = listaItems
-                    .Where(i => i.Categoria != null && i.Categoria.ToLower().Contains("alimento"))
-                    .Sum(i => (decimal)i.CantidadStock);
-            }
-            else
-            {
-                TotalAlimento = 0;
-            }
-        }
-
-        // --- ESTE ES EL MÉTODO QUE TE FALTABA ---
-        public event PropertyChangedEventHandler? PropertyChanged;
-
+        public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

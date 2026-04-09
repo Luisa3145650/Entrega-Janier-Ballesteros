@@ -1,61 +1,72 @@
-﻿using LiveCharts;
-using LiveCharts.Wpf;
-using loginavicola.ViewModel;
+﻿using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Separator = LiveCharts.Wpf.Separator;
+using LiveCharts;
+using LiveCharts.Wpf;
+using loginavicola.ViewModel;
 
 namespace loginavicola.View
 {
-    public partial class homeView : UserControl  // ← quitado INotifyPropertyChanged
+    public partial class homeView : UserControl
     {
         public homeView()
         {
             InitializeComponent();
             this.DataContext = new homeViewModel();
-            CargarGraficaConsumoAlimento();
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             if (DataContext is homeViewModel vm)
             {
+                // 1. Actualiza todos los datos (Cards y Gráficas de Pastel)
                 vm.ActualizarCards();
-                CargarGraficaConsumoAlimento();
+
+                // 2. Vinculamos las gráficas de pastel manualmente si no usas Binding en XAML
+                if (CategoriaChart != null)
+                    CategoriaChart.Series = vm.ProduccionCategoriaSeries;
+
+                if (EstadoAvesChart != null)
+                    EstadoAvesChart.Series = vm.EstadoAvesSeries;
+
+                // 3. Cargamos la gráfica de líneas de consumo
+                CargarGraficaConsumo(vm);
             }
         }
 
-        private void CargarGraficaConsumoAlimento()
+        private void CargarGraficaConsumo(homeViewModel vm)
         {
-            if (DataContext is not homeViewModel vm)
-                return;
-
             var consumos = vm.ObtenerConsumosRecientes(7);
 
-            if (!consumos.Any())
+            if (consumos == null || !consumos.Any())
             {
-                vm.EtiquetasDias = new[] { "Sin datos" }; // ← escribe en el VM
                 ConsumoAlimentoChart.Series = new SeriesCollection();
                 return;
             }
 
-            vm.EtiquetasDias = consumos               // ← escribe en el VM
-                .Select(c => c.FechaConsumo.ToString("dd/MMM"))
-                .ToArray();
+            vm.EtiquetasDias = consumos.Select(c => c.FechaConsumo.ToString("dd/MMM")).ToArray();
 
             ConsumoAlimentoChart.Series = new SeriesCollection
             {
                 new LineSeries
                 {
-                    Title = "Consumo Semanal (kg)",
-                    Values = new ChartValues<double>(
-                        consumos.Select(c => (double)c.CantidadConsumida)
-                    ),
-                    PointGeometrySize = 10,
+                    Title = "Consumo (kg)",
+                    Values = new ChartValues<double>(consumos.Select(c => (double)c.CantidadConsumida)),
                     Stroke = Brushes.MediumPurple,
-                    Fill   = Brushes.Transparent
+                    PointGeometrySize = 8,
+                    PointForeground = Brushes.White,
+                    Fill = new LinearGradientBrush
+                    {
+                        StartPoint = new Point(0, 0),
+                        EndPoint = new Point(0, 1),
+                        GradientStops = new GradientStopCollection
+                        {
+                            new GradientStop(Color.FromArgb(50, 147, 112, 219), 0),
+                            new GradientStop(Colors.Transparent, 1)
+                        }
+                    }
                 }
             };
         }
