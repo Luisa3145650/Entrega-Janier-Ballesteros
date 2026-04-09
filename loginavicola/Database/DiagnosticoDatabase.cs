@@ -32,6 +32,7 @@ namespace loginavicola.Database
                 {
                     connection.Open();
 
+                    // Se agregaron IdMedicamento y CantidadMedicamentoUsado a la estructura
                     string createTable = @"
                         CREATE TABLE IF NOT EXISTS Diagnostico (
                             IdDiagnostico INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,11 +52,16 @@ namespace loginavicola.Database
                     {
                         command.ExecuteNonQuery();
                     }
+
+                    // 2. MIGRACIÓN: Verificar si faltan las nuevas columnas y agregarlas
+                    // Esto evita el error "no such column" si la DB ya existía antes
+                    AgregarColumnaSiNoExiste(connection, "IdMedicamento", "INTEGER");
+                    AgregarColumnaSiNoExiste(connection, "CantidadMedicamentoUsado", "INTEGER DEFAULT 0");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al crear tabla Diagnostico: {ex.Message}",
+                MessageBox.Show($"Error al inicializar tabla Diagnostico: {ex.Message}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

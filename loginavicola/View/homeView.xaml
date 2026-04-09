@@ -6,7 +6,8 @@
              xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              mc:Ignorable="d"
              Loaded="UserControl_Loaded"
-             x:Name="RootView">
+             x:Name="RootView"
+             >
 
     <UserControl.Resources>
         <!-- Estilo para tarjetas superiores (coloridas) -->

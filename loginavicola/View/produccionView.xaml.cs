@@ -330,7 +330,7 @@ namespace loginavicola.View
 
         private void ProcesarLogicaHuevo(Image<Bgr, byte> imagen)
         {
-            
+
             // Definición de zonas
             Rectangle zonaHuevo = new Rectangle(80, 50, 440, 300);
             // Modifica los valores para centrar el recuadro solo en los dígitos numéricos
