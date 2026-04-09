@@ -24,6 +24,47 @@ namespace loginavicola.Database
             CrearTablaDiagnostico();
         }
 
+        private void AgregarColumnaSiNoExiste(SQLiteConnection connection, string nombreColumna, string tipoDato)
+        {
+            try
+            {
+                // Consultar si la columna existe en la tabla Diagnostico
+                string query = $"PRAGMA table_info(Diagnostico)";
+                bool existe = false;
+
+                using (var command = new SQLiteCommand(query, connection))
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        if (reader["name"].ToString().Equals(nombreColumna, StringComparison.OrdinalIgnoreCase))
+                        {
+                            existe = true;
+                            break;
+                        }
+                    }
+                }
+
+                // Si no existe, la creamos con ALTER TABLE
+                if (!existe)
+                {
+                    string alterQuery = $"ALTER TABLE Diagnostico ADD COLUMN {nombreColumna} {tipoDato}";
+                    using (var alterCommand = new SQLiteCommand(alterQuery, connection))
+                    {
+                        alterCommand.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Solo mostrar error si no es un error de "columna duplicada"
+                if (!ex.Message.Contains("duplicate column name"))
+                {
+                    MessageBox.Show($"Error al verificar/agregar columna {nombreColumna}: {ex.Message}");
+                }
+            }
+        }
+
         private void CrearTablaDiagnostico()
         {
             try
@@ -52,6 +93,8 @@ namespace loginavicola.Database
                     {
                         command.ExecuteNonQuery();
                     }
+
+
 
                     // 2. MIGRACIÓN: Verificar si faltan las nuevas columnas y agregarlas
                     // Esto evita el error "no such column" si la DB ya existía antes
