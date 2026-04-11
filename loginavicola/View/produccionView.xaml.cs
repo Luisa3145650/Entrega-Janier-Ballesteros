@@ -1,10 +1,12 @@
-﻿// LIBRERÍAS DE VIDEO
+﻿
+// LIBRERÍAS DE VIDEO
 using AForge.Video;
 using AForge.Video.DirectShow;
 // LIBRERÍAS DE VISIÓN
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using Emgu.CV.Util; // Agregado para VectorOfVectorOfPoint
 using loginavicola.Database;
 using loginavicola.Model;
 using System;
@@ -17,10 +19,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using Point = System.Drawing.Point;
 using Tesseract; // <-- AGREGAR ESTA LÍNEA
-using System.Drawing.Drawing2D;
-using System.Linq; // <-- AGREGAR ESTA LÍNEA
+
 
 
 namespace loginavicola.View
@@ -76,9 +76,12 @@ namespace loginavicola.View
             CargarHistorial();
 
             // Inicialización optimizada:
-            ocrEngine = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default);
-            // IMPORTANTE: Solo reconocer dígitos para evitar errores
-            ocrEngine.SetVariable("tessedit_char_whitelist", "0123456789");
+            ocrEngine = new TesseractEngine(@"./tessdata", "ssd", EngineMode.Default);
+            // Nota: Si antes usabas "spa" o "ssd" en vez de "eng", pon el que tenías para que coincida con tus archivos de Tesseract.
+
+            // 2. LUEGO SÍ LE ASIGNAMOS LAS VARIABLES
+            ocrEngine.SetVariable("tessedit_char_whitelist", "0123456789.");
+            ocrEngine.SetVariable("classify_bln_numeric_mode", "1");
         }
 
 
@@ -178,56 +181,78 @@ namespace loginavicola.View
 
         private string LeerPesoMejorado(Image<Gray, byte> grisPeso)
         {
-            // 1. Aumentar resolución (Fundamental para números de display)
-            using (Image<Gray, byte> rescaled = grisPeso.Resize(3.0, Emgu.CV.CvEnum.Inter.Cubic))
+            // 1. Escalar x2 (Mejora radical para LCD)
+            using (Image<Gray, byte> rescaled = grisPeso.Resize(2.0, Inter.Lanczos4))
             {
-                string[] resultados = new string[2];
+                string mejorResultado = "";
 
-                // MÉTODO A: CLAHE (Ecualización adaptativa) + Otsu
+                // --- Método A: CLAHE + Otsu (El rey para reflejos en cristal) ---
                 using (Image<Gray, byte> metodoA = rescaled.Clone())
                 {
-                    metodoA._EqualizeHist();
-                    CvInvoke.Threshold(metodoA, metodoA, 0, 255, ThresholdType.BinaryInv | ThresholdType.Otsu);
-                    resultados[0] = ProcesarTesseract(metodoA);
+                    metodoA._EqualizeHist(); // EmguCV alternativo a CLAHE
+                    CvInvoke.Threshold(metodoA, metodoA, 0, 255, ThresholdType.Binary | ThresholdType.Otsu);
+                    string resA = IntentarTesseract(metodoA);
+                    if (EsNumeroValido(resA)) return resA;
                 }
 
-                // MÉTODO B: Umbral Adaptativo Simple
+                // --- Método B: Otsu Normal ---
                 using (Image<Gray, byte> metodoB = rescaled.Clone())
                 {
-                    CvInvoke.AdaptiveThreshold(metodoB, metodoB, 255, AdaptiveThresholdType.GaussianC, ThresholdType.BinaryInv, 15, 7);
-
-                    // Pequeña dilatación para unir los segmentos de los números LCD
-                    using (Mat kernel = new Mat(3, 3, Emgu.CV.CvEnum.DepthType.Cv8U, 1))
-                    {
-                        kernel.SetTo(new MCvScalar(1));
-                        CvInvoke.MorphologyEx(metodoB, metodoB, MorphOp.Close, kernel, new System.Drawing.Point(-1, -1), 1, BorderType.Default, new MCvScalar());
-                    }
-                    resultados[1] = ProcesarTesseract(metodoB);
+                    CvInvoke.Threshold(metodoB, metodoB, 0, 255, ThresholdType.Binary | ThresholdType.Otsu);
+                    string resB = IntentarTesseract(metodoB);
+                    if (EsNumeroValido(resB)) return resB;
                 }
 
-                // Devolver el primero que tenga sentido (que tenga números)
-                foreach (var res in resultados)
+                // --- Método C: Otsu Invertido (Por si los números se ven más claros que el fondo) ---
+                using (Image<Gray, byte> metodoC = rescaled.Clone())
                 {
-                    if (!string.IsNullOrEmpty(res) && res.Length >= 2) return res;
+                    CvInvoke.Threshold(metodoC, metodoC, 0, 255, ThresholdType.BinaryInv | ThresholdType.Otsu);
+                    string resC = IntentarTesseract(metodoC);
+                    if (EsNumeroValido(resC)) return resC;
                 }
+
+                return "";
             }
-            return "";
         }
 
-        private string ProcesarTesseract(Image<Gray, byte> imgProcesada)
+        private string IntentarTesseract(Image<Gray, byte> mascara)
         {
-            // Opcional: Descomenta esto para ver qué lee Tesseract realmente (útil para calibrar la luz)
-            // CvInvoke.Imshow("DEBUG_OCR_PESO", imgProcesada);
-
-            using (Bitmap bmpOcr = imgProcesada.ToBitmap())
+            // Operaciones morfológicas para unir los segmentos del LCD (El secreto del éxito)
+            using (Mat kClose = CvInvoke.GetStructuringElement(0, new System.Drawing.Size(3, 7), new System.Drawing.Point(-1, -1)))
+            using (Mat kOpen = CvInvoke.GetStructuringElement(0, new System.Drawing.Size(2, 2), new System.Drawing.Point(-1, -1)))
             {
-                ocrEngine.SetVariable("tessedit_char_whitelist", "0123456789");
+                CvInvoke.MorphologyEx(mascara, mascara, MorphOp.Close, kClose, new System.Drawing.Point(-1, -1), 1, BorderType.Default, new MCvScalar());
+                CvInvoke.MorphologyEx(mascara, mascara, MorphOp.Open, kOpen, new System.Drawing.Point(-1, -1), 1, BorderType.Default, new MCvScalar());
+            }
+
+            // OPCIONAL: Descomenta esto para ver la máscara final antes de enviarla a Tesseract
+            //
+            mascara.Save("debug_mascara_ocr.jpg");
+
+            using (Bitmap bmpOcr = mascara.ToBitmap())
+            {
+                // IMPORTANTE: Permitir el punto decimal
+                ocrEngine.SetVariable("tessedit_char_whitelist", "0123456789.");
+                ocrEngine.SetVariable("classify_bln_numeric_mode", "1");
+
                 using (var page = ocrEngine.Process(bmpOcr, PageSegMode.SingleLine))
                 {
                     string raw = page.GetText().Trim();
-                    return System.Text.RegularExpressions.Regex.Replace(raw, @"[^\d]", "");
+                    return System.Text.RegularExpressions.Regex.Replace(raw, @"[^0-9.]", "").Trim();
                 }
             }
+        }
+
+        private bool EsNumeroValido(string txt)
+        {
+            if (string.IsNullOrWhiteSpace(txt)) return false;
+            // Si podemos convertirlo a un número (ignorando cultura) y está entre 15g y 200g (huevos)
+            if (double.TryParse(txt, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double v))
+            {
+                // Huevos reales pesan entre 30 y 120, dejamos margen
+                return (v >= 20.0 && v <= 150.0);
+            }
+            return false;
         }
 
 
@@ -334,7 +359,13 @@ namespace loginavicola.View
             // Definición de zonas
             Rectangle zonaHuevo = new Rectangle(80, 50, 440, 300);
             // Modifica los valores para centrar el recuadro solo en los dígitos numéricos
-            Rectangle zonaPeso = new Rectangle(190, 395, 110, 45);
+            // JUEGA CON ESTOS 4 NÚMEROS HASTA QUE EL RECUADRO AZUL QUEDE PERFECTO
+            int posicionX = 220; // Mueve el recuadro a la izquierda/derecha
+            int posicionY = 380; // Mueve el recuadro arriba/abajo
+            int ancho = 90;      // Hazlo más ancho o angosto
+            int alto = 40;       // Hazlo más alto o bajito
+
+            Rectangle zonaPeso = new Rectangle(posicionX, posicionY, ancho, alto);
 
             try
             {
