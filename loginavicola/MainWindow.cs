@@ -35,7 +35,6 @@ namespace loginavicola
                 Btnlotes.Visibility = user.PermisoLotes ? Visibility.Visible : Visibility.Collapsed;
                 BtnProduccion.Visibility = user.PermisoProduccion ? Visibility.Visible : Visibility.Collapsed;
                 Btnalimentacion.Visibility = user.PermisoAlimentacion ? Visibility.Visible : Visibility.Collapsed;
-                Btnventa.Visibility = user.PermisoEntregas ? Visibility.Visible : Visibility.Collapsed;
                 Btndiagnostico.Visibility = user.PermisoDiagnostico ? Visibility.Visible : Visibility.Collapsed;
 
                 // Nota: Aquí usé el permiso que corresponde a reportes según tu lógica
@@ -69,7 +68,6 @@ namespace loginavicola
         private void Btnlotes_Click(object sender, RoutedEventArgs e) => Navegar(new lotesView(), "Lotes", IconChar.CheckToSlot);
         private void BtnProduccion_Click(object sender, RoutedEventArgs e) => Navegar(new produccionView(), "Producción", IconChar.Egg);
         private void Btnalimentacion_Click(object sender, RoutedEventArgs e) => Navegar(new alimentacionView(), "Alimentación", IconChar.Jar);
-        private void Btnventa_Click(object sender, RoutedEventArgs e) => Navegar(new ventasView(), "Entregas", IconChar.MagnifyingGlass);
         private void Btndiagnostico_Click(object sender, RoutedEventArgs e) => Navegar(new diagnosticoView(), "Diagnóstico", IconChar.Stethoscope);
         private void Btninventario_Click(object sender, RoutedEventArgs e) => Navegar(new inventarioView(), "Inventario", IconChar.Warehouse);
         private void Btngestion_Click(object sender, RoutedEventArgs e) => Navegar(new gestionView(), "Gestión", IconChar.User);

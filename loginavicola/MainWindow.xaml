@@ -93,14 +93,6 @@
                         </StackPanel>
                     </RadioButton>
 
-                    <RadioButton x:Name="Btnventa" Style="{StaticResource menuButton}"
-                                 Tag="{StaticResource color1}"
-                                 Click="Btnventa_Click">
-                        <StackPanel Orientation="Horizontal">
-                            <fa:IconImage Icon="MagnifyingGlass" Style="{StaticResource menuButtonIcon}"/>
-                            <TextBlock Text="Entregas" Style="{StaticResource menuButtonText}"/>
-                        </StackPanel>
-                    </RadioButton>
 
                     <RadioButton x:Name="Btndiagnostico" Style="{StaticResource menuButton}"
                                  Tag="{StaticResource color1}"
