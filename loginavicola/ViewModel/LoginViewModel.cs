@@ -44,6 +44,11 @@ namespace loginavicola.ViewModel
                 UserSession.UsuarioActual = usuario;
 
                 var mainWin = new MainWindow();
+
+                if (mainWin.DataContext is MainViewModel mainVM)
+                {
+                    mainVM.CurrentUserAccount = usuario;
+                }
                 mainWin.Show();
 
                 // cerrar ventana login

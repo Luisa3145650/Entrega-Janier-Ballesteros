@@ -12,6 +12,9 @@ namespace loginavicola.ViewModel
     {
         private Usuario _currentUserAccount;
 
+        public string DisplayName => CurrentUserAccount?.NombreCompleto ?? "Usuario Invitado";
+        public string DisplayRol => CurrentUserAccount?.Rol ?? "Sin Rol";
+
         public Usuario CurrentUserAccount
         {
             get => _currentUserAccount;
@@ -19,6 +22,11 @@ namespace loginavicola.ViewModel
             {
                 _currentUserAccount = value;
                 OnPropertyChanged(nameof(CurrentUserAccount));
+
+                OnPropertyChanged(nameof(DisplayName));
+                OnPropertyChanged(nameof(DisplayRol));
+
+
             }
         }
 
@@ -29,12 +37,12 @@ namespace loginavicola.ViewModel
             LoadCurrentUserData();
         }
 
-        private void LoadCurrentUserData()
+        public void LoadCurrentUserData()
         {
             var user = UserSession.UsuarioActual;
             if (user != null)
             {
-                CurrentUserAccount = user;
+                this.CurrentUserAccount = user;
             }
         }
 
@@ -44,5 +52,7 @@ namespace loginavicola.ViewModel
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+
     }
 }

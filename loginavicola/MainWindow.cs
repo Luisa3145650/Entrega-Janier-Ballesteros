@@ -14,7 +14,11 @@ namespace loginavicola
         public MainWindow()
         {
             InitializeComponent();
+            var viewModel = new loginavicola.ViewModel.MainViewModel();
+            this.DataContext = viewModel;
+            viewModel.LoadCurrentUserData();
             MainContentArea.Content = new homeView(); // Vista inicial
+                                                      // PRUEBA RÁPIDA
 
             // Llamamos a la lógica de permisos al abrir la ventana
             AplicarPermisos();
@@ -80,8 +84,15 @@ namespace loginavicola
 
         private void btnVolverLogin_Click(object sender, RoutedEventArgs e)
         {
+            // Limpiamos la sesión antes de salir
+            UserSession.UsuarioActual = null;
+
             new loginView().Show();
             this.Close();
         }
+
+
     }
+
+
 }
