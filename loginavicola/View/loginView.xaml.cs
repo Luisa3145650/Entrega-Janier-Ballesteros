@@ -69,10 +69,6 @@ namespace loginavicola.View
             }
         }
 
-        private void Btnregistro_Click(object sender, RoutedEventArgs e)
-        {
-            Registrarse registroWindow = new Registrarse();
-            registroWindow.ShowDialog();
-        }
+
     }
 }

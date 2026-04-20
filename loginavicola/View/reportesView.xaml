@@ -61,8 +61,8 @@
             <StackPanel Margin="40,20">
 
                 <StackPanel Margin="0,0,0,20">
-                    <TextBlock Text="Exportar Datos" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,0,0,5"/>
-                    <TextBlock Text="Descargue la información del sistema en formato CSV" FontSize="13" Foreground="White" Margin="0,0,0,10"/>
+                    <TextBlock Text="Exportar Datos" FontSize="24" FontWeight="Bold" Foreground="Black" Margin="0,0,0,5"/>
+                    <TextBlock Text="Descargue la información del sistema en formato CSV" FontSize="13" Foreground="Black" Margin="0,0,0,10"/>
                 </StackPanel>
 
                 <Grid HorizontalAlignment="Center">
