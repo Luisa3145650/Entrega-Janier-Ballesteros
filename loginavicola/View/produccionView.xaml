@@ -96,11 +96,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock 
-                                x:Name="lblProduccionHoy"
-                                Text="0" FontSize="32" 
-                                FontWeight="Bold" 
-                                Foreground="White"/>
+                            <TextBlock x:Name="lblProduccionHoy" Text="0" FontSize="32" FontWeight="Bold" Foreground="White"/>
                             <TextBlock Text="Producción Hoy" FontSize="12" Foreground="White" Opacity="0.9"/>
                         </StackPanel>
                         <Border Grid.Column="1" Background="#33FFFFFF" CornerRadius="12" Width="50" Height="50" VerticalAlignment="Center">
@@ -116,22 +112,11 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="{Binding LotesActivos}" FontSize="32" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="0" FontSize="32" FontWeight="Bold" Foreground="White"/>
                             <TextBlock Text="Lotes activos" FontSize="12" Foreground="White" Opacity="0.9"/>
                         </StackPanel>
-                        <Border Grid.Column="1" 
-                                Background="#33FFFFFF" 
-                                CornerRadius="12" 
-                                Width="50" 
-                                Height="50"
-                                VerticalAlignment="Center">
-                            <TextBlock 
-                                x:Name="lblLotesActivos"
-                                Text="📦" 
-                                FontSize="28" 
-                                Foreground="White" 
-                                HorizontalAlignment="Center" 
-                                VerticalAlignment="Center"/>
+                        <Border Grid.Column="1" Background="#33FFFFFF" CornerRadius="12" Width="50" Height="50" VerticalAlignment="Center">
+                            <TextBlock x:Name="lblLotesActivos" Text="📦" FontSize="28" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </Grid>
                 </Border>
@@ -147,13 +132,7 @@
                             <TextBlock Text="Eficiencia" FontSize="12" Foreground="White" Opacity="0.9"/>
                         </StackPanel>
                         <Border Grid.Column="1" Background="#33FFFFFF" CornerRadius="12" Width="50" Height="50" VerticalAlignment="Center">
-                            <TextBlock 
-                                x:Name="lblEficiencia"
-                                Text="✓" 
-                                FontSize="28" Foreground="White" 
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Bottom" 
-                                Margin="0,0,0,6"/>
+                            <TextBlock x:Name="lblEficiencia" Text="✓" FontSize="28" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,6"/>
                         </Border>
                     </Grid>
                 </Border>
@@ -175,9 +154,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-
-                            <ComboBox x:Name="cbCamaras" Grid.Column="0" DisplayMemberPath="Nombre" Style="{StaticResource ComboBoxStyle}" Height="36" VerticalContentAlignment="Center" Margin="0,0,8,0"/>
-
+                            <ComboBox x:Name="cbCamaras" DisplayMemberPath="Nombre" Style="{StaticResource ComboBoxStyle}" Height="36" VerticalContentAlignment="Center" Margin="0,0,8,0"/>
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
                                 <Button x:Name="btnConectarCamara" Content="▶" ToolTip="Conectar" Style="{StaticResource InfoButtonStyle}" Width="36" Height="36" Padding="0" FontSize="12" Margin="0,0,4,0"/>
                                 <Button x:Name="btnDesconectarCamara" Content="⏹" ToolTip="Desconectar" Style="{StaticResource DangerButtonStyle}" Width="36" Height="36" Padding="0" FontSize="12" Margin="0,0,4,0"/>
@@ -187,35 +164,16 @@
 
                         <Border BorderBrush="#DDDDDD" BorderThickness="1" Background="Black" Height="450" CornerRadius="8" Margin="0,0,0,10">
                             <Grid>
-
-                                <!-- Cámara -->
                                 <Image x:Name="imgCamara" Stretch="Uniform"/>
-
-                                <!-- Overlay (texto encima de la cámara con los nombres correctos para el C#) -->
                                 <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10">
-                                    <TextBlock x:Name="lblCategoria" 
-                                               Text="Categoría: --" 
-                                               FontSize="24" 
-                                               FontWeight="Bold" 
-                                               Foreground="Lime"/>
-                                               
-                                    <TextBlock x:Name="lblPesoReal" 
-                                               Text="Peso: 0.0 g" 
-                                               FontSize="20" 
-                                               Foreground="White"/>
-                                               
-                                     <TextBlock x:Name="lblVolumen" 
-                                               Text="Volumen: 0.0 cm³" 
-                                               FontSize="16" 
-                                               Foreground="#DDD"/>
+                                    <TextBlock x:Name="lblCategoria" Text="Categoría: --" FontSize="24" FontWeight="Bold" Foreground="Lime"/>
+                                    <TextBlock x:Name="lblPesoReal" Text="Peso: 0.0 g" FontSize="20" Foreground="White"/>
+                                    <TextBlock x:Name="lblVolumen" Text="Volumen: 0.0 cm³" FontSize="16" Foreground="#DDD"/>
                                 </StackPanel>
-
                             </Grid>
                         </Border>
 
-                        <Button x:Name="btnCapturarFoto" 
-                                Content="Capturar foto" Style="{StaticResource PurpleButtonStyle}" 
-                                HorizontalAlignment="Center"/>
+                        <Button x:Name="btnCapturarFoto" Content="Capturar foto" Style="{StaticResource PurpleButtonStyle}" HorizontalAlignment="Center"/>
                         <TextBlock x:Name="txtEstadoCamara" Text="2 cámara(s) detectada(s)" FontSize="11" Foreground="#666" HorizontalAlignment="Center" Margin="0,10,0,0"/>
                     </StackPanel>
                 </Border>
@@ -226,11 +184,19 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <TextBlock Grid.Row="0" Text="RESUMEN DE PRODUCCIÓN" FontSize="14" FontWeight="Bold" Foreground="#333" Margin="0,0,0,15"/>
 
-                            <Grid Grid.Row="1">
+                            <Border Grid.Row="1" Background="#FDF2E9" CornerRadius="8" Padding="12,8" Margin="0,0,0,15" BorderBrush="#FAD7A0" BorderThickness="1">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="👤 RECOLECTOR ASIGNADO:" FontWeight="Bold" FontSize="11" Foreground="#A04000" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="lblNombreRecolector" Text="NO IDENTIFICADO" FontWeight="Bold" FontSize="12" Foreground="#D35400" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Grid Grid.Row="2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="200"/>
@@ -238,37 +204,35 @@
 
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="Detalles por Categoría:" FontSize="12" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,10"/>
-                                    <StackPanel>
-                                        <StackPanel Orientation="Horizontal" Margin="0,3">
-                                            <Rectangle Width="12" Height="12" Fill="#00BCD4" Margin="0,0,10,0"/>
-                                            <TextBlock Text="Jumbo" Width="80" Foreground="#333" FontSize="11"/>
-                                            <TextBlock x:Name="lblResumenJumbo" Text="0" Foreground="#666" FontSize="11"/>
-                                        </StackPanel>
-                                        <StackPanel Orientation="Horizontal" Margin="0,3">
-                                            <Rectangle Width="12" Height="12" Fill="#2196F3" Margin="0,0,10,0"/>
-                                            <TextBlock Text="AAA" Width="80" Foreground="#333" FontSize="11"/>
-                                            <TextBlock x:Name="lblResumenAAA" Text="0" Foreground="#666" FontSize="11"/>
-                                        </StackPanel>
-                                        <StackPanel Orientation="Horizontal" Margin="0,3">
-                                            <Rectangle Width="12" Height="12" Fill="#FFC107" Margin="0,0,10,0"/>
-                                            <TextBlock Text="AA" Width="80" Foreground="#333" FontSize="11"/>
-                                            <TextBlock x:Name="lblResumenAA" Text="0" Foreground="#666" FontSize="11"/>
-                                        </StackPanel>
-                                        <StackPanel Orientation="Horizontal" Margin="0,3">
-                                            <Rectangle Width="12" Height="12" Fill="#4CAF50" Margin="0,0,10,0"/>
-                                            <TextBlock Text="A" Width="80" Foreground="#333" FontSize="11"/>
-                                            <TextBlock x:Name="lblResumenA" Text="0" Foreground="#666" FontSize="11"/>
-                                        </StackPanel>
-                                        <StackPanel Orientation="Horizontal" Margin="0,3">
-                                            <Rectangle Width="12" Height="12" Fill="#FF9800" Margin="0,0,10,0"/>
-                                            <TextBlock Text="B" Width="80" Foreground="#333" FontSize="11"/>
-                                            <TextBlock x:Name="lblResumenB" Text="0" Foreground="#666" FontSize="11"/>
-                                        </StackPanel>
-                                        <StackPanel Orientation="Horizontal" Margin="0,3">
-                                            <Rectangle Width="12" Height="12" Fill="#F44336" Margin="0,0,10,0"/>
-                                            <TextBlock Text="C" Width="80" Foreground="#333" FontSize="11"/>
-                                            <TextBlock x:Name="lblResumenC" Text="0" Foreground="#666" FontSize="11"/>
-                                        </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                                        <Rectangle Width="12" Height="12" Fill="#00BCD4" Margin="0,0,10,0"/>
+                                        <TextBlock Text="Jumbo" Width="80" Foreground="#333" FontSize="11"/>
+                                        <TextBlock x:Name="lblResumenJumbo" Text="0" Foreground="#666" FontSize="11"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                                        <Rectangle Width="12" Height="12" Fill="#2196F3" Margin="0,0,10,0"/>
+                                        <TextBlock Text="AAA" Width="80" Foreground="#333" FontSize="11"/>
+                                        <TextBlock x:Name="lblResumenAAA" Text="0" Foreground="#666" FontSize="11"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                                        <Rectangle Width="12" Height="12" Fill="#FFC107" Margin="0,0,10,0"/>
+                                        <TextBlock Text="AA" Width="80" Foreground="#333" FontSize="11"/>
+                                        <TextBlock x:Name="lblResumenAA" Text="0" Foreground="#666" FontSize="11"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                                        <Rectangle Width="12" Height="12" Fill="#4CAF50" Margin="0,0,10,0"/>
+                                        <TextBlock Text="A" Width="80" Foreground="#333" FontSize="11"/>
+                                        <TextBlock x:Name="lblResumenA" Text="0" Foreground="#666" FontSize="11"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                                        <Rectangle Width="12" Height="12" Fill="#FF9800" Margin="0,0,10,0"/>
+                                        <TextBlock Text="B" Width="80" Foreground="#333" FontSize="11"/>
+                                        <TextBlock x:Name="lblResumenB" Text="0" Foreground="#666" FontSize="11"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                                        <Rectangle Width="12" Height="12" Fill="#F44336" Margin="0,0,10,0"/>
+                                        <TextBlock Text="C" Width="80" Foreground="#333" FontSize="11"/>
+                                        <TextBlock x:Name="lblResumenC" Text="0" Foreground="#666" FontSize="11"/>
                                     </StackPanel>
                                 </StackPanel>
 
@@ -310,21 +274,10 @@
                 </StackPanel>
             </Grid>
 
-            <Border Grid.Row="2" 
-                    Background="Transparent" 
-                    CornerRadius="8" Padding="15" 
-                    Margin="10,20,10,0">
-                <StackPanel Orientation="Horizontal" 
-                            HorizontalAlignment="Center">
-                    <Button x:Name="btnClasificarManual" 
-                            Content="Clasificación Manual" 
-                            Foreground="White"
-                            Style="{StaticResource SecondaryButtonStyle}" 
-                            Click="btnClasificacionManual_Click"/>
-                    <Button x:Name="btnGuardar"
-                            Content="Guardar Registro" 
-                            Foreground="White"
-                            Style="{StaticResource PrimaryButtonStyle}"/>
+            <Border Grid.Row="2" Background="Transparent" CornerRadius="8" Padding="15" Margin="10,20,10,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="btnClasificarManual" Content="Clasificación Manual" Foreground="White" Style="{StaticResource SecondaryButtonStyle}" Click="btnClasificacionManual_Click"/>
+                    <Button x:Name="btnGuardar" Content="Guardar Registro" Foreground="White" Style="{StaticResource PrimaryButtonStyle}"/>
                 </StackPanel>
             </Border>
         </Grid>
