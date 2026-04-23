@@ -10,10 +10,10 @@
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Background="Transparent"
-        AllowsTransparency="True"
+        AllowsTransparency="False"
         MouseDown="Window_MouseDown">
 
-    <Border CornerRadius="12">
+    <Border CornerRadius="12" ClipToBounds="True">
         <Border.Background>
             <ImageBrush ImageSource="/loginavicola;component/imagenes/gallinas.jpg">
                 <ImageBrush.Opacity>
@@ -22,8 +22,9 @@
             </ImageBrush>
         </Border.Background>
 
-        <Border CornerRadius="10" 
-            BorderThickness="1"
+        <Border CornerRadius="12" 
+            BorderThickness="2"
+            ClipToBounds="True"
             Opacity="0.60">
             <Border.BorderBrush>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -35,8 +36,8 @@
 
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
-                    <GradientStop Color="#FF000000" Offset="0"/>
-                    <GradientStop Color="#FF000000" Offset="0.75"/>
+                    <GradientStop Color="#CC000000" Offset="0"/>
+                    <GradientStop Color="#CC000000" Offset="0.75"/>
                 </LinearGradientBrush>
             </Border.Background>
 
@@ -44,7 +45,6 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="30"/>
                     <RowDefinition Height="*"/>
-
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Row="0">
@@ -134,7 +134,7 @@
                 <Border Width="300"
                         Background="#4DFFFFFF"
                         CornerRadius="20"
-                        Margin="271,15,237,15"
+                        Margin="171,15,137,15"
                         Grid.RowSpan="2">
 
                     <StackPanel Orientation="Vertical">
@@ -220,7 +220,7 @@
                                 FontSize="12"
                                 FontFamily="Arial"
                                 Cursor="Hand"
-                                Margin="0,50,0,0"
+                                Margin="0,90,0,0"
                                 Click="BtnLogin_Click">
                             <Button.Style>
                                 <Style TargetType="Button">
@@ -243,15 +243,9 @@
                                 </ControlTemplate>
                             </Button.Template>
                         </Button>
-
-                       
-
-                       
-
                     </StackPanel>
                 </Border>
             </Grid>
-
         </Border>
     </Border>
 </Window>

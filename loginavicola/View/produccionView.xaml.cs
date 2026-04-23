@@ -77,6 +77,7 @@ namespace loginavicola.View
             CargarCamarasUSB();
             ActualizarEstadisticas();
             CargarHistorial();
+            CargarDatosUsuario();
         }
 
         // ════════════════════════════════════════════════════════════════
@@ -96,14 +97,18 @@ namespace loginavicola.View
             };
         }
 
+        // Busca este método en tu produccionView.xaml.cs y reemplázalo
         private void btnClasificacionManual_Click(object sender, RoutedEventArgs e)
         {
-            ManualView ventana = new ManualView();
-            ventana.Owner = Window.GetWindow(this);
-            if (ventana.ShowDialog() == true)
+            // 💡 CAMBIO: Usamos .Nombres aquí también
+            string nombreSesion = UserSession.UsuarioActual?.Nombres ?? "Invitado";
+
+            ManualView ventanaManual = new ManualView(nombreSesion);
+
+            if (ventanaManual.ShowDialog() == true)
             {
                 CargarHistorial();
-                ActualizarEstadisticas();
+                ActualizarResumenUI();
             }
         }
 
@@ -716,21 +721,26 @@ namespace loginavicola.View
             ActualizarResumenUI();
         }
 
+        // Asegúrate de tener este método para que la UI se refresque con la base de datos
         private void ActualizarResumenUI()
         {
-            Dispatcher.Invoke(() =>
+            var historial = database.ObtenerHistorial();
+            if (historial != null && historial.Count > 0)
             {
-                lblResumenJumbo.Text = contadorJumbo.ToString();
-                lblResumenAAA.Text = contadorAAA.ToString();
-                lblResumenAA.Text = contadorAA.ToString();
-                lblResumenA.Text = contadorA.ToString();
-                lblResumenB.Text = contadorB.ToString();
-                lblResumenC.Text = contadorC.ToString();
+                // Sumar todos los huevos por categoría de los registros de HOY
+                DateTime hoy = DateTime.Today;
+                var registrosHoy = historial.Where(h => h.Fecha.Date == hoy).ToList();
 
-                int total = contadorJumbo + contadorAAA + contadorAA
-                          + contadorA + contadorB + contadorC;
-                lblTotalResumen.Text = total.ToString();
-            });
+                lblResumenJumbo.Text = registrosHoy.Sum(h => h.Jumbo).ToString();
+                lblResumenAAA.Text = registrosHoy.Sum(h => h.AAA).ToString();
+                lblResumenAA.Text = registrosHoy.Sum(h => h.AA).ToString();
+                lblResumenA.Text = registrosHoy.Sum(h => h.A).ToString();
+                lblResumenB.Text = registrosHoy.Sum(h => h.B).ToString();
+                lblResumenC.Text = registrosHoy.Sum(h => h.C).ToString();
+
+                lblTotalResumen.Text = registrosHoy.Sum(h => h.Total).ToString();
+                lblProduccionHoy.Text = lblTotalResumen.Text;
+            }
         }
 
         private void ReiniciarContadores()
@@ -813,7 +823,13 @@ namespace loginavicola.View
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al cargar historial: {ex.Message}");
+                // Si el objeto Usuario tiene una propiedad 'Nombre', la usamos. 
+                // Si no, puedes usar 'UserSession.UsuarioActual.NombreUsuario'
+                string nombreParaMostrar = UserSession.UsuarioActual.Nombres ?? "Usuario";
+
+                // Actualizamos el Label o TextBlock naranja
+                // Asegúrate de que el nombre del control sea 'lblNombreRecolector'
+                lblNombreRecolector.Text = nombreParaMostrar.ToUpper();
             }
         }
 

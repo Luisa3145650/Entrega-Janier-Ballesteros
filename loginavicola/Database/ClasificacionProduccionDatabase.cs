@@ -55,7 +55,7 @@ namespace loginavicola.Database
             }
         }
 
-        // ── 1. HISTORIAL PARA EL DATAGRID ───────────────────────────────
+        // 1. MÉTODO PARA EL HISTORIAL (DataGrid)
         public List<ClasificacionProduccion> ObtenerHistorial(int limite = 50)
         {
             var lista = new List<ClasificacionProduccion>();
@@ -100,7 +100,7 @@ namespace loginavicola.Database
             return lista;
         }
 
-        // ── 2. INSERTAR CLASIFICACIÓN MANUAL ────────────────────────────
+        // 2. MÉTODO PARA REGISTRO MANUAL
         public bool InsertarClasificacion(ClasificacionProduccion c)
         {
             try
@@ -130,18 +130,15 @@ namespace loginavicola.Database
                         command.Parameters.AddWithValue("@C", c.C);
                         command.Parameters.AddWithValue("@Total", c.Total);
                         command.Parameters.AddWithValue("@Obs", c.Observaciones);
+
                         return command.ExecuteNonQuery() > 0;
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error en DB: {ex.Message}");
-                return false;
-            }
+            catch { return false; }
         }
 
-        // ── 3. REGISTRO INDIVIDUAL POR CÁMARA ───────────────────────────
+        // 3. SOLUCIÓN AL ERROR 1: RegistrarHuevoIndividual (Para la Cámara)
         public void RegistrarHuevoIndividual(string categoria, double peso, double volumen)
         {
             try
@@ -171,7 +168,6 @@ namespace loginavicola.Database
                         command.Parameters.AddWithValue("@Vol", volumen);
                         command.ExecuteNonQuery();
                     }
-                    new InventarioDatabase().SumarStockDesdeProduccion(categoria, 1);
                 }
             }
             catch (Exception ex)
@@ -215,7 +211,38 @@ namespace loginavicola.Database
             return stats;
         }
 
-        // ── 5. TOTAL DEL DÍA ────────────────────────────────────────────
+        // 4. SOLUCIÓN AL ERROR 2: ObtenerProduccionPorCategorias (Para el Resumen)
+        public List<ProduccionResumen> ObtenerProduccionPorCategorias()
+        {
+            var stats = new List<ProduccionResumen>();
+            try
+            {
+                using (var connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+                    string query = @"SELECT SUM(Jumbo), SUM(AAA), SUM(AA), SUM(A), SUM(B), SUM(C) 
+                                     FROM ClasificacionProduccion WHERE DATE(Fecha) = DATE('now', 'localtime')";
+
+                    using (var command = new SQLiteCommand(query, connection))
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            stats.Add(new ProduccionResumen { Categoria = "Jumbo", Cantidad = reader[0] != DBNull.Value ? Convert.ToInt32(reader[0]) : 0 });
+                            stats.Add(new ProduccionResumen { Categoria = "AAA", Cantidad = reader[1] != DBNull.Value ? Convert.ToInt32(reader[1]) : 0 });
+                            stats.Add(new ProduccionResumen { Categoria = "AA", Cantidad = reader[2] != DBNull.Value ? Convert.ToInt32(reader[2]) : 0 });
+                            stats.Add(new ProduccionResumen { Categoria = "A", Cantidad = reader[3] != DBNull.Value ? Convert.ToInt32(reader[3]) : 0 });
+                            stats.Add(new ProduccionResumen { Categoria = "B", Cantidad = reader[4] != DBNull.Value ? Convert.ToInt32(reader[4]) : 0 });
+                            stats.Add(new ProduccionResumen { Categoria = "C", Cantidad = reader[5] != DBNull.Value ? Convert.ToInt32(reader[5]) : 0 });
+                        }
+                    }
+                }
+            }
+            catch { }
+            return stats;
+        }
+
+        // 5. Método auxiliar para el total del día
         public int ObtenerProduccionHoy()
         {
             try
@@ -223,10 +250,7 @@ namespace loginavicola.Database
                 using (var connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
-                    string query =
-                        "SELECT SUM(Total) FROM ClasificacionProduccion " +
-                        "WHERE DATE(Fecha) = DATE('now','localtime')";
-
+                    string query = "SELECT SUM(Total) FROM ClasificacionProduccion WHERE DATE(Fecha) = DATE('now', 'localtime')";
                     using (var command = new SQLiteCommand(query, connection))
                     {
                         var result = command.ExecuteScalar();
@@ -236,43 +260,9 @@ namespace loginavicola.Database
             }
             catch { return 0; }
         }
-
-        // ── 6. ESTADÍSTICAS POR FECHA ────────────────────────────────────
-        public Dictionary<string, int> ObtenerEstadisticasPorCategoria(DateTime fecha)
-        {
-            var est = new Dictionary<string, int>
-                { {"Jumbo",0}, {"AAA",0}, {"AA",0}, {"A",0}, {"B",0}, {"C",0} };
-            try
-            {
-                using (var connection = new SQLiteConnection(connectionString))
-                {
-                    connection.Open();
-                    string query =
-                        "SELECT SUM(Jumbo), SUM(AAA), SUM(AA), SUM(A), SUM(B), SUM(C) " +
-                        "FROM ClasificacionProduccion WHERE DATE(Fecha) = @Fecha";
-
-                    using (var command = new SQLiteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@Fecha", fecha.ToString("yyyy-MM-dd"));
-                        using (var reader = command.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                string[] cats = { "Jumbo", "AAA", "AA", "A", "B", "C" };
-                                for (int i = 0; i < cats.Length; i++)
-                                    est[cats[i]] = reader[i] != DBNull.Value
-                                                   ? Convert.ToInt32(reader[i]) : 0;
-                            }
-                        }
-                    }
-                }
-            }
-            catch { }
-            return est;
-        }
     }
 
-    // ── MODELO AUXILIAR ──────────────────────────────────────────────────
+    // CLASE DE APOYO CORREGIDA (Ubicada dentro del namespace para ser encontrada)
     public class ProduccionResumen
     {
         public string Categoria { get; set; }

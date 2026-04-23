@@ -1,16 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using loginavicola.Database;
 using loginavicola.Model;
 
@@ -19,49 +8,45 @@ namespace loginavicola.View
     public partial class ManualView : Window
     {
         private ClasificacionProduccionDatabase database;
+        private string _recolectorActual;
 
-        public ManualView()
+        // Constructor modificado para recibir el nombre del usuario
+        public ManualView(string nombreUsuario)
         {
             InitializeComponent();
             database = new ClasificacionProduccionDatabase();
+            _recolectorActual = nombreUsuario;
+
+            // Configuración inicial automática
             dpFecha.SelectedDate = DateTime.Now;
+            txtRecolector.Text = _recolectorActual;
+            txtRecolector.IsReadOnly = true; // Bloquea el campo para que sea automático
         }
 
         private void btnRegistrar_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Validar recolector
-                if (string.IsNullOrWhiteSpace(txtRecolector.Text))
-                {
-                    MessageBox.Show("Por favor ingrese el nombre del recolector",
-                        "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
                 // Validar fecha
                 if (!dpFecha.SelectedDate.HasValue)
                 {
-                    MessageBox.Show("Por favor seleccione una fecha",
-                        "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Por favor seleccione una fecha", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                // Parsear cantidades
-                int jumbo = int.TryParse(txtJumbo.Text, out int j) && j >= 0 ? j : 0;
-                int aaa = int.TryParse(txtAAA.Text, out int a3) && a3 >= 0 ? a3 : 0;
-                int aa = int.TryParse(txtAA.Text, out int a2) && a2 >= 0 ? a2 : 0;
-                int a = int.TryParse(txtA.Text, out int a1) && a1 >= 0 ? a1 : 0;
-                int b = int.TryParse(txtB.Text, out int b1) && b1 >= 0 ? b1 : 0;
-                int c = int.TryParse(txtC.Text, out int c1) && c1 >= 0 ? c1 : 0;
+                // Parsear cantidades (si el campo está vacío pone 0)
+                int jumbo = int.TryParse(txtJumbo.Text, out int j) ? j : 0;
+                int aaa = int.TryParse(txtAAA.Text, out int a3) ? a3 : 0;
+                int aa = int.TryParse(txtAA.Text, out int a2) ? a2 : 0;
+                int a = int.TryParse(txtA.Text, out int a1) ? a1 : 0;
+                int b = int.TryParse(txtB.Text, out int b1) ? b1 : 0;
+                int c = int.TryParse(txtC.Text, out int c1) ? c1 : 0;
 
                 int total = jumbo + aaa + aa + a + b + c;
 
-                // Validar que haya al menos un huevo
-                if (total == 0)
+                if (total <= 0)
                 {
-                    MessageBox.Show("Debe clasificar al menos un huevo",
-                        "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Debe ingresar al menos un huevo para registrar.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -69,9 +54,9 @@ namespace loginavicola.View
                 var clasificacion = new ClasificacionProduccion
                 {
                     Fecha = dpFecha.SelectedDate.Value.Date,
-                    Hora = DateTime.Now.TimeOfDay, // HORA ACTUAL
-                    Recolector = txtRecolector.Text.Trim(),
-                    TipoClasificacion = "Manual", // TIPO: MANUAL
+                    Hora = DateTime.Now.TimeOfDay,
+                    Recolector = _recolectorActual,
+                    TipoClasificacion = "Manual",
                     Jumbo = jumbo,
                     AAA = aaa,
                     AA = aa,
@@ -79,45 +64,29 @@ namespace loginavicola.View
                     B = b,
                     C = c,
                     Total = total,
-                    Observaciones = "Clasificación manual registrada"
+                    Observaciones = "Registro Manual"
                 };
 
-                // Guardar en base de datos
+                // Guardar en Base de Datos
                 if (database.InsertarClasificacion(clasificacion))
                 {
-                    MessageBox.Show(
-                        $"✅ Clasificación Manual Registrada\n\n" +
-                        $"📅 Fecha: {clasificacion.Fecha:dd/MM/yyyy}\n" +
-                        $"🕐 Hora: {clasificacion.Hora:hh\\:mm\\:ss}\n" +
-                        $"👷 Recolector: {clasificacion.Recolector}\n\n" +
-                        $"🥚 Total: {total} huevos\n\n" +
-                        $"Jumbo: {jumbo} | AAA: {aaa} | AA: {aa}\n" +
-                        $"A: {a} | B: {b} | C: {c}",
-                        "Registro Exitoso",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                    MessageBox.Show($"✅ Registro Exitoso\nRecolector: {_recolectorActual}\nTotal: {total} huevos",
+                        "Información", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                    DialogResult = true;
-                    Close();
-                }
-                else
-                {
-                    MessageBox.Show("Error al guardar la clasificación",
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    this.DialogResult = true; // Esto avisa a la ventana principal que hubo un cambio
+                    this.Close();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private void btnCerrar_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = false;
-            Close();
+            this.DialogResult = false;
+            this.Close();
         }
     }
 }
-
