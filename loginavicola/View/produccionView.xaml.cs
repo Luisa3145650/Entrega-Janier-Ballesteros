@@ -808,7 +808,7 @@ namespace loginavicola.View
         {
             try
             {
-                var historial = database.ObtenerClasificacionesRecientes(20);
+                var historial = database.ObtenerHistorial(20);
                 dgHistorial.ItemsSource = historial;
             }
             catch (Exception ex)
