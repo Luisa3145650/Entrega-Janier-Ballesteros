@@ -176,40 +176,7 @@ namespace loginavicola.Database
             }
         }
 
-        // ── 4. RESUMEN POR CATEGORÍAS (hoy) ─────────────────────────────
-        public List<ProduccionResumen> ObtenerProduccionPorCategorias()
-        {
-            var stats = new List<ProduccionResumen>();
-            try
-            {
-                using (var connection = new SQLiteConnection(connectionString))
-                {
-                    connection.Open();
-                    string query =
-                        "SELECT SUM(Jumbo), SUM(AAA), SUM(AA), SUM(A), SUM(B), SUM(C) " +
-                        "FROM ClasificacionProduccion " +
-                        "WHERE DATE(Fecha) = DATE('now','localtime')";
 
-                    using (var command = new SQLiteCommand(query, connection))
-                    using (var reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            string[] cats = { "Jumbo", "AAA", "AA", "A", "B", "C" };
-                            for (int i = 0; i < cats.Length; i++)
-                                stats.Add(new ProduccionResumen
-                                {
-                                    Categoria = cats[i],
-                                    Cantidad = reader[i] != DBNull.Value
-                                                ? Convert.ToInt32(reader[i]) : 0
-                                });
-                        }
-                    }
-                }
-            }
-            catch { }
-            return stats;
-        }
 
         // 4. SOLUCIÓN AL ERROR 2: ObtenerProduccionPorCategorias (Para el Resumen)
         public List<ProduccionResumen> ObtenerProduccionPorCategorias()

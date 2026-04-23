@@ -823,15 +823,19 @@ namespace loginavicola.View
             }
             catch (Exception ex)
             {
-                // Si el objeto Usuario tiene una propiedad 'Nombre', la usamos. 
-                // Si no, puedes usar 'UserSession.UsuarioActual.NombreUsuario'
-                string nombreParaMostrar = UserSession.UsuarioActual.Nombres ?? "Usuario";
+                MessageBox.Show($"Error al cargar historial: {ex.Message}");
+            }
+        }
 
-                // Actualizamos el Label o TextBlock naranja
-                // Asegúrate de que el nombre del control sea 'lblNombreRecolector'
+        private void CargarDatosUsuario()
+        {
+            if (UserSession.UsuarioActual != null)
+            {
+                string nombreParaMostrar = UserSession.UsuarioActual.Nombres ?? "Usuario";
                 lblNombreRecolector.Text = nombreParaMostrar.ToUpper();
             }
         }
+
 
         // ════════════════════════════════════════════════════════════════
         //  CONVERSIÓN DE IMÁGENES
