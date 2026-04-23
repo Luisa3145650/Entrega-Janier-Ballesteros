@@ -253,7 +253,7 @@ namespace loginavicola.View
         // ════════════════════════════════════════════════════════════════
         private void ProcesarLogicaHuevo(Image<Bgr, byte> imagen)
         {
-            // ── ZONAS DE DETECCIÓN ─────────────────────────────────────
+
             Rectangle zonaHuevo = new Rectangle(80, 50, 440, 300);
 
             int posicionX = 200;
