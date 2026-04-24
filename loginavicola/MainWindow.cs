@@ -1,12 +1,13 @@
-﻿using System;
-using System.Windows;
-using System.Windows.Input;
-using System.Runtime.InteropServices;
-using System.Windows.Interop;
-using loginavicola.View;
+﻿using FontAwesome.Sharp;
 using loginavicola.Model;
+using loginavicola.View;
 using loginavicola.ViewModel;
-using FontAwesome.Sharp;
+using System;
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Interop;
 
 namespace loginavicola
 {
@@ -95,6 +96,77 @@ namespace loginavicola
         private void btnMinimize_Click(object sender, RoutedEventArgs e) => this.WindowState = WindowState.Minimized;
 
         private void btnMaximize_Click(object sender, RoutedEventArgs e) => this.WindowState = (this.WindowState == WindowState.Maximized) ? WindowState.Normal : WindowState.Maximized;
+
+        // ══════════════════════════════════════════════════
+        //  MENÚ HAMBURGUESA
+        // ══════════════════════════════════════════════════
+
+        private bool _sidebarCollapsed = false;
+
+        // Todos los TextBlock del menú agrupados para fácil control
+        private IEnumerable<TextBlock> GetMenuTexts() => new[]
+        {
+    TxtInicio, TxtLotes, TxtProduccion, TxtAlimentacion,
+    TxtDiagnostico, TxtInventario, TxtGestion, TxtReportes,
+    TxtCerrarSesion
+};
+
+        private void btnHamburger_Click(object sender, RoutedEventArgs e)
+        {
+            _sidebarCollapsed = !_sidebarCollapsed;
+
+            if (_sidebarCollapsed)
+                ColapsarMenu();
+            else
+                ExpandirMenu();
+        }
+
+        private void ColapsarMenu()
+        {
+            // Anima el ancho de la columna de 250 → 60
+            AnimarColumna(250, 60);
+
+            // Oculta textos y logo
+            foreach (var txt in GetMenuTexts())
+                txt.Visibility = Visibility.Collapsed;
+
+            PanelLogo.Visibility = Visibility.Collapsed;
+
+            // Los tooltips se muestran al hacer hover (ya configurado en XAML)
+        }
+
+        private void ExpandirMenu()
+        {
+            // Anima el ancho de la columna de 60 → 250
+            AnimarColumna(60, 250);
+
+            // Muestra textos y logo
+            foreach (var txt in GetMenuTexts())
+                txt.Visibility = Visibility.Visible;
+
+            PanelLogo.Visibility = Visibility.Visible;
+        }
+
+        private void AnimarColumna(double desde, double hasta)
+        {
+            // Usamos MaxWidth del Border del sidebar para animar suavemente
+            SidebarBorder.BeginAnimation(
+                FrameworkElement.MaxWidthProperty,
+                new System.Windows.Media.Animation.DoubleAnimation
+                {
+                    From = desde,
+                    To = hasta,
+                    Duration = new Duration(TimeSpan.FromMilliseconds(220)),
+                    EasingFunction = new System.Windows.Media.Animation.CubicEase
+                    {
+                        EasingMode = System.Windows.Media.Animation.EasingMode.EaseInOut
+                    }
+                }
+            );
+
+            // Actualiza también el ancho de la columna para que el área principal se reajuste
+            SidebarColumn.Width = new GridLength(hasta);
+        }
 
         private void btnVolverLogin_Click(object sender, RoutedEventArgs e)
         {
