@@ -30,6 +30,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
+            <!-- Menú Lateral -->
             <Border CornerRadius="10,0,0,10" Grid.Column="0">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0.7">
@@ -38,69 +39,73 @@
                     </LinearGradientBrush>
                 </Border.Background>
 
-                <StackPanel>
-                    <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,30,0,30">
-                        <Image Source="/imagenes/logo-sena.png" Height="68" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Unidad Avícola Yamboró" Foreground="White" FontSize="16" FontFamily="Arial" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                <DockPanel LastChildFill="False">
+                    <!-- Contenido superior -->
+                    <StackPanel DockPanel.Dock="Top">
+                        <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,30,0,30">
+                            <Image Source="/imagenes/logo-sena.png" Height="68" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Unidad Avícola Yamboró" Foreground="White" FontSize="16" FontFamily="Arial" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                        </StackPanel>
+
+                        <RadioButton x:Name="Btndashboar" Style="{StaticResource menuButton}" Tag="{StaticResource color1}" Click="Btndashboar_Click" IsChecked="True">
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconImage Icon="Home" Style="{StaticResource menuButtonIcon}"/>
+                                <TextBlock Text="Inicio" Style="{StaticResource menuButtonText}"/>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton x:Name="Btnlotes" Style="{StaticResource menuButton}" Tag="{StaticResource color1}" Click="Btnlotes_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconImage Icon="CheckToSlot" Style="{StaticResource menuButtonIcon}"/>
+                                <TextBlock Text="Lotes" Style="{StaticResource menuButtonText}"/>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton x:Name="BtnProduccion" Style="{StaticResource menuButton}" Tag="{StaticResource color1}" Click="BtnProduccion_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconImage Icon="Egg" Style="{StaticResource menuButtonIcon}"/>
+                                <TextBlock Text="Producción" Style="{StaticResource menuButtonText}"/>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton x:Name="Btnalimentacion" Style="{StaticResource menuButton}" Tag="{StaticResource color1}" Click="Btnalimentacion_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconImage Icon="Jar" Style="{StaticResource menuButtonIcon}"/>
+                                <TextBlock Text="Alimentación" Style="{StaticResource menuButtonText}"/>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton x:Name="Btndiagnostico" Style="{StaticResource menuButton}" Tag="{StaticResource color1}" Click="Btndiagnostico_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconImage Icon="Stethoscope" Style="{StaticResource menuButtonIcon}"/>
+                                <TextBlock Text="Diagnóstico" Style="{StaticResource menuButtonText}"/>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton x:Name="Btninventario" Style="{StaticResource menuButton}" Tag="{StaticResource color1}" Click="Btninventario_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconImage Icon="Warehouse" Style="{StaticResource menuButtonIcon}"/>
+                                <TextBlock Text="Inventario" Style="{StaticResource menuButtonText}"/>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton x:Name="Btngestion" Style="{StaticResource menuButton}" Tag="{StaticResource color1}" Click="Btngestion_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconImage Icon="User" Style="{StaticResource menuButtonIcon}"/>
+                                <TextBlock Text="Gestión de usuarios" Style="{StaticResource menuButtonText}"/>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton x:Name="Btnreportes" Style="{StaticResource menuButton}" Tag="{StaticResource color1}" Click="Btnreportes_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconImage Icon="Download" Style="{StaticResource menuButtonIcon}"/>
+                                <TextBlock Text="Exportar Datos" Style="{StaticResource menuButtonText}"/>
+                            </StackPanel>
+                        </RadioButton>
                     </StackPanel>
 
-                    <RadioButton x:Name="Btndashboar" Style="{StaticResource menuButton}" Tag="{StaticResource color1}" Click="Btndashboar_Click" IsChecked="True">
-                        <StackPanel Orientation="Horizontal">
-                            <fa:IconImage Icon="Home" Style="{StaticResource menuButtonIcon}"/>
-                            <TextBlock Text="Inicio" Style="{StaticResource menuButtonText}"/>
-                        </StackPanel>
-                    </RadioButton>
-
-                    <RadioButton x:Name="Btnlotes" Style="{StaticResource menuButton}" Tag="{StaticResource color1}" Click="Btnlotes_Click">
-                        <StackPanel Orientation="Horizontal">
-                            <fa:IconImage Icon="CheckToSlot" Style="{StaticResource menuButtonIcon}"/>
-                            <TextBlock Text="Lotes" Style="{StaticResource menuButtonText}"/>
-                        </StackPanel>
-                    </RadioButton>
-
-                    <RadioButton x:Name="BtnProduccion" Style="{StaticResource menuButton}" Tag="{StaticResource color1}" Click="BtnProduccion_Click">
-                        <StackPanel Orientation="Horizontal">
-                            <fa:IconImage Icon="Egg" Style="{StaticResource menuButtonIcon}"/>
-                            <TextBlock Text="Producción" Style="{StaticResource menuButtonText}"/>
-                        </StackPanel>
-                    </RadioButton>
-
-                    <RadioButton x:Name="Btnalimentacion" Style="{StaticResource menuButton}" Tag="{StaticResource color1}" Click="Btnalimentacion_Click">
-                        <StackPanel Orientation="Horizontal">
-                            <fa:IconImage Icon="Jar" Style="{StaticResource menuButtonIcon}"/>
-                            <TextBlock Text="Alimentación" Style="{StaticResource menuButtonText}"/>
-                        </StackPanel>
-                    </RadioButton>
-
-                    <RadioButton x:Name="Btndiagnostico" Style="{StaticResource menuButton}" Tag="{StaticResource color1}" Click="Btndiagnostico_Click">
-                        <StackPanel Orientation="Horizontal">
-                            <fa:IconImage Icon="Stethoscope" Style="{StaticResource menuButtonIcon}"/>
-                            <TextBlock Text="Diagnóstico" Style="{StaticResource menuButtonText}"/>
-                        </StackPanel>
-                    </RadioButton>
-
-                    <RadioButton x:Name="Btninventario" Style="{StaticResource menuButton}" Tag="{StaticResource color1}" Click="Btninventario_Click">
-                        <StackPanel Orientation="Horizontal">
-                            <fa:IconImage Icon="Warehouse" Style="{StaticResource menuButtonIcon}"/>
-                            <TextBlock Text="Inventario" Style="{StaticResource menuButtonText}"/>
-                        </StackPanel>
-                    </RadioButton>
-
-                    <RadioButton x:Name="Btngestion" Style="{StaticResource menuButton}" Tag="{StaticResource color1}" Click="Btngestion_Click">
-                        <StackPanel Orientation="Horizontal">
-                            <fa:IconImage Icon="User" Style="{StaticResource menuButtonIcon}"/>
-                            <TextBlock Text="Gestión de usuarios" Style="{StaticResource menuButtonText}"/>
-                        </StackPanel>
-                    </RadioButton>
-
-                    <RadioButton x:Name="Btnreportes" Style="{StaticResource menuButton}" Tag="{StaticResource color1}" Click="Btnreportes_Click">
-                        <StackPanel Orientation="Horizontal">
-                            <fa:IconImage Icon="Download" Style="{StaticResource menuButtonIcon}"/>
-                            <TextBlock Text="Exportar Datos" Style="{StaticResource menuButtonText}"/>
-                        </StackPanel>
-                    </RadioButton>
-
-                    <Border Background="#E74C3C" CornerRadius="8" Margin="15,80,15,15" Height="45">
+                    <!-- Botón Cerrar sesión fijo en la parte inferior -->
+                    <Border Background="#E74C3C" CornerRadius="8" Margin="15,0,15,15" Height="45" DockPanel.Dock="Bottom">
                         <Button x:Name="btnVolverLogin" Background="Transparent" BorderThickness="0" Click="btnVolverLogin_Click" Cursor="Hand">
                             <Button.Style>
                                 <Style TargetType="Button">
@@ -121,9 +126,10 @@
                             </StackPanel>
                         </Button>
                     </Border>
-                </StackPanel>
+                </DockPanel>
             </Border>
 
+            <!-- Contenido Principal -->
             <Border CornerRadius="0,10,10,0" Grid.Column="1" Background="#E5E5E5">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -131,6 +137,7 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
+                    <!-- Header -->
                     <Grid Grid.Row="0">
                         <Grid.Background>
                             <SolidColorBrush Color="#388E3C"/>
@@ -151,23 +158,35 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
+                            <!-- Botones de control - Versión elegante en grises -->
                             <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,10,0">
-                                <Button x:Name="btnMinimizar" Style="{StaticResource controlButton}" Tag="{StaticResource color8}" Click="btnMinimize_Click">
+                                <Button x:Name="btnMinimizar" 
+                                        Style="{StaticResource controlButton}" 
+                                        Tag="{StaticResource color8}" 
+                                        Click="btnMinimize_Click">
                                     <fa:IconImage Icon="WindowMinimize" Width="12" Style="{StaticResource controlButtonIcon}"/>
                                 </Button>
-                                <Button x:Name="btnMaximize" Style="{StaticResource controlButton}" Tag="{StaticResource color6}" Click="btnMaximize_Click">
-                                    <fa:IconImage Icon="Square" Style="{StaticResource controlButtonIcon}"/>
+
+                                <Button x:Name="btnMaximize" 
+                                        Style="{StaticResource controlButton}" 
+                                        Tag="{StaticResource color6}" 
+                                        Click="btnMaximize_Click">
+                                    <fa:IconImage Icon="Square" Width="12" Style="{StaticResource controlButtonIcon}"/>
                                 </Button>
-                                <Button x:Name="btnClose" Style="{StaticResource controlButton}" Tag="{StaticResource color4}" Click="btnClose_Click">
-                                    <fa:IconImage Icon="Xmark" Style="{StaticResource controlButtonIcon}"/>
+
+                                <Button x:Name="btnClose" 
+                                        Style="{StaticResource controlButton}" 
+                                        Tag="{StaticResource color4}" 
+                                        Click="btnClose_Click">
+                                    <fa:IconImage Icon="Xmark" Width="12" Style="{StaticResource controlButtonIcon}"/>
                                 </Button>
                             </StackPanel>
 
+                            <!-- Info Usuario -->
                             <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,35,10">
-
                                 <StackPanel VerticalAlignment="Center" Margin="0,0,15,0">
-                                    <TextBlock Text="{Binding DisplayName}" Foreground="White" FontSize="14" FontWeight="Bold" FontFamily="Segoe UI" TextAlignment="Right"/>
-                                    <TextBlock Text="{Binding DisplayRol}" Foreground="#E8F5E9" FontSize="11" FontStyle="Italic" Opacity="0.85" TextAlignment="Right" Margin="0,2,0,0"/>
+                                    <TextBlock x:Name="txtUserName" Text="{Binding DisplayName}" Foreground="White" FontSize="14" FontWeight="Bold" FontFamily="Segoe UI" TextAlignment="Right"/>
+                                    <TextBlock x:Name="txtUserRol" Text="{Binding DisplayRol}" Foreground="#E8F5E9" FontSize="11" FontStyle="Italic" Opacity="0.85" TextAlignment="Right" Margin="0,2,0,0"/>
                                 </StackPanel>
 
                                 <Grid>
@@ -179,11 +198,11 @@
                                     <Ellipse Width="12" Height="12" Fill="#4CAF50" Stroke="#388E3C" StrokeThickness="1.5"
                                              VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="0,0,0,2"/>
                                 </Grid>
-
                             </StackPanel>
                         </Grid>
                     </Grid>
 
+                    <!-- Contenido Dinámico -->
                     <ContentControl x:Name="MainContentArea" Grid.Row="1" Margin="25"/>
                 </Grid>
             </Border>

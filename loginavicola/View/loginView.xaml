@@ -130,7 +130,6 @@
                     </Button>
                 </Grid>
 
-
                 <Border Width="300"
                         Background="#4DFFFFFF"
                         CornerRadius="20"
@@ -220,7 +219,7 @@
                                 FontSize="12"
                                 FontFamily="Arial"
                                 Cursor="Hand"
-                                Margin="0,90,0,0"
+                                Margin="0,50,0,0"
                                 Click="BtnLogin_Click">
                             <Button.Style>
                                 <Style TargetType="Button">
@@ -235,10 +234,42 @@
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
                                     <Border Width="150" Height="40"
-                            CornerRadius="20"
-                            Background="{TemplateBinding Background}">
+                                            CornerRadius="20"
+                                            Background="{TemplateBinding Background}">
                                         <ContentPresenter VerticalAlignment="Center"
-                                          HorizontalAlignment="Center"/>
+                                                          HorizontalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <!-- Botón de Visitante -->
+                        <Button x:Name="btnVisitante"
+                                BorderThickness="0"
+                                Content="Entrar como visitante"
+                                Foreground="White"
+                                FontSize="12"
+                                FontFamily="Arial"
+                                Cursor="Hand"
+                                Margin="0,15,0,20"
+                                Click="BtnVisitante_Click">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="#007B00"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#005E00"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Width="150" Height="40"
+                                            CornerRadius="20"
+                                            Background="{TemplateBinding Background}">
+                                        <ContentPresenter VerticalAlignment="Center"
+                                                          HorizontalAlignment="Center"/>
                                     </Border>
                                 </ControlTemplate>
                             </Button.Template>

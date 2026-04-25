@@ -44,8 +44,20 @@ namespace loginavicola.ViewModel
         private string[] _etiquetasDias = Array.Empty<string>();
         public string[] EtiquetasDias { get => _etiquetasDias; set { _etiquetasDias = value; OnPropertyChanged(); } }
 
+        // NUEVA PROPIEDAD PARA LA GRÁFICA DE CONSUMO LINEAL
+        private ChartValues<double> _valoresConsumoAlimento;
+        public ChartValues<double> ValoresConsumoAlimento
+        {
+            get => _valoresConsumoAlimento;
+            set { _valoresConsumoAlimento = value; OnPropertyChanged(); }
+        }
+
         public homeViewModel()
         {
+            // Inicializar con valores vacíos
+            ValoresConsumoAlimento = new ChartValues<double>();
+            EtiquetasDias = new string[0];
+
             ActualizarCards();
             IniciarTimer();
         }
@@ -61,10 +73,11 @@ namespace loginavicola.ViewModel
         {
             TotalLotes = database.ObtenerTotalLotes();
             TotalAves = database.ObtenerTotalAves();
-            TotalHuevosHoy = _produccionDb.ObtenerProduccionHoy(); // Suma total del día
+            TotalHuevosHoy = _produccionDb.ObtenerProduccionHoy();
 
             CargarGraficaSalud();
             CargarGraficaProduccion();
+            CargarGraficaConsumo(); // NUEVO: Cargar gráfica de consumo
 
             var listaItems = inventarioDb.ObtenerTodosItems();
             TotalAlimento = listaItems?.Where(i => i.Categoria != null && i.Categoria.ToLower().Contains("alimento"))
@@ -108,6 +121,22 @@ namespace loginavicola.ViewModel
                 }
             }
             ProduccionCategoriaSeries = series;
+        }
+
+        // NUEVO MÉTODO: Cargar gráfica de consumo directamente en el ViewModel
+        private void CargarGraficaConsumo()
+        {
+            var consumos = ObtenerConsumosRecientes(7);
+
+            if (consumos == null || !consumos.Any())
+            {
+                ValoresConsumoAlimento = new ChartValues<double>();
+                EtiquetasDias = new string[0];
+                return;
+            }
+
+            EtiquetasDias = consumos.Select(c => c.FechaConsumo.ToString("dd/MMM")).ToArray();
+            ValoresConsumoAlimento = new ChartValues<double>(consumos.Select(c => (double)c.CantidadConsumida));
         }
 
         public List<Consumo> ObtenerConsumosRecientes(int cantidad = 7)

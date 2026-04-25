@@ -1,4 +1,5 @@
-﻿using System;
+﻿using loginavicola;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -40,7 +41,7 @@ namespace loginavicola.ViewModel
         public void LoadCurrentUserData()
         {
             // SOLUCIÓN A LA AMBIGÜEDAD: Especificamos que busque en el Namespace .Model
-            var user = loginavicola.Model.UserSession.UsuarioActual;
+            var user = loginavicola.UserSession.UsuarioActual;
 
             if (user != null)
             {
