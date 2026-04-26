@@ -1,12 +1,11 @@
 ﻿// ═══════════════════════════════════════════════════════════════════
 //  produccionView.xaml.cs  —  Clasificación automática de huevos
-//  VERSIÓN FINAL: OCR Tesseract ELIMINADO → Detección 7 segmentos + Báscula Serial (Fix CH340)
+//  VERSIÓN MEJORADA: OCR Tesseract ELIMINADO → Detección 7 segmentos
 // ═══════════════════════════════════════════════════════════════════
 
 // LIBRERÍAS DE VIDEO
 using AForge.Video;
 using AForge.Video.DirectShow;
-using System.IO.Ports;
 // LIBRERÍAS DE VISIÓN
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -21,12 +20,10 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions; // 👈 Para limpiar los datos de la báscula
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using System.Management;
 
 namespace loginavicola.View
 {
@@ -36,9 +33,6 @@ namespace loginavicola.View
         private FilterInfoCollection dispositivosVideo;
         private VideoCaptureDevice fuenteVideo;
         private bool camaraConectada = false;
-
-        private SerialPort puertoBascula;
-        private string bufferSerial = ""; // 👈 Buffer para no perder pedazos de lectura serial
 
         // ── BASE DE DATOS ────────────────────────────────────────────────
         private ClasificacionProduccionDatabase database;
@@ -72,7 +66,6 @@ namespace loginavicola.View
         {
             InitializeComponent();
             database = new ClasificacionProduccionDatabase();
-            ConectarBasculaPorCable();
             InitializeComponentEventHandlers();
             CargarCamarasUSB();
             ActualizarEstadisticas();
@@ -90,11 +83,7 @@ namespace loginavicola.View
             btnRefrescarCamaras.Click += (s, e) => { DesconectarCamaraUSB(); CargarCamarasUSB(); };
             btnCapturarFoto.Click += BtnCapturarFoto_Click;
             btnGuardar.Click += BtnGuardarClasificacionAutomatica_Click;
-            this.Unloaded += (s, e) =>
-            {
-                DesconectarCamaraUSB();
-                if (puertoBascula != null && puertoBascula.IsOpen) puertoBascula.Close(); // Asegura liberar el puerto al salir
-            };
+            this.Unloaded += (s, e) => DesconectarCamaraUSB();
         }
 
         // Busca este método en tu produccionView.xaml.cs y reemplázalo
@@ -240,8 +229,7 @@ namespace loginavicola.View
                     using (Bitmap procesado = ImageToBitmap(emguImage))
                     {
                         var bsource = ConvertBitmapToBitmapSource(procesado);
-                        Dispatcher.BeginInvoke(new Action(() =>
-                        {
+                        Dispatcher.BeginInvoke(new Action(() => {
                             if (camaraConectada) imgCamara.Source = bsource;
                         }), DispatcherPriority.Render);
                     }
@@ -258,20 +246,28 @@ namespace loginavicola.View
         // ════════════════════════════════════════════════════════════════
         private void ProcesarLogicaHuevo(Image<Bgr, byte> imagen)
         {
+<<<<<<< HEAD
 
+            // Definición de zonas
+=======
+            // ── ZONAS DE DETECCIÓN ─────────────────────────────────────
+            // Zona del huevo (verde): ajusta para centrar sobre el huevo
             Rectangle zonaHuevo = new Rectangle(80, 50, 440, 300);
 
-            int posicionX = 200;
-            int posicionY = 350;
-            int ancho = 160;
-            int alto = 70;
+            // ⚠️ ZONA DEL PESO (azul): AJUSTA ESTOS 4 VALORES hasta que
+            //    el rectángulo azul quede EXACTAMENTE sobre los números
+            int posicionX = 200;  // ← izquierda/derecha
+            int posicionY = 350;  // ← arriba/abajo
+            int ancho = 160;  // ← ancho del recuadro
+            int alto = 70;   // ← alto del recuadro
 
             Rectangle zonaPeso = new Rectangle(posicionX, posicionY, ancho, alto);
 
             try
             {
-                CvInvoke.Rectangle(imagen, zonaHuevo, new MCvScalar(0, 255, 0), 2);
-                CvInvoke.Rectangle(imagen, zonaPeso, new MCvScalar(255, 0, 0), 2);
+                // Dibujar guías visuales en pantalla
+                CvInvoke.Rectangle(imagen, zonaHuevo, new MCvScalar(0, 255, 0), 2);   // verde = huevo
+                CvInvoke.Rectangle(imagen, zonaPeso, new MCvScalar(255, 0, 0), 2);   // azul  = peso
 
                 // ── 1. LEER PESO (7 SEGMENTOS) ─────────────────────────
                 if ((DateTime.Now - ultimaDeteccion).TotalMilliseconds > 500)
@@ -283,9 +279,11 @@ namespace loginavicola.View
 
                         if (!string.IsNullOrEmpty(textoNumero))
                         {
+                            // 🔥 Limitar longitud (evita cosas como 4472)
                             if (textoNumero.Length > 4)
                                 textoNumero = textoNumero.Substring(0, 4);
 
+                            // 🔥 Corregir si viene sin punto (ej: 502 → 50.2)
                             if (!textoNumero.Contains(".") && textoNumero.Length == 3)
                                 textoNumero = textoNumero.Insert(2, ".");
 
@@ -294,6 +292,7 @@ namespace loginavicola.View
                                 System.Globalization.CultureInfo.InvariantCulture,
                                 out double pBruto))
                             {
+                                // 🔥 Corrección adicional por si sigue alto
                                 if (pBruto > 200 && pBruto < 2000)
                                     pBruto /= 10.0;
 
@@ -309,8 +308,7 @@ namespace loginavicola.View
                                             string cat = ClasificarHuevo(this.pesoGramos);
                                             RegistrarHuevoEnBD(this.pesoGramos, cat);
                                         }
-                                        Dispatcher.BeginInvoke(new Action(() =>
-                                        {
+                                        Dispatcher.BeginInvoke(new Action(() => {
                                             lblPesoReal.Text = $"{this.pesoGramos} g";
                                             lblCategoria.Text = ClasificarHuevo(this.pesoGramos);
                                         }));
@@ -320,6 +318,7 @@ namespace loginavicola.View
                         }
                         else
                         {
+                            // Sin lectura válida → limpiar para el siguiente huevo
                             if (double.TryParse(textoNumero,
                                     System.Globalization.NumberStyles.Any,
                                     System.Globalization.CultureInfo.InvariantCulture,
@@ -390,6 +389,7 @@ namespace loginavicola.View
                                 FontFace.HersheySimplex, 0.6,
                                 new MCvScalar(255, 255, 0), 2);
 
+                            // Control de registro
                             if (this.pesoGramos >= 30)
                             {
                                 if (puedeRegistrar && yaRegistrado)
@@ -425,6 +425,12 @@ namespace loginavicola.View
         // ════════════════════════════════════════════════════════════════
         //  ★★★  DETECCIÓN DE DISPLAY 7 SEGMENTOS  ★★★
         // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Toma la región de la báscula (ya en grises), la binariza,
+        /// detecta los dígitos individualmente con contornos y devuelve
+        /// el texto del peso (ej: "65.3").
+        /// </summary>
         private string LeerPeso7Segmentos(Image<Gray, byte> gris)
         {
             using (Image<Gray, byte> procesada = gris.Clone())
@@ -473,32 +479,40 @@ namespace loginavicola.View
                     System.Diagnostics.Debug.WriteLine($"[ERROR 7SEG] {ex.Message}");
                 }
 
-                return "";
+                return ""; // ← fallback final obligatorio
             }
         }
 
+        /// <summary>
+        /// Detecta cada dígito de la pantalla usando contornos (nivel PRO).
+        /// Retorna lista ordenada de izquierda a derecha.
+        /// </summary>
         private List<(Rectangle bbox, Image<Gray, byte> img)> DetectarDigitosConContornos(
             Image<Gray, byte> binarizada)
         {
             var resultados = new List<(Rectangle, Image<Gray, byte>)>();
+
             try
             {
                 using (var contornos = new VectorOfVectorOfPoint())
                 {
+                    // Clonar para no modificar la original
                     using (Image<Gray, byte> copia = binarizada.Clone())
                     {
                         CvInvoke.FindContours(copia, contornos, null,
                             RetrType.External, ChainApproxMethod.ChainApproxSimple);
                     }
 
-                    int alturaMinima = binarizada.Height / 3;
+                    int alturaMinima = binarizada.Height / 3; // Descartar ruido pequeño
 
                     for (int i = 0; i < contornos.Size; i++)
                     {
                         Rectangle bbox = CvInvoke.BoundingRectangle(contornos[i]);
 
+                        // Filtrar por tamaño: solo contornos que sean dígitos reales
                         if (bbox.Height >= alturaMinima && bbox.Width >= 5)
                         {
+                            // Asegurar que el bbox no se salga de la imagen
                             bbox = Rectangle.Intersect(bbox,
                                 new Rectangle(0, 0, binarizada.Width, binarizada.Height));
 
@@ -509,18 +523,29 @@ namespace loginavicola.View
                         }
                     }
                 }
+
+                // Ordenar de izquierda a derecha (vital para leer "65.3" correctamente)
                 resultados.Sort((a, b) => a.Item1.X.CompareTo(b.Item1.X));
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[ERROR DetectarDigitos] {ex.Message}");
             }
+
             return resultados;
         }
 
+        /// <summary>
+        /// Plan B: divide la imagen en N partes iguales y lee cada una.
+        /// Útil si los contornos fallan.
+        /// </summary>
         private string LeerPorDivision(Image<Gray, byte> binarizada)
         {
+            // ⚠️ AJUSTA este número según tu báscula:
+            // 3 → muestra "65.2"  (3 dígitos + punto implícito)
+            // 4 → muestra "65.21" (4 dígitos)
             const int NUM_DIGITOS = 3;
+
             int anchoDigito = binarizada.Width / NUM_DIGITOS;
             string resultado = "";
 
@@ -536,24 +561,48 @@ namespace loginavicola.View
                         resultado += digito.ToString();
                 }
             }
+
             return resultado;
         }
 
+        /// <summary>
+        /// Analiza los 7 segmentos de UN dígito y retorna el número (0-9).
+        /// Retorna -1 si no reconoce el patrón.
+        ///
+        ///   ─ a ─
+        ///  |     |
+        ///  f     b
+        ///  |     |
+        ///   ─ g ─
+        ///  |     |
+        ///  e     c
+        ///  |     |
+        ///   ─ d ─
+        /// </summary>
         private int DetectarDigito7Segmentos(Image<Gray, byte> img)
         {
             int w = img.Width;
             int h = img.Height;
 
-            if (w < 5 || h < 10) return -1;
+            if (w < 5 || h < 10) return -1; // imagen demasiado pequeña
 
+            // ── DEFINIR ZONAS DE CADA SEGMENTO ───────────────────────
+            // Cada Rectangle cubre el área donde debería estar ese segmento
             Rectangle[] zonas = new Rectangle[]
             {
+                // a — horizontal superior
                 new Rectangle(w/4,       0,          w/2, h/6),
+                // f — vertical superior izquierda
                 new Rectangle(0,         h/6,        w/4, h/3),
+                // b — vertical superior derecha
                 new Rectangle(3*w/4,     h/6,        w/4, h/3),
+                // g — horizontal central
                 new Rectangle(w/4,       h/2 - h/12, w/2, h/6),
+                // e — vertical inferior izquierda
                 new Rectangle(0,         h/2,        w/4, h/3),
+                // c — vertical inferior derecha
                 new Rectangle(3*w/4,     h/2,        w/4, h/3),
+                // d — horizontal inferior
                 new Rectangle(w/4,       5*h/6,      w/2, h/6)
             };
 
@@ -561,6 +610,7 @@ namespace loginavicola.View
 
             for (int i = 0; i < 7; i++)
             {
+                // Asegurar que la zona no se salga de la imagen
                 Rectangle zona = Rectangle.Intersect(zonas[i],
                     new Rectangle(0, 0, w, h));
 
@@ -573,6 +623,10 @@ namespace loginavicola.View
                 using (var roi = img.Copy(zona))
                 {
                     double promedio = CvInvoke.Mean(roi).V0;
+
+                    // ⚠️ UMBRAL: si falla ajusta entre 80 y 160
+                    // Fondo negro + dígitos blancos → promedio > 120 = segmento activo
+                    // Fondo claro + dígitos oscuros → invierte la lógica
                     encendidos[i] = promedio > 90 ? 1 : 0;
                 }
             }
@@ -580,23 +634,40 @@ namespace loginavicola.View
             return MapearSegmentos(encendidos);
         }
 
+        /// <summary>
+        /// Convierte el patrón binario de 7 segmentos al dígito correspondiente.
+        /// Orden: a, f, b, g, e, c, d
+        /// </summary>
         private int MapearSegmentos(int[] s)
         {
             string clave = string.Join("", s);
+
+            // Tabla completa de los 10 dígitos
             var mapa = new Dictionary<string, int>
             {
-                { "1111110", 0 }, { "0110000", 1 }, { "1101101", 2 },
-                { "1111001", 3 }, { "0110011", 4 }, { "1011011", 5 },
-                { "1011111", 6 }, { "1110000", 7 }, { "1111111", 8 },
+                { "1111110", 0 },
+                { "0110000", 1 },
+                { "1101101", 2 },
+                { "1111001", 3 },
+                { "0110011", 4 },
+                { "1011011", 5 },
+                { "1011111", 6 },
+                { "1110000", 7 },
+                { "1111111", 8 },
                 { "1111011", 9 }
             };
 
             if (mapa.TryGetValue(clave, out int digito))
                 return digito;
 
+            // Si no coincide exactamente, buscar el más parecido (tolerancia a errores)
             return BuscarDigitoMasCercano(s);
         }
 
+        /// <summary>
+        /// Si el patrón no coincide exactamente, busca el dígito con
+        /// menor diferencia de segmentos (tolerancia a reflejos/ruido).
+        /// </summary>
         private int BuscarDigitoMasCercano(int[] s)
         {
             var patrones = new Dictionary<string, int>
@@ -608,7 +679,7 @@ namespace loginavicola.View
             };
 
             int mejorDigito = -1;
-            int menorDiferencia = 4;
+            int menorDiferencia = 4; // Tolerancia máxima: 3 segmentos diferentes
 
             foreach (var par in patrones)
             {
@@ -622,6 +693,10 @@ namespace loginavicola.View
                     mejorDigito = par.Value;
                 }
             }
+
+            System.Diagnostics.Debug.WriteLine(
+                $"[7SEG Fuzzy] Patrón: {string.Join("", s)} → {mejorDigito} (diff={menorDiferencia})");
+
             return mejorDigito;
         }
 
@@ -636,6 +711,7 @@ namespace loginavicola.View
             var lista = bufferPesos.ToList();
             double prom = lista.Average();
 
+            // Estable si todas las lecturas están a menos de 0.8g del promedio
             if (lista.All(p => Math.Abs(p - prom) < 0.8))
                 return Math.Round(prom, 1);
 
@@ -838,6 +914,23 @@ namespace loginavicola.View
 
 
         // ════════════════════════════════════════════════════════════════
+        //  COLOR POR CATEGORÍA (para uso visual futuro)
+        // ════════════════════════════════════════════════════════════════
+        private Bgr ObtenerColorCategoria(string categoria)
+        {
+            switch (categoria)
+            {
+                case "Jumbo": return new Bgr(System.Drawing.Color.Cyan);
+                case "AAA": return new Bgr(System.Drawing.Color.Blue);
+                case "AA": return new Bgr(System.Drawing.Color.Yellow);
+                case "A": return new Bgr(System.Drawing.Color.LimeGreen);
+                case "B": return new Bgr(System.Drawing.Color.Orange);
+                case "C": return new Bgr(System.Drawing.Color.Red);
+                default: return new Bgr(System.Drawing.Color.White);
+            }
+        }
+
+        // ════════════════════════════════════════════════════════════════
         //  CONVERSIÓN DE IMÁGENES
         // ════════════════════════════════════════════════════════════════
         private Image<Bgr, byte> BitmapToImage(Bitmap bmp)
@@ -943,187 +1036,15 @@ namespace loginavicola.View
         }
 
         private void dgHistorial_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+    }
 
-
-        private string DetectarPuertoCH340()
-        {
-            // Palabras clave que usan los drivers de adaptadores USB-Serial
-            string[] palabrasClave = { "CH340", "CH341", "USB-SERIAL",
-                                "USB Serial", "Prolific", "CP210" };
-
-            try
-            {
-                using (var searcher = new System.Management.ManagementObjectSearcher(
-                    "SELECT * FROM Win32_PnPEntity WHERE Name LIKE '%(COM%'"))
-                {
-                    foreach (var obj in searcher.Get())
-                    {
-                        string nombre = obj["Name"]?.ToString() ?? "";
-
-                        bool esCH340 = palabrasClave.Any(k =>
-                            nombre.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0);
-
-                        if (esCH340)
-                        {
-                            // Extraer "COMx" del nombre del dispositivo
-                            var match = System.Text.RegularExpressions.Regex.Match(
-                                nombre, @"COM\d+");
-                            if (match.Success)
-                            {
-                                System.Diagnostics.Debug.WriteLine(
-                                    $"[Báscula] Encontrada en: {nombre} → {match.Value}");
-                                return match.Value;
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[DetectarPuerto] {ex.Message}");
-            }
-
-            // Fallback: probar puertos COM2-COM10 uno por uno
-            foreach (string puerto in SerialPort.GetPortNames().OrderBy(p => p))
-            {
-                try
-                {
-                    using (var test = new SerialPort(puerto, 9600))
-                    {
-                        test.Open();
-                        test.Close();
-                        System.Diagnostics.Debug.WriteLine($"[Báscula] Fallback COM: {puerto}");
-                        return puerto;
-                    }
-                }
-                catch { /* puerto ocupado o no existe, seguir */ }
-            }
-
-            return null; // No se encontró ningún puerto
-        }
-
-        // ════════════════════════════════════════════════════════════════
-        //  ★★★ COMUNICACIÓN SERIAL BÁSCULA (MEJORADO Y EN GRAMOS) ★★★
-        // ════════════════════════════════════════════════════════════════
-        private void ConectarBasculaPorCable()
-        {
-            // Auto-detectar el puerto CH340/USB-Serial
-            string puertoDetectado = DetectarPuertoCH340();
-
-            if (puertoDetectado == null)
-            {
-                MessageBox.Show(
-                    "No se detectó ningún adaptador USB-Serial.\n\n" +
-                    "Verifica:\n" +
-                    "• El cable USB esté conectado\n" +
-                    "• Driver CH340 instalado\n" +
-                    "• Administrador de dispositivos → Puertos (COM y LPT)",
-                    "Báscula no encontrada",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            try
-            {
-                // Cerrar puerto anterior si estaba abierto
-                if (puertoBascula != null)
-                {
-                    if (puertoBascula.IsOpen) puertoBascula.Close();
-                    puertoBascula.Dispose();
-                    puertoBascula = null;
-                }
-
-                puertoBascula = new SerialPort(puertoDetectado)
-                {
-                    BaudRate = 9600,
-                    Parity = Parity.None,
-                    DataBits = 8,
-                    StopBits = StopBits.One,
-                    Handshake = Handshake.None,
-                    DtrEnable = true,
-                    RtsEnable = true,
-                    ReadTimeout = 3000,
-                    WriteTimeout = 3000
-                };
-
-                puertoBascula.DataReceived += new SerialDataReceivedEventHandler(RecepcionDatosBascula);
-                puertoBascula.Open();
-
-                ActualizarEstado($"✅ Báscula conectada en {puertoDetectado}");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"Puerto {puertoDetectado} encontrado pero no se pudo abrir.\n\n" +
-                    $"Error: {ex.Message}\n\n" +
-                    "¿Está siendo usado por otro programa?",
-                    "Error de Báscula",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void RecepcionDatosBascula(object sender, SerialDataReceivedEventArgs e)
-        {
-            try
-            {
-                SerialPort sp = (SerialPort)sender;
-                string data = sp.ReadExisting();
-
-                // Acumulamos en el buffer para no perder pedazos de la lectura
-                bufferSerial += data;
-
-                // Revisamos si la báscula ya terminó de mandar el mensaje (detectando el salto de línea)
-                if (bufferSerial.Contains("\n") || bufferSerial.Contains("\r"))
-                {
-                    // Extraemos solo los números usando Regex (ignora letras como "kg", "ST", etc.)
-                    Match match = Regex.Match(bufferSerial, @"\d+\.\d+");
-
-
-                    if (match.Success)
-                    {
-                        if (double.TryParse(match.Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double pesoLeido))
-                        {
-                            // Lógica de Gramos: Si el peso es menor a 10, asumimos que viene en Kilos (ej: 0.065 kg)
-                            double pesoFinalEnGramos = pesoLeido;
-                            if (pesoLeido < 10 && pesoLeido > 0)
-                            {
-                                pesoFinalEnGramos = pesoLeido * 1000;
-                            }
-
-                            // Redondeamos para quitar decimales molestos
-                            pesoFinalEnGramos = Math.Round(pesoFinalEnGramos);
-
-                            // Actualizamos la interfaz (siempre usando Dispatcher para hilos externos)
-                            Dispatcher.Invoke(() =>
-                            {
-                                this.pesoGramos = pesoFinalEnGramos;
-                                lblPesoReal.Text = $"{this.pesoGramos} g";
-
-                                string categoria = ClasificarHuevo(this.pesoGramos);
-                                lblCategoria.Text = $"Categoría: {categoria}";
-                            });
-                        }
-                    }
-
-                    // Limpiamos el buffer para el siguiente peso
-                    bufferSerial = "";
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error leyendo báscula: {ex.Message}");
-                bufferSerial = ""; // Limpiar en caso de error para no atascarse
-            }
-        }
-
-        // ════════════════════════════════════════════════════════════════════
-        //  MODELO AUXILIAR
-        // ════════════════════════════════════════════════════════════════════
-        public class CamaraUSB
-        {
-            public string Nombre { get; set; }
-            public string MonikerString { get; set; }
-            public override string ToString() => Nombre;
-        }
+    // ════════════════════════════════════════════════════════════════════
+    //  MODELO AUXILIAR
+    // ════════════════════════════════════════════════════════════════════
+    public class CamaraUSB
+    {
+        public string Nombre { get; set; }
+        public string MonikerString { get; set; }
+        public override string ToString() => Nombre;
     }
 }

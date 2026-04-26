@@ -46,12 +46,12 @@ namespace loginavicola.View
 
             try
             {
-                // 🔥 AQUÍ USAMOS TU MÉTODO REAL
                 Usuario usuarioLogeado = db.ValidarLogin(usuario, clave);
 
                 if (usuarioLogeado != null)
                 {
                     UserSession.UsuarioActual = usuarioLogeado;
+                    UserSession.EsVisitante = false;
                     MessageBox.Show($"¡Bienvenido {usuarioLogeado.Nombres}!");
 
                     MainWindow main = new MainWindow();
@@ -69,6 +69,28 @@ namespace loginavicola.View
             }
         }
 
+        private void BtnVisitante_Click(object sender, RoutedEventArgs e)
+        {
+            // Crear un usuario visitante virtual
+            UserSession.UsuarioActual = new Usuario
+            {
+                IdUsuario = 0,
+                Nombres = "Visitante",
+                Username = "visitante",
+                Rol = "Visitante",
+                PermisoLotes = false,
+                PermisoProduccion = true,  // Solo producción visible
+                PermisoAlimentacion = false,
+                PermisoDiagnostico = false,
+                PermisoInventario = false
+            };
+            UserSession.EsVisitante = true;
 
+            MessageBox.Show("Bienvenido como visitante. Solo podrás ver el Dashboard y Producción.");
+
+            MainWindow main = new MainWindow();
+            main.Show();
+            this.Close();
+        }
     }
 }
