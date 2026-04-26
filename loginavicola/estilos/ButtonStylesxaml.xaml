@@ -2,7 +2,6 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp">
 
-
     <Style x:Key="menuButton" TargetType="RadioButton">
         <Setter Property="Height" Value="50"/>
         <Setter Property="Margin" Value="-5,0,0,5"/>
@@ -45,6 +44,7 @@
         <Setter Property="Height" Value="20"/>
         <Setter Property="Margin" Value="15,0,20,0"/>
     </Style>
+
     <!--MENU BOTON TEXTO-->
     <Style x:Key="menuButtonText" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/>
@@ -60,17 +60,19 @@
         </Style.Triggers>
     </Style>
 
-    <!--control bar boton-->
+    <!--control bar boton - VERSIÓN COMPACTA Y CON BUEN HOVER -->
     <Style x:Key="controlButton" TargetType="Button">
-        <!--boton normal estilo-->
-        <Setter Property="Width" Value="35"/>
+        <Setter Property="Width" Value="28"/>
+        <Setter Property="Height" Value="28"/>
+        <Setter Property="Margin" Value="4,0,4,0"/>
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource plainTextColor3}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border Background="{TemplateBinding Background}"
-                        CornerRadius="4">
+                            CornerRadius="6">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </ControlTemplate>
@@ -79,31 +81,36 @@
 
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource panelActiveColor}"/>
-                <Setter Property="Foreground" Value="{Binding Path=Tag, RelativeSource={RelativeSource Self}}"/>
+                <Setter Property="Background" Value="#33FFFFFF"/>
+                <!-- Más visible -->
+                <Setter Property="Foreground" Value="White"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="#1AFFFFFF"/>
             </Trigger>
         </Style.Triggers>
-
     </Style>
 
-    <!--BOTONICONO MENU-->
-    <Style  x:Key="controlButtonIcon" TargetType="fa:IconImage">
-        <Setter Property="Foreground" Value="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-        <Setter Property="Width" Value="9"/>
-        <Setter Property="Height" Value="9"/>
+    <!--BOTONICONO CONTROL -->
+    <Style x:Key="controlButtonIcon" TargetType="fa:IconImage">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Width" Value="11"/>
+        <Setter Property="Height" Value="11"/>
     </Style>
-    
-     <!--control bar boton-->
+
+    <!--control bar boton (alternativo)-->
     <Style x:Key="contrlButton" TargetType="Button">
-        <!--boton normal estilo-->
-        <Setter Property="Width" Value="35"/>
+        <Setter Property="Width" Value="28"/>
+        <Setter Property="Height" Value="28"/>
+        <Setter Property="Margin" Value="4,0,4,0"/>
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource plainTextColor3}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border Background="{TemplateBinding Background}"
-                        CornerRadius="4">
+                            CornerRadius="6">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </ControlTemplate>
@@ -112,23 +119,24 @@
 
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource panelActiveColor}"/>
-                <Setter Property="Foreground" Value="{Binding Path=Tag, RelativeSource={RelativeSource Self}}"/>
+                <Setter Property="Background" Value="#33FFFFFF"/>
+                <Setter Property="Foreground" Value="White"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="#1AFFFFFF"/>
             </Trigger>
         </Style.Triggers>
-
     </Style>
 
-    <!--BOTONICONO MENU-->
-    <Style  x:Key="contrlButtonIcon" TargetType="fa:IconImage">
-        <Setter Property="Foreground" Value="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-        <Setter Property="Width" Value="9"/>
-        <Setter Property="Height" Value="9"/>
+    <!--BOTONICONO CONTROL (alternativo)-->
+    <Style x:Key="contrlButtonIcon" TargetType="fa:IconImage">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Width" Value="11"/>
+        <Setter Property="Height" Value="11"/>
     </Style>
 
     <!--boton de icono-->
     <Style x:Key="iconButton" TargetType="Button">
-        <!--boton normal estilo-->
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Width" Value="25"/>
         <Setter Property="Background" Value="Transparent"/>
@@ -148,14 +156,12 @@
                 <Setter Property="Foreground" Value="{Binding Path=Tag, RelativeSource={RelativeSource Self}}"/>
             </Trigger>
         </Style.Triggers>
-
     </Style>
 
     <!--BOTONICONO MENU-->
-    <Style  x:Key="iconButtonIcon" TargetType="fa:IconImage">
+    <Style x:Key="iconButtonIcon" TargetType="fa:IconImage">
         <Setter Property="Foreground" Value="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
         <Setter Property="Width" Value="16"/>
         <Setter Property="Height" Value="16"/>
     </Style>
 </ResourceDictionary>
-    

@@ -1,8 +1,7 @@
-﻿using System;
+﻿using loginavicola;
+using System;
 using System.Windows;
 using System.Windows.Input;
-using System.Runtime.InteropServices;
-using System.Windows.Interop;
 using loginavicola.View;
 using loginavicola.Model;
 using loginavicola.ViewModel;
@@ -17,30 +16,59 @@ namespace loginavicola
             InitializeComponent();
 
             // Creamos e inicializamos el ViewModel
-            var viewModel = new loginavicola.ViewModel.MainViewModel();
+            var viewModel = new MainViewModel();
 
             // Cargamos los datos del usuario
             viewModel.LoadCurrentUserData();
 
-            // Conectamos el DataContext para que el XAML vea el Nombre y Rol
+            // Conectamos el DataContext
             this.DataContext = viewModel;
 
             MainContentArea.Content = new homeView();
 
-            // Llamamos a la lógica de permisos al abrir la ventana
+            // Actualizar textos de usuario
+            ActualizarInfoUsuario();
+
+            // Aplicar permisos
             AplicarPermisos();
+        }
+
+        private void ActualizarInfoUsuario()
+        {
+            if (UserSession.EsVisitante)
+            {
+                txtUserName.Text = "Visitante";
+                txtUserRol.Text = "Visitante";
+            }
+            else if (UserSession.UsuarioActual != null)
+            {
+                txtUserName.Text = UserSession.UsuarioActual.Nombres;
+                txtUserRol.Text = UserSession.UsuarioActual.Rol;
+            }
         }
 
         private void AplicarPermisos()
         {
-            // SOLUCIÓN AL ERROR: Especificamos que use el del Model para evitar la ambigüedad
-            var user = loginavicola.Model.UserSession.UsuarioActual;
-
-            if (user != null)
+            if (UserSession.EsVisitante)
             {
+                // Visitante: solo ve Dashboard y Producción
+                Btndashboar.Visibility = Visibility.Visible;
+                BtnProduccion.Visibility = Visibility.Visible;
+
+                Btnlotes.Visibility = Visibility.Collapsed;
+                Btnalimentacion.Visibility = Visibility.Collapsed;
+                Btndiagnostico.Visibility = Visibility.Collapsed;
+                Btninventario.Visibility = Visibility.Collapsed;
+                Btngestion.Visibility = Visibility.Collapsed;
+                Btnreportes.Visibility = Visibility.Collapsed;
+            }
+            else if (UserSession.UsuarioActual != null)
+            {
+                var user = UserSession.UsuarioActual;
+
                 Btndashboar.Visibility = Visibility.Visible;
 
-                // Regla especial: Solo el Administrador ve la Gestión de Usuarios
+                // Solo el Administrador ve la Gestión de Usuarios
                 Btngestion.Visibility = (user.Rol == "Administrador") ? Visibility.Visible : Visibility.Collapsed;
 
                 // Permisos por módulos
@@ -53,18 +81,6 @@ namespace loginavicola
             }
         }
 
-        private void pnlControlBar_MouseEnter(object sender, MouseEventArgs e)
-        {
-            this.MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
-        }
-
-        private void pnlControlBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        // Método genérico para navegar y cambiar el título/icono
         private void Navegar(object view, string titulo, IconChar icono)
         {
             MainContentArea.Content = view;
@@ -72,36 +88,104 @@ namespace loginavicola
             imgTitleIcon.Icon = icono;
         }
 
-        // Eventos Click de los botones
-        private void Btndashboar_Click(object sender, RoutedEventArgs e) => Navegar(new homeView(), "Dashboard", IconChar.Home);
+        private void Btndashboar_Click(object sender, RoutedEventArgs e)
+        {
+            Navegar(new homeView(), "Dashboard", IconChar.Home);
+        }
 
-        private void Btnlotes_Click(object sender, RoutedEventArgs e) => Navegar(new lotesView(), "Lotes", IconChar.CheckToSlot);
+        private void Btnlotes_Click(object sender, RoutedEventArgs e)
+        {
+            if (UserSession.EsVisitante)
+            {
+                MessageBox.Show("Acceso denegado. Los visitantes solo pueden ver Dashboard y Producción.", "Permiso denegado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Btndashboar.IsChecked = true;
+                return;
+            }
+            Navegar(new lotesView(), "Lotes", IconChar.CheckToSlot);
+        }
 
-        private void BtnProduccion_Click(object sender, RoutedEventArgs e) => Navegar(new produccionView(), "Producción", IconChar.Egg);
+        private void BtnProduccion_Click(object sender, RoutedEventArgs e)
+        {
+            Navegar(new produccionView(), "Producción", IconChar.Egg);
+        }
 
-        private void Btnalimentacion_Click(object sender, RoutedEventArgs e) => Navegar(new alimentacionView(), "Alimentación", IconChar.Jar);
+        private void Btnalimentacion_Click(object sender, RoutedEventArgs e)
+        {
+            if (UserSession.EsVisitante)
+            {
+                MessageBox.Show("Acceso denegado. Los visitantes solo pueden ver Dashboard y Producción.", "Permiso denegado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Btndashboar.IsChecked = true;
+                return;
+            }
+            Navegar(new alimentacionView(), "Alimentación", IconChar.Jar);
+        }
 
-        private void Btndiagnostico_Click(object sender, RoutedEventArgs e) => Navegar(new diagnosticoView(), "Diagnóstico", IconChar.Stethoscope);
+        private void Btndiagnostico_Click(object sender, RoutedEventArgs e)
+        {
+            if (UserSession.EsVisitante)
+            {
+                MessageBox.Show("Acceso denegado. Los visitantes solo pueden ver Dashboard y Producción.", "Permiso denegado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Btndashboar.IsChecked = true;
+                return;
+            }
+            Navegar(new diagnosticoView(), "Diagnóstico", IconChar.Stethoscope);
+        }
 
-        private void Btninventario_Click(object sender, RoutedEventArgs e) => Navegar(new inventarioView(), "Inventario", IconChar.Warehouse);
+        private void Btninventario_Click(object sender, RoutedEventArgs e)
+        {
+            if (UserSession.EsVisitante)
+            {
+                MessageBox.Show("Acceso denegado. Los visitantes solo pueden ver Dashboard y Producción.", "Permiso denegado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Btndashboar.IsChecked = true;
+                return;
+            }
+            Navegar(new inventarioView(), "Inventario", IconChar.Warehouse);
+        }
 
-        private void Btngestion_Click(object sender, RoutedEventArgs e) => Navegar(new gestionView(), "Gestión", IconChar.User);
+        private void Btngestion_Click(object sender, RoutedEventArgs e)
+        {
+            if (UserSession.EsVisitante || UserSession.UsuarioActual?.Rol != "Administrador")
+            {
+                MessageBox.Show("Acceso denegado. Solo administradores pueden acceder a esta sección.", "Permiso denegado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Btndashboar.IsChecked = true;
+                return;
+            }
+            Navegar(new gestionView(), "Gestión de usuarios", IconChar.User);
+        }
 
-        private void Btnreportes_Click(object sender, RoutedEventArgs e) => Navegar(new reportesView(), "Reportes", IconChar.Download);
+        private void Btnreportes_Click(object sender, RoutedEventArgs e)
+        {
+            if (UserSession.EsVisitante)
+            {
+                MessageBox.Show("Acceso denegado. Los visitantes no pueden exportar datos.", "Permiso denegado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Btndashboar.IsChecked = true;
+                return;
+            }
+            Navegar(new reportesView(), "Exportar Datos", IconChar.Download);
+        }
 
-        // Controles de ventana
-        private void btnClose_Click(object sender, RoutedEventArgs e) => Application.Current.Shutdown();
+        private void btnClose_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
 
-        private void btnMinimize_Click(object sender, RoutedEventArgs e) => this.WindowState = WindowState.Minimized;
+        private void btnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
 
-        private void btnMaximize_Click(object sender, RoutedEventArgs e) => this.WindowState = (this.WindowState == WindowState.Maximized) ? WindowState.Normal : WindowState.Maximized;
+        private void btnMaximize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = (this.WindowState == WindowState.Maximized) ? WindowState.Normal : WindowState.Maximized;
+        }
 
         private void btnVolverLogin_Click(object sender, RoutedEventArgs e)
         {
-            // Limpiamos la sesión usando la ruta completa para evitar el error de ambigüedad
-            loginavicola.Model.UserSession.UsuarioActual = null;
+            UserSession.UsuarioActual = null;
+            UserSession.EsVisitante = false;
 
-            new loginView().Show();
+            loginView login = new loginView();
+            login.Show();
             this.Close();
         }
     }
