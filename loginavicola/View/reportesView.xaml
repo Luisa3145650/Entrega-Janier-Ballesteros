@@ -10,7 +10,7 @@
 
     <UserControl.Resources>
         <Style x:Key="ReportCardStyle" TargetType="Border">
-            <Setter Property="Background" Value="#E8E8E8"/>
+            <Setter Property="Background" Value="White"/>
             <Setter Property="CornerRadius" Value="16"/>
             <Setter Property="Padding" Value="20,15"/>
             <Setter Property="Margin" Value="10"/>
