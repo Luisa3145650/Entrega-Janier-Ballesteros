@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
-using System.Linq;
 using System.Windows;
 using loginavicola.Model;
 
@@ -11,11 +10,10 @@ namespace loginavicola.Database
     public class ClasificacionProduccionDatabase
     {
         private readonly string connectionString;
-        private readonly string dbPath;
 
         public ClasificacionProduccionDatabase()
         {
-            dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sistema_avicola.db");
+            string dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sistema_avicola.db");
             connectionString = $"Data Source={dbPath};Version=3;";
             CrearTabla();
         }
@@ -55,7 +53,6 @@ namespace loginavicola.Database
             }
         }
 
-        // 1. MÉTODO PARA EL HISTORIAL (DataGrid)
         public List<ClasificacionProduccion> ObtenerHistorial(int limite = 50)
         {
             var lista = new List<ClasificacionProduccion>();
@@ -64,9 +61,7 @@ namespace loginavicola.Database
                 using (var connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
-                    string query =
-                        "SELECT * FROM ClasificacionProduccion " +
-                        "ORDER BY IdClasificacion DESC LIMIT @Limite";
+                    string query = "SELECT * FROM ClasificacionProduccion ORDER BY IdClasificacion DESC LIMIT @Limite";
 
                     using (var command = new SQLiteCommand(query, connection))
                     {
@@ -96,11 +91,10 @@ namespace loginavicola.Database
                     }
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex.Message); }
             return lista;
         }
 
-        // 2. MÉTODO PARA REGISTRO MANUAL
         public bool InsertarClasificacion(ClasificacionProduccion c)
         {
             try
@@ -108,13 +102,8 @@ namespace loginavicola.Database
                 using (var connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
-                    string query = @"
-                        INSERT INTO ClasificacionProduccion
-                        (Fecha, Hora, Recolector, TipoClasificacion,
-                         Jumbo, AAA, AA, A, B, C, Total, Observaciones)
-                        VALUES
-                        (@Fecha, @Hora, @Recolector, @Tipo,
-                         @Jumbo, @AAA, @AA, @A, @B, @C, @Total, @Obs)";
+                    string query = @"INSERT INTO ClasificacionProduccion (Fecha, Hora, Recolector, TipoClasificacion, Jumbo, AAA, AA, A, B, C, Total, Observaciones) 
+                                     VALUES (@Fecha, @Hora, @Recolector, @Tipo, @Jumbo, @AAA, @AA, @A, @B, @C, @Total, @Obs)";
 
                     using (var command = new SQLiteCommand(query, connection))
                     {
@@ -129,16 +118,15 @@ namespace loginavicola.Database
                         command.Parameters.AddWithValue("@B", c.B);
                         command.Parameters.AddWithValue("@C", c.C);
                         command.Parameters.AddWithValue("@Total", c.Total);
-                        command.Parameters.AddWithValue("@Obs", c.Observaciones);
+                        command.Parameters.AddWithValue("@Obs", c.Observaciones ?? (object)DBNull.Value);
 
                         return command.ExecuteNonQuery() > 0;
                     }
                 }
             }
-            catch { return false; }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex.Message); return false; }
         }
 
-        // 3. SOLUCIÓN AL ERROR 1: RegistrarHuevoIndividual (Para la Cámara)
         public void RegistrarHuevoIndividual(string categoria, double peso, double volumen)
         {
             try
@@ -146,14 +134,8 @@ namespace loginavicola.Database
                 using (var connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
-                    string query = @"
-                        INSERT INTO ClasificacionProduccion
-                        (Fecha, Hora, Recolector, TipoClasificacion,
-                         Jumbo, AAA, AA, A, B, C, Peso, Volumen, Total)
-                        VALUES
-                        (@Fecha, @Hora, 'Sistema Vision', 'Automatica',
-                         @Jumbo, @AAA, @AA, @A, @B, @C, @Peso, @Vol, 1)";
-
+                    string query = @"INSERT INTO ClasificacionProduccion (Fecha, Hora, Recolector, TipoClasificacion, Jumbo, AAA, AA, A, B, C, Peso, Volumen, Total) 
+                                     VALUES (@Fecha, @Hora, 'Sistema Vision', 'Automatica', @Jumbo, @AAA, @AA, @A, @B, @C, @Peso, @Vol, 1)";
 
                     using (var command = new SQLiteCommand(query, connection))
                     {
@@ -171,63 +153,9 @@ namespace loginavicola.Database
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error Vision: {ex.Message}");
-            }
-        }
-
-
-
-        // 4. SOLUCIÓN AL ERROR 2: ObtenerProduccionPorCategorias (Para el Resumen)
-        public List<ProduccionResumen> ObtenerProduccionPorCategorias()
-        {
-            var stats = new List<ProduccionResumen>();
-            try
-            {
-                using (var connection = new SQLiteConnection(connectionString))
-                {
-                    connection.Open();
-                    string query = @"SELECT SUM(Jumbo), SUM(AAA), SUM(AA), SUM(A), SUM(B), SUM(C) 
-                                     FROM ClasificacionProduccion WHERE DATE(Fecha) = DATE('now', 'localtime')";
-
-
-                    using (var command = new SQLiteCommand(query, connection))
-                    {
-
-                        command.Parameters.AddWithValue("@Fecha", DateTime.Now.ToString("yyyy-MM-dd"));
-                        command.Parameters.AddWithValue("@Hora", DateTime.Now.ToString("HH:mm:ss"));
-                        command.Parameters.AddWithValue("@Jumbo", categoria == "Jumbo" ? 1 : 0);
-                        command.Parameters.AddWithValue("@AAA", categoria == "AAA" ? 1 : 0);
-                        command.Parameters.AddWithValue("@AA", categoria == "AA" ? 1 : 0);
-                        command.Parameters.AddWithValue("@A", categoria == "A" ? 1 : 0);
-                        command.Parameters.AddWithValue("@B", categoria == "B" ? 1 : 0);
-                        command.Parameters.AddWithValue("@C", categoria == "C" ? 1 : 0);
-                        command.Parameters.AddWithValue("@Peso", peso);
-                        command.Parameters.AddWithValue("@Vol", volumen);
-                        command.ExecuteNonQuery();
-
-                        if (reader.Read())
-                        {
-                            stats.Add(new ProduccionResumen { Categoria = "Jumbo", Cantidad = reader[0] != DBNull.Value ? Convert.ToInt32(reader[0]) : 0 });
-                            stats.Add(new ProduccionResumen { Categoria = "AAA", Cantidad = reader[1] != DBNull.Value ? Convert.ToInt32(reader[1]) : 0 });
-                            stats.Add(new ProduccionResumen { Categoria = "AA", Cantidad = reader[2] != DBNull.Value ? Convert.ToInt32(reader[2]) : 0 });
-                            stats.Add(new ProduccionResumen { Categoria = "A", Cantidad = reader[3] != DBNull.Value ? Convert.ToInt32(reader[3]) : 0 });
-                            stats.Add(new ProduccionResumen { Categoria = "B", Cantidad = reader[4] != DBNull.Value ? Convert.ToInt32(reader[4]) : 0 });
-                            stats.Add(new ProduccionResumen { Categoria = "C", Cantidad = reader[5] != DBNull.Value ? Convert.ToInt32(reader[5]) : 0 });
-                        }
->>>>>>> 886cc47dd4978db9f3f1cae3cbad615e35f86466
-                    }
-                }
-            }
-
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Error Vision: {ex.Message}"); }
-
-            catch { }
-            return stats;
         }
 
-        // 4. SOLUCIÓN AL ERROR 2: ObtenerProduccionPorCategorias (Para el Resumen)
         public List<ProduccionResumen> ObtenerProduccionPorCategorias()
         {
             var stats = new List<ProduccionResumen>();
@@ -236,29 +164,30 @@ namespace loginavicola.Database
                 using (var connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
+                    // Consulta corregida para sumar las categorías del día actual
                     string query = @"SELECT SUM(Jumbo), SUM(AAA), SUM(AA), SUM(A), SUM(B), SUM(C) 
-                                     FROM ClasificacionProduccion WHERE DATE(Fecha) = DATE('now', 'localtime')";
+                                     FROM ClasificacionProduccion 
+                                     WHERE DATE(Fecha) = DATE('now', 'localtime')";
 
                     using (var command = new SQLiteCommand(query, connection))
                     using (var reader = command.ExecuteReader())
                     {
                         if (reader.Read())
                         {
-                            stats.Add(new ProduccionResumen { Categoria = "Jumbo", Cantidad = reader[0] != DBNull.Value ? Convert.ToInt32(reader[0]) : 0 });
-                            stats.Add(new ProduccionResumen { Categoria = "AAA", Cantidad = reader[1] != DBNull.Value ? Convert.ToInt32(reader[1]) : 0 });
-                            stats.Add(new ProduccionResumen { Categoria = "AA", Cantidad = reader[2] != DBNull.Value ? Convert.ToInt32(reader[2]) : 0 });
-                            stats.Add(new ProduccionResumen { Categoria = "A", Cantidad = reader[3] != DBNull.Value ? Convert.ToInt32(reader[3]) : 0 });
-                            stats.Add(new ProduccionResumen { Categoria = "B", Cantidad = reader[4] != DBNull.Value ? Convert.ToInt32(reader[4]) : 0 });
-                            stats.Add(new ProduccionResumen { Categoria = "C", Cantidad = reader[5] != DBNull.Value ? Convert.ToInt32(reader[5]) : 0 });
+                            stats.Add(new ProduccionResumen { Categoria = "Jumbo", Cantidad = reader.IsDBNull(0) ? 0 : Convert.ToInt32(reader[0]) });
+                            stats.Add(new ProduccionResumen { Categoria = "AAA", Cantidad = reader.IsDBNull(1) ? 0 : Convert.ToInt32(reader[1]) });
+                            stats.Add(new ProduccionResumen { Categoria = "AA", Cantidad = reader.IsDBNull(2) ? 0 : Convert.ToInt32(reader[2]) });
+                            stats.Add(new ProduccionResumen { Categoria = "A", Cantidad = reader.IsDBNull(3) ? 0 : Convert.ToInt32(reader[3]) });
+                            stats.Add(new ProduccionResumen { Categoria = "B", Cantidad = reader.IsDBNull(4) ? 0 : Convert.ToInt32(reader[4]) });
+                            stats.Add(new ProduccionResumen { Categoria = "C", Cantidad = reader.IsDBNull(5) ? 0 : Convert.ToInt32(reader[5]) });
                         }
                     }
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex.Message); }
             return stats;
         }
 
-        // 5. Método auxiliar para el total del día
         public int ObtenerProduccionHoy()
         {
             try
@@ -276,13 +205,6 @@ namespace loginavicola.Database
             }
             catch { return 0; }
         }
-    }
-
-    // CLASE DE APOYO CORREGIDA (Ubicada dentro del namespace para ser encontrada)
-    public class ProduccionResumen
-    {
-        public string Categoria { get; set; }
-        public int Cantidad { get; set; }
     }
 
     public class ProduccionResumen

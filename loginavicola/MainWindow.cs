@@ -7,8 +7,7 @@ using loginavicola.View;
 using loginavicola.Model;
 using loginavicola.ViewModel;
 using FontAwesome.Sharp;
-using loginavicola.ViewModel;
-using FontAwesome.Sharp;
+
 
 namespace loginavicola
 {
