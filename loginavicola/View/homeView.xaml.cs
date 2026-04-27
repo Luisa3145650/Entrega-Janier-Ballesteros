@@ -15,32 +15,67 @@ namespace loginavicola.View
         private DispatcherTimer _carruselTimer;
         private int _indiceActual = 0;
         private homeViewModel _viewModel;
+        private bool _esNavegacionManual = false;
 
         public homeView()
         {
             InitializeComponent();
             _viewModel = new homeViewModel();
             this.DataContext = _viewModel;
+
             IniciarCarrusel();
         }
 
         private void IniciarCarrusel()
         {
             _carruselTimer = new DispatcherTimer();
-            _carruselTimer.Interval = TimeSpan.FromSeconds(3); // Cambia cada 3 segundos
-            _carruselTimer.Tick += (s, e) => SiguienteTarjeta();
+            _carruselTimer.Interval = TimeSpan.FromSeconds(5);
+            _carruselTimer.Tick += (s, e) => SiguienteTarjetaAuto();
             _carruselTimer.Start();
         }
 
-        private void SiguienteTarjeta()
+        private void SiguienteTarjetaAuto()
         {
+            if (!_esNavegacionManual)
+            {
+                _indiceActual = (_indiceActual + 1) % 4;
+                MostrarTarjetaActual();
+            }
+        }
+
+        private void BtnAnterior_Click(object sender, RoutedEventArgs e)
+        {
+            _esNavegacionManual = true;
+            _indiceActual = (_indiceActual - 1 + 4) % 4;
+            MostrarTarjetaActual();
+            ReiniciarTimer();
+        }
+
+        private void BtnSiguiente_Click(object sender, RoutedEventArgs e)
+        {
+            _esNavegacionManual = true;
             _indiceActual = (_indiceActual + 1) % 4;
             MostrarTarjetaActual();
+            ReiniciarTimer();
+        }
+
+        private void ReiniciarTimer()
+        {
+            _carruselTimer.Stop();
+            _carruselTimer.Start();
+
+            DispatcherTimer timerReset = new DispatcherTimer();
+            timerReset.Interval = TimeSpan.FromSeconds(10);
+            timerReset.Tick += (s, e) => { _esNavegacionManual = false; timerReset.Stop(); };
+            timerReset.Start();
         }
 
         private void MostrarTarjetaActual()
         {
             CarruselContent.Children.Clear();
+
+            btnAnterior.Visibility = _indiceActual > 0 ? Visibility.Visible : Visibility.Collapsed;
+            btnSiguiente.Visibility = _indiceActual < 3 ? Visibility.Visible : Visibility.Visible;
 
             switch (_indiceActual)
             {
@@ -64,6 +99,8 @@ namespace loginavicola.View
         private void MostrarGraficaProduccionHuevos()
         {
             var grid = new Grid();
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
             var titulo = new TextBlock
             {
@@ -74,12 +111,8 @@ namespace loginavicola.View
                 Margin = new Thickness(0, 0, 0, 15)
             };
 
-            var chart = new CartesianChart
-            {
-                Height = 300
-            };
+            var chart = new CartesianChart { Height = 300 };
 
-            // Datos de ejemplo (puedes cambiarlos por datos reales de tu BD)
             var series = new ColumnSeries
             {
                 Title = "Huevos",
@@ -96,21 +129,14 @@ namespace loginavicola.View
             };
             chart.AxisX.Add(axisX);
 
-            var axisY = new Axis
-            {
-                FontSize = 11,
-                Title = "Cantidad de huevos"
-            };
+            var axisY = new Axis { FontSize = 11, Title = "Cantidad de huevos" };
             chart.AxisY.Add(axisY);
-
-            grid.Children.Add(titulo);
-            grid.Children.Add(chart);
 
             Grid.SetRow(titulo, 0);
             Grid.SetRow(chart, 1);
 
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            grid.Children.Add(titulo);
+            grid.Children.Add(chart);
 
             CarruselContent.Children.Add(grid);
         }
@@ -118,6 +144,8 @@ namespace loginavicola.View
         private void MostrarGraficaProduccionCategoria()
         {
             var grid = new Grid();
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
             var titulo = new TextBlock
             {
@@ -136,14 +164,11 @@ namespace loginavicola.View
                 Height = 300
             };
 
-            grid.Children.Add(titulo);
-            grid.Children.Add(chart);
-
             Grid.SetRow(titulo, 0);
             Grid.SetRow(chart, 1);
 
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            grid.Children.Add(titulo);
+            grid.Children.Add(chart);
 
             CarruselContent.Children.Add(grid);
         }
@@ -151,6 +176,8 @@ namespace loginavicola.View
         private void MostrarGraficaEstadoAves()
         {
             var grid = new Grid();
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
             var titulo = new TextBlock
             {
@@ -169,14 +196,11 @@ namespace loginavicola.View
                 Height = 300
             };
 
-            grid.Children.Add(titulo);
-            grid.Children.Add(chart);
-
             Grid.SetRow(titulo, 0);
             Grid.SetRow(chart, 1);
 
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            grid.Children.Add(titulo);
+            grid.Children.Add(chart);
 
             CarruselContent.Children.Add(grid);
         }
@@ -184,6 +208,8 @@ namespace loginavicola.View
         private void MostrarGraficaConsumoAlimento()
         {
             var grid = new Grid();
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
             var titulo = new TextBlock
             {
@@ -194,13 +220,8 @@ namespace loginavicola.View
                 Margin = new Thickness(0, 0, 0, 15)
             };
 
-            // Cargar datos reales de consumo
             var consumos = _viewModel.ObtenerConsumosRecientes(7);
-
-            var chart = new CartesianChart
-            {
-                Height = 300
-            };
+            var chart = new CartesianChart { Height = 300 };
 
             if (consumos != null && consumos.Any())
             {
@@ -217,16 +238,11 @@ namespace loginavicola.View
                 };
                 chart.Series.Add(series);
 
-                var axisX = new Axis
-                {
-                    Labels = _viewModel.EtiquetasDias,
-                    FontSize = 11
-                };
+                var axisX = new Axis { Labels = _viewModel.EtiquetasDias, FontSize = 11 };
                 chart.AxisX.Add(axisX);
             }
             else
             {
-                // Datos de ejemplo si no hay datos en la BD
                 var series = new LineSeries
                 {
                     Title = "Consumo (kg)",
@@ -238,29 +254,18 @@ namespace loginavicola.View
                 };
                 chart.Series.Add(series);
 
-                var axisX = new Axis
-                {
-                    Labels = new[] { "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom" },
-                    FontSize = 11
-                };
+                var axisX = new Axis { Labels = new[] { "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom" }, FontSize = 11 };
                 chart.AxisX.Add(axisX);
             }
 
-            var axisY = new Axis
-            {
-                FontSize = 11,
-                Title = "Kilogramos"
-            };
+            var axisY = new Axis { FontSize = 11, Title = "Kilogramos" };
             chart.AxisY.Add(axisY);
-
-            grid.Children.Add(titulo);
-            grid.Children.Add(chart);
 
             Grid.SetRow(titulo, 0);
             Grid.SetRow(chart, 1);
 
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            grid.Children.Add(titulo);
+            grid.Children.Add(chart);
 
             CarruselContent.Children.Add(grid);
         }
@@ -278,21 +283,29 @@ namespace loginavicola.View
                     indicadores[i].Background = (SolidColorBrush)new BrushConverter().ConvertFrom(colores[i]);
                 }
             }
+
+            // Configurar eventos de clic en indicadores
+            for (int i = 0; i < indicadores.Length; i++)
+            {
+                int index = i;
+                if (indicadores[i] != null)
+                {
+                    indicadores[i].MouseLeftButtonUp -= (s, e) => { };
+                    indicadores[i].MouseLeftButtonUp += (s, e) =>
+                    {
+                        _esNavegacionManual = true;
+                        _indiceActual = index;
+                        MostrarTarjetaActual();
+                        ReiniciarTimer();
+                    };
+                }
+            }
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            // Actualizar datos
             _viewModel.ActualizarCards();
-
-            // Mostrar primera tarjeta
             MostrarTarjetaActual();
-
-            // Configurar eventos de clic en indicadores
-            Indicator0.MouseLeftButtonUp += (s, args) => { _carruselTimer.Stop(); _indiceActual = 0; MostrarTarjetaActual(); _carruselTimer.Start(); };
-            Indicator1.MouseLeftButtonUp += (s, args) => { _carruselTimer.Stop(); _indiceActual = 1; MostrarTarjetaActual(); _carruselTimer.Start(); };
-            Indicator2.MouseLeftButtonUp += (s, args) => { _carruselTimer.Stop(); _indiceActual = 2; MostrarTarjetaActual(); _carruselTimer.Start(); };
-            Indicator3.MouseLeftButtonUp += (s, args) => { _carruselTimer.Stop(); _indiceActual = 3; MostrarTarjetaActual(); _carruselTimer.Start(); };
         }
     }
 }

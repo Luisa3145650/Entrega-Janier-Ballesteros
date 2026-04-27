@@ -14,7 +14,8 @@
             <Setter Property="CornerRadius" Value="15"/>
             <Setter Property="Padding" Value="25"/>
             <Setter Property="Margin" Value="8"/>
-            <Setter Property="MinHeight" Value="140"/>
+            <Setter Property="MinHeight" Value="120"/>
+            <Setter Property="MinWidth" Value="180"/>
             <Setter Property="Effect">
                 <Setter.Value>
                     <DropShadowEffect BlurRadius="20" ShadowDepth="4" 
@@ -31,204 +32,272 @@
         </Style>
 
         <Style x:Key="BigValueStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="42"/>
+            <Setter Property="FontSize" Value="36"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
 
         <Style x:Key="SubtitleStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="Opacity" Value="0.9"/>
         </Style>
-
-        <!-- Estilo para el contenedor del carrusel -->
-        <Style x:Key="CarruselCardStyle" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="CornerRadius" Value="15"/>
-            <Setter Property="Padding" Value="20"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect BlurRadius="15" ShadowDepth="2" 
-                                    Opacity="0.1" Color="#000000"/>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </UserControl.Resources>
 
+    <!-- SIN SCROLLVIEWER - Todo visible sin scroll -->
     <Grid Background="Transparent">
-        <StackPanel>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-            <!-- Tarjetas superiores de KPI (4 tarjetas de colores) -->
-            <Grid Margin="20,20,20,10">
+        <!-- Tarjetas superiores de KPI -->
+        <Grid Grid.Row="0" Margin="20,20,20,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Style="{StaticResource ColorCardStyle}">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#F39C12" Offset="0"/>
+                        <GradientStop Color="#F39C12" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid>
+                    <Border Background="#30FFFFFF" 
+                           Width="50" Height="50" CornerRadius="25"
+                           HorizontalAlignment="Right" VerticalAlignment="Top"
+                           Margin="0,-5,-5,0">
+                        <TextBlock Text="🐔" FontSize="24" 
+                                  Foreground="White"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left">
+                        <TextBlock Text="Total gallinas" 
+                                 Style="{StaticResource SubtitleStyle}"
+                                 Foreground="White"
+                                 Margin="0,0,0,5"/>
+                        <TextBlock x:Name="TotalGallinasValue" Text="{Binding TotalAves}" 
+                                 Style="{StaticResource BigValueStyle}"
+                                 Foreground="White"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="1" Style="{StaticResource ColorCardStyle}">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#17A2B8" Offset="0"/>
+                        <GradientStop Color="#17A2B8" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid>
+                    <Border Background="#30FFFFFF" 
+                           Width="50" Height="50" CornerRadius="25"
+                           HorizontalAlignment="Right" VerticalAlignment="Top"
+                           Margin="0,-5,-5,0">
+                        <TextBlock Text="🥚" FontSize="24" 
+                                  Foreground="White"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left">
+                        <TextBlock Text="Huevos hoy" 
+                                 Style="{StaticResource SubtitleStyle}"
+                                 Foreground="White"
+                                 Margin="0,0,0,5"/>
+                        <TextBlock x:Name="HuevosHoyValue" Text="{Binding TotalHuevosHoy}" 
+                                 Style="{StaticResource BigValueStyle}"
+                                 Foreground="White"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="2" Style="{StaticResource ColorCardStyle}">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#9C59B6" Offset="0"/>
+                        <GradientStop Color="#9C59B6" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid>
+                    <Border Background="#30FFFFFF" 
+                           Width="50" Height="50" CornerRadius="25"
+                           HorizontalAlignment="Right" VerticalAlignment="Top"
+                           Margin="0,-5,-5,0">
+                        <TextBlock Text="🌾" FontSize="24" 
+                                  Foreground="White"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left">
+                        <TextBlock Text="Kg alimento" 
+                                 Style="{StaticResource SubtitleStyle}"
+                                 Foreground="White"
+                                 Margin="0,0,0,5"/>
+                        <TextBlock x:Name="AlimentoValue" Text="{Binding TotalAlimento}" 
+                                 Style="{StaticResource BigValueStyle}"
+                                 Foreground="White"/>
+                        <TextBlock Text="Stock disponible" 
+                                 FontSize="9"
+                                 Foreground="White" 
+                                 Opacity="0.75"
+                                 Margin="0,3,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="3" Style="{StaticResource ColorCardStyle}">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#4CAF50" Offset="0"/>
+                        <GradientStop Color="#4CAF50" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid>
+                    <Border Background="#30FFFFFF" 
+                           Width="50" Height="50" CornerRadius="25"
+                           HorizontalAlignment="Right" VerticalAlignment="Top"
+                           Margin="0,-5,-5,0">
+                        <TextBlock Text="📦" FontSize="24" 
+                                  Foreground="White"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left">
+                        <TextBlock Text="Lotes activos" 
+                                 Style="{StaticResource SubtitleStyle}"
+                                 Foreground="White"
+                                 Margin="0,0,0,5"/>
+                        <TextBlock x:Name="LotesValue"
+                                  Text="{Binding TotalLotes}" 
+                                  Style="{StaticResource BigValueStyle}"
+                                  Foreground="White"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Carrusel de gráficas - SIN SCROLL -->
+        <Grid Grid.Row="1" Margin="20,10,20,20" Height="380">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Contenedor del carrusel con flechas -->
+            <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="45"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="45"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Tarjeta 1: Total gallinas -->
-                <Border Grid.Column="0" Style="{StaticResource ColorCardStyle}">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                            <GradientStop Color="#F39C12" Offset="0"/>
-                            <GradientStop Color="#F39C12" Offset="1"/>
-                        </LinearGradientBrush>
-                    </Border.Background>
-                    <Grid>
-                        <Border Background="#30FFFFFF" 
-                               Width="60" Height="60" CornerRadius="30"
-                               HorizontalAlignment="Right" VerticalAlignment="Top"
-                               Margin="0,-5,-5,0">
-                            <TextBlock Text="🐔" FontSize="28" 
-                                      Foreground="White"
-                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left">
-                            <TextBlock Text="Total gallinas" 
-                                     Style="{StaticResource SubtitleStyle}"
-                                     Foreground="White"
-                                     Margin="0,0,0,8"/>
-                            <TextBlock x:Name="TotalGallinasValue" Text="{Binding TotalAves}" 
-                                     Style="{StaticResource BigValueStyle}"
-                                     Foreground="White"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <!-- Tarjeta 2: Huevos hoy -->
-                <Border Grid.Column="1" Style="{StaticResource ColorCardStyle}">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                            <GradientStop Color="#17A2B8" Offset="0"/>
-                            <GradientStop Color="#17A2B8" Offset="1"/>
-                        </LinearGradientBrush>
-                    </Border.Background>
-                    <Grid>
-                        <Border Background="#30FFFFFF" 
-                               Width="60" Height="60" CornerRadius="30"
-                               HorizontalAlignment="Right" VerticalAlignment="Top"
-                               Margin="0,-5,-5,0">
-                            <TextBlock Text="🥚" FontSize="28" 
-                                      Foreground="White"
-                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left">
-                            <TextBlock Text="Huevos hoy" 
-                                     Style="{StaticResource SubtitleStyle}"
-                                     Foreground="White"
-                                     Margin="0,0,0,8"/>
-                            <TextBlock x:Name="HuevosHoyValue" Text="{Binding TotalHuevosHoy}" 
-                                     Style="{StaticResource BigValueStyle}"
-                                     Foreground="White"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <!-- Tarjeta 3: Kg alimento -->
-                <Border Grid.Column="2" Style="{StaticResource ColorCardStyle}">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                            <GradientStop Color="#9C59B6" Offset="0"/>
-                            <GradientStop Color="#9C59B6" Offset="1"/>
-                        </LinearGradientBrush>
-                    </Border.Background>
-                    <Grid>
-                        <Border Background="#30FFFFFF" 
-                               Width="60" Height="60" CornerRadius="30"
-                               HorizontalAlignment="Right" VerticalAlignment="Top"
-                               Margin="0,-5,-5,0">
-                            <TextBlock Text="🌾" FontSize="28" 
-                                      Foreground="White"
-                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left">
-                            <TextBlock Text="Kg alimento" 
-                                     Style="{StaticResource SubtitleStyle}"
-                                     Foreground="White"
-                                     Margin="0,0,0,8"/>
-                            <TextBlock x:Name="AlimentoValue" Text="{Binding TotalAlimento}" 
-                                     Style="{StaticResource BigValueStyle}"
-                                     Foreground="White"/>
-                            <TextBlock Text="Stock disponible" 
-                                     FontSize="10"
-                                     Foreground="White" 
-                                     Opacity="0.75"
-                                     Margin="0,5,0,0"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <!-- Tarjeta 4: Lotes activos -->
-                <Border Grid.Column="3" Style="{StaticResource ColorCardStyle}">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                            <GradientStop Color="#4CAF50" Offset="0"/>
-                            <GradientStop Color="#4CAF50" Offset="1"/>
-                        </LinearGradientBrush>
-                    </Border.Background>
-                    <Grid>
-                        <Border Background="#30FFFFFF" 
-                               Width="60" Height="60" CornerRadius="30"
-                               HorizontalAlignment="Right" VerticalAlignment="Top"
-                               Margin="0,-5,-5,0">
-                            <TextBlock Text="📦" FontSize="28" 
-                                      Foreground="White"
-                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left">
-                            <TextBlock Text="Lotes activos" 
-                                     Style="{StaticResource SubtitleStyle}"
-                                     Foreground="White"
-                                     Margin="0,0,0,8"/>
-                            <TextBlock x:Name="LotesValue"
-                                      Text="{Binding TotalLotes}" 
-                                      Style="{StaticResource BigValueStyle}"
-                                      Foreground="White"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-            </Grid>
-
-            <!-- Título del carrusel -->
-            <TextBlock Text="📊 Estadísticas Avícolas" 
-                       FontSize="18" 
-                       FontWeight="Bold" 
-                       Margin="25,10,0,10"
-                       Foreground="#1F2937"/>
-
-            <!-- Carrusel de gráficas -->
-            <Grid Margin="20,5,20,20" Height="420">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+                <!-- Flecha Izquierda - MISMO COLOR VERDE -->
+                <Button x:Name="btnAnterior" 
+                        Grid.Column="0"
+                        Width="45" Height="45"
+                        VerticalAlignment="Center"
+                        Cursor="Hand"
+                        Click="BtnAnterior_Click"
+                        Visibility="Collapsed">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="#10B981" CornerRadius="22.5">
+                                <TextBlock Text="◀" FontSize="20" Foreground="White" 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Button.Triggers>
+                        <EventTrigger RoutedEvent="MouseEnter">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <ColorAnimation To="#059669" Duration="0:0:0.1" 
+                                                  Storyboard.TargetProperty="Background.Color"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="MouseLeave">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <ColorAnimation To="#10B981" Duration="0:0:0.1" 
+                                                  Storyboard.TargetProperty="Background.Color"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Button.Triggers>
+                </Button>
 
                 <!-- Contenedor de la tarjeta actual -->
                 <Border x:Name="CarruselContainer" 
-                        Grid.Row="0"
-                        Style="{StaticResource CarruselCardStyle}">
+                        Grid.Column="1"
+                        Background="White" 
+                        CornerRadius="15" 
+                        Padding="20"
+                        Margin="10,0">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="15" ShadowDepth="2" 
+                                        Opacity="0.1" Color="#000000"/>
+                    </Border.Effect>
+
                     <Grid x:Name="CarruselContent">
                         <!-- El contenido cambia dinámicamente -->
                     </Grid>
                 </Border>
 
-                <!-- Indicadores de navegación -->
-                <StackPanel Grid.Row="1" 
-                            Orientation="Horizontal" 
-                            HorizontalAlignment="Center" 
-                            Margin="0,15,0,0">
-                    <Border x:Name="Indicator0" Width="30" Height="4" CornerRadius="2" 
-                            Background="#10B981" Margin="4,0" Cursor="Hand"/>
-                    <Border x:Name="Indicator1" Width="30" Height="4" CornerRadius="2" 
-                            Background="#D1D5DB" Margin="4,0" Cursor="Hand"/>
-                    <Border x:Name="Indicator2" Width="30" Height="4" CornerRadius="2" 
-                            Background="#D1D5DB" Margin="4,0" Cursor="Hand"/>
-                    <Border x:Name="Indicator3" Width="30" Height="4" CornerRadius="2" 
-                            Background="#D1D5DB" Margin="4,0" Cursor="Hand"/>
-                </StackPanel>
+                <!-- Flecha Derecha - MISMO COLOR VERDE -->
+                <Button x:Name="btnSiguiente" 
+                        Grid.Column="2"
+                        Width="45" Height="45"
+                        VerticalAlignment="Center"
+                        Cursor="Hand"
+                        Click="BtnSiguiente_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="#10B981" CornerRadius="22.5">
+                                <TextBlock Text="▶" FontSize="20" Foreground="White" 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Button.Triggers>
+                        <EventTrigger RoutedEvent="MouseEnter">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <ColorAnimation To="#059669" Duration="0:0:0.1" 
+                                                  Storyboard.TargetProperty="Background.Color"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="MouseLeave">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <ColorAnimation To="#10B981" Duration="0:0:0.1" 
+                                                  Storyboard.TargetProperty="Background.Color"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Button.Triggers>
+                </Button>
             </Grid>
 
-        </StackPanel>
+            <!-- Indicadores de página -->
+            <StackPanel Grid.Row="2" 
+                        Orientation="Horizontal" 
+                        HorizontalAlignment="Center" 
+                        Margin="0,15,0,0">
+                <Border x:Name="Indicator0" Width="30" Height="4" CornerRadius="2" 
+                        Background="#10B981" Margin="4,0" Cursor="Hand"/>
+                <Border x:Name="Indicator1" Width="30" Height="4" CornerRadius="2" 
+                        Background="#D1D5DB" Margin="4,0" Cursor="Hand"/>
+                <Border x:Name="Indicator2" Width="30" Height="4" CornerRadius="2" 
+                        Background="#D1D5DB" Margin="4,0" Cursor="Hand"/>
+                <Border x:Name="Indicator3" Width="30" Height="4" CornerRadius="2" 
+                        Background="#D1D5DB" Margin="4,0" Cursor="Hand"/>
+            </StackPanel>
+        </Grid>
+
     </Grid>
 </UserControl>

@@ -10,7 +10,7 @@
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Background="Transparent"
-        AllowsTransparency="False"
+        AllowsTransparency="True"
         MouseDown="Window_MouseDown">
 
     <Border CornerRadius="12" ClipToBounds="True">
@@ -23,9 +23,9 @@
         </Border.Background>
 
         <Border CornerRadius="12" 
-            BorderThickness="2"
-            ClipToBounds="True"
-            Opacity="0.60">
+                BorderThickness="2"
+                ClipToBounds="True"
+                Opacity="0.60">
             <Border.BorderBrush>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                     <GradientStop Color="{StaticResource winBorderColor1}"  Offset="0"/>
