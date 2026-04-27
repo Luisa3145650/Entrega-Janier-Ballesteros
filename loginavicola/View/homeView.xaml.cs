@@ -113,10 +113,17 @@ namespace loginavicola.View
 
             var chart = new CartesianChart { Height = 300 };
 
+            // Usar datos del ViewModel
+            var valoresProduccion = _viewModel.ValoresProduccionSemanal;
+            if (valoresProduccion == null || valoresProduccion.Count == 0)
+            {
+                valoresProduccion = new ChartValues<int> { 0, 0, 0, 0, 0, 0, 0 };
+            }
+
             var series = new ColumnSeries
             {
                 Title = "Huevos",
-                Values = new ChartValues<int> { 800, 850, 920, 880, 900, 870, 890 },
+                Values = valoresProduccion,
                 Fill = (SolidColorBrush)new BrushConverter().ConvertFrom("#10B981"),
                 MaxColumnWidth = 45
             };
@@ -124,7 +131,7 @@ namespace loginavicola.View
 
             var axisX = new Axis
             {
-                Labels = new[] { "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom" },
+                Labels = _viewModel.EtiquetasDiasSemana,
                 FontSize = 11
             };
             chart.AxisX.Add(axisX);
@@ -181,7 +188,7 @@ namespace loginavicola.View
 
             var titulo = new TextBlock
             {
-                Text = "🐔 Estado de salud de las aves",
+                Text = "🐔 Estado de las aves",
                 FontSize = 16,
                 FontWeight = FontWeights.Bold,
                 Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#1F2937"),
@@ -213,24 +220,24 @@ namespace loginavicola.View
 
             var titulo = new TextBlock
             {
-                Text = "🌾 Consumo de alimento (últimos 7 días)",
+                Text = "🌾 Consumo de alimento",
                 FontSize = 16,
                 FontWeight = FontWeights.Bold,
                 Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#1F2937"),
                 Margin = new Thickness(0, 0, 0, 15)
             };
 
-            var consumos = _viewModel.ObtenerConsumosRecientes(7);
             var chart = new CartesianChart { Height = 300 };
 
-            if (consumos != null && consumos.Any())
-            {
-                _viewModel.EtiquetasDias = consumos.Select(c => c.FechaConsumo.ToString("dd/MMM")).ToArray();
+            var valoresConsumo = _viewModel.ValoresConsumoAlimento;
+            var etiquetas = _viewModel.EtiquetasDias;
 
+            if (valoresConsumo != null && valoresConsumo.Any() && etiquetas != null && etiquetas.Any())
+            {
                 var series = new LineSeries
                 {
                     Title = "Consumo (kg)",
-                    Values = new ChartValues<double>(consumos.Select(c => (double)c.CantidadConsumida)),
+                    Values = valoresConsumo,
                     Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom("#9C59B6"),
                     PointGeometrySize = 8,
                     PointForeground = Brushes.White,
@@ -238,15 +245,16 @@ namespace loginavicola.View
                 };
                 chart.Series.Add(series);
 
-                var axisX = new Axis { Labels = _viewModel.EtiquetasDias, FontSize = 11 };
+                var axisX = new Axis { Labels = etiquetas, FontSize = 11 };
                 chart.AxisX.Add(axisX);
             }
             else
             {
+                // Datos de ejemplo si no hay datos reales
                 var series = new LineSeries
                 {
                     Title = "Consumo (kg)",
-                    Values = new ChartValues<double> { 120, 135, 128, 142, 138, 145, 140 },
+                    Values = new ChartValues<double> { 0, 0, 0, 0, 0, 0, 0 },
                     Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom("#9C59B6"),
                     PointGeometrySize = 8,
                     PointForeground = Brushes.White,
@@ -284,7 +292,6 @@ namespace loginavicola.View
                 }
             }
 
-            // Configurar eventos de clic en indicadores
             for (int i = 0; i < indicadores.Length; i++)
             {
                 int index = i;
