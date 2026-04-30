@@ -13,9 +13,15 @@ namespace loginavicola.ViewModel
     {
         private readonly LoteDatabase database;
 
+
+        public string RolUsuarioActual => UserSession.UsuarioActual?.Rol ?? string.Empty;
+
         public LotesViewModel()
         {
             database = new LoteDatabase();
+
+            System.Diagnostics.Debug.WriteLine($"=== ROL CARGADO: '{UserSession.UsuarioActual?.Rol}' ===");
+            System.Diagnostics.Debug.WriteLine($"=== RolUsuarioActual: '{RolUsuarioActual}' ===");
 
             LotesRegistrados = new ObservableCollection<Lote>();
 
@@ -97,13 +103,14 @@ namespace loginavicola.ViewModel
         {
             LotesRegistrados.Clear();
             var lotes = database.ObtenerTodosLosLotes();
-
             foreach (var lote in lotes)
-            {
                 LotesRegistrados.Add(lote);
-            }
 
             ActualizarEstadisticas();
+
+            // Notificar el rol después de cargar
+            OnPropertyChanged(nameof(RolUsuarioActual));
+            System.Diagnostics.Debug.WriteLine($"=== ROL EN CargarDatos: '{RolUsuarioActual}' ===");
         }
 
         private void ActualizarEstadisticas()

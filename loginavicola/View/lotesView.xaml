@@ -198,23 +198,19 @@
         <DataTemplate>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 
+                                                <!-- Botón Editar -->
                                                 <Button Content="✏️" 
-    Command="{Binding DataContext.EditarCommand, 
-              RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+    Command="{Binding DataContext.EditarCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
     CommandParameter="{Binding}" 
     Background="#E3F2FD" BorderThickness="0" Margin="2" Padding="8,4" Cursor="Hand"
-    Visibility="{Binding DataContext.RolUsuarioActual, 
-                 RelativeSource={RelativeSource AncestorType=DataGrid},
-                 Converter={StaticResource RoleConverter}}"/>
+    Visibility="{Binding RelativeSource={RelativeSource Self}, Converter={StaticResource RoleConverter}}"/>
 
+                                                <!-- Botón Eliminar -->
                                                 <Button Content="🗑️" 
-    Command="{Binding DataContext.EliminarCommand, 
-              RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+    Command="{Binding DataContext.EliminarCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
     CommandParameter="{Binding}" 
     Background="#FFEBEE" BorderThickness="0" Margin="2" Padding="8,4" Cursor="Hand"
-    Visibility="{Binding DataContext.RolUsuarioActual, 
-                 RelativeSource={RelativeSource AncestorType=DataGrid},
-                 Converter={StaticResource RoleConverter}}"/>
+    Visibility="{Binding RelativeSource={RelativeSource Self}, Converter={StaticResource RoleConverter}}"/>
 
                                             </StackPanel>
         </DataTemplate>

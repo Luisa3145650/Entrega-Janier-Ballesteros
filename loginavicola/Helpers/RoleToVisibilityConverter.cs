@@ -9,18 +9,15 @@ namespace loginavicola.Helpers
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            // Si el rol es "Administrador", devolvemos Visible. Si no, Collapsed (desaparece).
-            string userRole = value as string;
-            if (userRole == "Administrador")
-            {
-                return Visibility.Visible;
-            }
-            return Visibility.Collapsed;
+            // Lee el rol directamente de la sesión, ignora el value del binding
+            string rol = loginavicola.UserSession.UsuarioActual?.Rol ?? string.Empty;
+
+            System.Diagnostics.Debug.WriteLine($"=== CONVERTER - Rol leído: '{rol}' ===");
+
+            return rol == "Administrador" ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
     }
 }

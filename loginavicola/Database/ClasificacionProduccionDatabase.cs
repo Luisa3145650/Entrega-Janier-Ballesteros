@@ -299,4 +299,11 @@ namespace loginavicola.Database
         public string DiaSemana { get; set; }
         public int Cantidad { get; set; }
     }
+
+    // Clase auxiliar para resumen por categoría
+    public class ProduccionResumen
+    {
+        public string Categoria { get; set; }
+        public int Cantidad { get; set; }
+    }
 }

@@ -400,30 +400,33 @@
                                             <DataTemplate>
                                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                                     <Button Content="✏️"
-                                                            Command="{Binding DataContext.EditarItemCommand, 
-                                                                     RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                            CommandParameter="{Binding}"
-                                                            Background="#3498DB"
-                                                            Foreground="White"
-                                                            BorderThickness="0"
-                                                            Margin="2" 
-                                                            Padding="8,4"
-                                                            Cursor="Hand"
-                                                            Visibility="{Binding DisplayRol, Converter={StaticResource RoleConverter}}"
-                                                            ToolTip="Editar producto"
-                                                            Click="BtnEditar_Click"/>
+        Command="{Binding DataContext.EditarItemCommand, 
+                 RelativeSource={RelativeSource AncestorType=DataGrid}}"
+        CommandParameter="{Binding}"
+        Background="#3498DB"
+        Foreground="White"
+        BorderThickness="0"
+        Margin="2" 
+        Padding="8,4"
+        Cursor="Hand"
+        Visibility="{Binding RelativeSource={RelativeSource Self}, 
+                     Converter={StaticResource RoleConverter}}"
+        ToolTip="Editar producto"
+        Click="BtnEditar_Click"/>
 
                                                     <Button Content="🗑️"
-                                                            Command="{Binding DataContext.EliminarItemCommand, 
-                                                                     RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                            CommandParameter="{Binding}"
-                                                            Background="#E74C3C"
-                                                            Foreground="White"
-                                                            BorderThickness="0"
-                                                            Margin="2" 
-                                                            Padding="8,4"
-                                                            Cursor="Hand"
-                                                            ToolTip="Eliminar producto"/>
+        Command="{Binding DataContext.EliminarItemCommand, 
+                 RelativeSource={RelativeSource AncestorType=DataGrid}}"
+        CommandParameter="{Binding}"
+        Background="#E74C3C"
+        Foreground="White"
+        BorderThickness="0"
+        Margin="2" 
+        Padding="8,4"
+        Cursor="Hand"
+        Visibility="{Binding RelativeSource={RelativeSource Self}, 
+                     Converter={StaticResource RoleConverter}}"
+        ToolTip="Eliminar producto"/>
                                                 </StackPanel>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
