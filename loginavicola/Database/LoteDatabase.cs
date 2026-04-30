@@ -294,6 +294,50 @@ namespace loginavicola.Database
                 return 0;
             }
         }
+
+        // OBTENER TOTAL DE AVES EN PRODUCCIÓN (Estado = Activo)
+        public int ObtenerTotalAvesEnProduccion()
+        {
+            try
+            {
+                using (var connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+                    string query = "SELECT COALESCE(SUM(CantidadGallinas), 0) FROM Lote WHERE Estado = 'Activo'";
+
+                    using (var command = new SQLiteCommand(query, connection))
+                    {
+                        return Convert.ToInt32(command.ExecuteScalar());
+                    }
+                }
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        // OBTENER TOTAL DE AVES PENSIONADAS (Estado = Pensionado)
+        public int ObtenerTotalAvesPensionadas()
+        {
+            try
+            {
+                using (var connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+                    string query = "SELECT COALESCE(SUM(CantidadGallinas), 0) FROM Lote WHERE Estado = 'Pensionado'";
+
+                    using (var command = new SQLiteCommand(query, connection))
+                    {
+                        return Convert.ToInt32(command.ExecuteScalar());
+                    }
+                }
+            }
+            catch
+            {
+                return 0;
+            }
+        }
     }
 
 

@@ -205,11 +205,98 @@ namespace loginavicola.Database
             }
             catch { return 0; }
         }
+
+        // NUEVO MÉTODO PARA PRODUCCIÓN DE LOS ÚLTIMOS 7 DÍAS
+        public List<ProduccionDiaria> ObtenerProduccionUltimos7Dias()
+        {
+            var lista = new List<ProduccionDiaria>();
+
+            try
+            {
+                using (var connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+                    string query = @"
+                        SELECT 
+                            CAST(strftime('%w', Fecha) AS INTEGER) as DiaSemanaNum,
+                            CASE CAST(strftime('%w', Fecha) AS INTEGER)
+                                WHEN 0 THEN 'Dom'
+                                WHEN 1 THEN 'Lun'
+                                WHEN 2 THEN 'Mar'
+                                WHEN 3 THEN 'Mié'
+                                WHEN 4 THEN 'Jue'
+                                WHEN 5 THEN 'Vie'
+                                WHEN 6 THEN 'Sáb'
+                            END as DiaSemana,
+                            SUM(Total) as Cantidad
+                        FROM ClasificacionProduccion
+                        WHERE Fecha >= DATE('now', '-7 days')
+                        GROUP BY DATE(Fecha)
+                        ORDER BY DiaSemanaNum";
+
+                    using (var command = new SQLiteCommand(query, connection))
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            lista.Add(new ProduccionDiaria
+                            {
+                                DiaSemanaNum = Convert.ToInt32(reader["DiaSemanaNum"]),
+                                DiaSemana = reader["DiaSemana"].ToString(),
+                                Cantidad = Convert.ToInt32(reader["Cantidad"])
+                            });
+                        }
+                    }
+                }
+
+                // Completar los días que faltan con 0
+                var diasCompletos = new List<ProduccionDiaria>();
+                string[] nombresDias = { "Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb" };
+                for (int i = 0; i < 7; i++)
+                {
+                    var existente = lista.FirstOrDefault(l => l.DiaSemanaNum == i);
+                    if (existente != null)
+                    {
+                        diasCompletos.Add(existente);
+                    }
+                    else
+                    {
+                        diasCompletos.Add(new ProduccionDiaria
+                        {
+                            DiaSemanaNum = i,
+                            DiaSemana = nombresDias[i],
+                            Cantidad = 0
+                        });
+                    }
+                }
+
+                return diasCompletos;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error al obtener producción semanal: {ex.Message}");
+                // Retornar 7 días con ceros
+                var diasPorDefecto = new List<ProduccionDiaria>();
+                string[] nombres = { "Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb" };
+                for (int i = 0; i < 7; i++)
+                {
+                    diasPorDefecto.Add(new ProduccionDiaria
+                    {
+                        DiaSemanaNum = i,
+                        DiaSemana = nombres[i],
+                        Cantidad = 0
+                    });
+                }
+                return diasPorDefecto;
+            }
+        }
     }
 
-    public class ProduccionResumen
+    // Clase auxiliar para producción diaria
+    public class ProduccionDiaria
     {
-        public string Categoria { get; set; }
+        public int DiaSemanaNum { get; set; }
+        public string DiaSemana { get; set; }
         public int Cantidad { get; set; }
     }
 }

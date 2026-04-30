@@ -6,7 +6,6 @@ using System.Windows;
 using System.Windows.Input;
 using loginavicola.Database;
 using loginavicola.Model;
-using loginavicola.Helpers; // Agregado para usar ExcelHelper
 
 namespace loginavicola.ViewModel
 {
@@ -18,32 +17,24 @@ namespace loginavicola.ViewModel
         {
             database = new LoteDatabase();
 
-            // Inicializar colecciones
             LotesRegistrados = new ObservableCollection<Lote>();
 
+            // Estados disponibles para el ComboBox
             EstadosDisponibles = new ObservableCollection<string>
             {
-                "Excelente",
-                "Bueno",
-                "Regular",
-                "Deficiente"
+                "Activo",
+                "Pensionado"
             };
 
-            // Inicializar comandos existentes
             AbrirModalCommand = new RelayCommand(AbrirModal);
             CerrarModalCommand = new RelayCommand(CerrarModal);
             RegistrarCommand = new RelayCommand(RegistrarLote);
             EditarCommand = new RelayCommand(EditarLote);
             EliminarCommand = new RelayCommand(EliminarLote);
 
-            // Inicializar nuevo comando de exportación
-            ExportarExcelCommand = new RelayCommand(o => ExportarALotesExcel());
-
-            // Cargar datos
             CargarDatos();
         }
 
-        // Propiedades para las tarjetas
         private int _totalLotes;
         public int TotalLotes
         {
@@ -65,7 +56,6 @@ namespace loginavicola.ViewModel
             set { _totalAves = value; OnPropertyChanged(nameof(TotalAves)); }
         }
 
-        // Colecciones
         public ObservableCollection<Lote> LotesRegistrados { get; set; }
         public ObservableCollection<string> EstadosDisponibles { get; set; }
 
@@ -97,15 +87,12 @@ namespace loginavicola.ViewModel
 
         private bool _esEdicion;
 
-        // Comandos
         public ICommand AbrirModalCommand { get; }
         public ICommand CerrarModalCommand { get; }
         public ICommand RegistrarCommand { get; }
         public ICommand EditarCommand { get; }
         public ICommand EliminarCommand { get; }
-        public ICommand ExportarExcelCommand { get; } // Nuevo comando
 
-        // Métodos
         private void CargarDatos()
         {
             LotesRegistrados.Clear();
@@ -126,25 +113,10 @@ namespace loginavicola.ViewModel
             TotalAves = database.ObtenerTotalAves();
         }
 
-        // Nuevo método para la exportación
-        private void ExportarALotesExcel()
-        {
-            if (LotesRegistrados != null && LotesRegistrados.Count > 0)
-            {
-                // Exporta la lista actual (si hay filtros aplicados, solo exportará lo visible)
-                ExcelHelper.ExportarAExcel(LotesRegistrados.ToList(), "Lotes Registrados");
-            }
-            else
-            {
-                MessageBox.Show("No hay datos disponibles para exportar.", "Atención",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-
         private void AbrirModal(object parameter)
         {
             _esEdicion = false;
-            LoteActual = new Lote { FechaIncorporacion = DateTime.Now };
+            LoteActual = new Lote { FechaIncorporacion = DateTime.Now, Estado = "Activo" };
             MostrarModal = true;
         }
 
@@ -243,6 +215,13 @@ namespace loginavicola.ViewModel
                 return false;
             }
 
+            if (string.IsNullOrWhiteSpace(LoteActual.Estado))
+            {
+                MessageBox.Show("Debe seleccionar un estado", "Validación",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
             return true;
         }
 
@@ -276,7 +255,6 @@ namespace loginavicola.ViewModel
         }
     }
 
-    // Clase auxiliar para los comandos
     public class RelayCommand : ICommand
     {
         private readonly Action<object> _execute;

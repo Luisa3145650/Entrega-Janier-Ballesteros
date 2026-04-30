@@ -10,22 +10,23 @@
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Background="Transparent"
-        AllowsTransparency="False"
+        AllowsTransparency="True"
         MouseDown="Window_MouseDown">
 
     <Border CornerRadius="12" ClipToBounds="True">
+        <!-- IMAGEN: Opacidad cambiada de 0.6 a 0.9 -->
         <Border.Background>
             <ImageBrush ImageSource="/loginavicola;component/imagenes/gallinas.jpg">
                 <ImageBrush.Opacity>
-                    0.6
+                    0.9
                 </ImageBrush.Opacity>
             </ImageBrush>
         </Border.Background>
 
         <Border CornerRadius="12" 
-            BorderThickness="2"
-            ClipToBounds="True"
-            Opacity="0.60">
+                BorderThickness="2"
+                ClipToBounds="True"
+                Opacity="0.60">
             <Border.BorderBrush>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                     <GradientStop Color="{StaticResource winBorderColor1}"  Offset="0"/>
@@ -34,10 +35,11 @@
                 </LinearGradientBrush>
             </Border.BorderBrush>
 
+            <!-- CAPA NEGRA: Color cambiado de CC a E6 (más opaco) -->
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
-                    <GradientStop Color="#CC000000" Offset="0"/>
-                    <GradientStop Color="#CC000000" Offset="0.75"/>
+                    <GradientStop Color="#E6000000" Offset="0"/>
+                    <GradientStop Color="#E6000000" Offset="0.75"/>
                 </LinearGradientBrush>
             </Border.Background>
 
@@ -130,6 +132,7 @@
                     </Button>
                 </Grid>
 
+                <!-- FORMULARIO: NO SE TOCA, QUEDA IGUAL -->
                 <Border Width="300"
                         Background="#4DFFFFFF"
                         CornerRadius="20"
@@ -219,7 +222,7 @@
                                 FontSize="12"
                                 FontFamily="Arial"
                                 Cursor="Hand"
-                                Margin="0,90,0,0"
+                                Margin="0,50,0,0"
                                 Click="BtnLogin_Click">
                             <Button.Style>
                                 <Style TargetType="Button">

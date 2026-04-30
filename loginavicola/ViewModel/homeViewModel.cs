@@ -44,7 +44,7 @@ namespace loginavicola.ViewModel
         private string[] _etiquetasDias = Array.Empty<string>();
         public string[] EtiquetasDias { get => _etiquetasDias; set { _etiquetasDias = value; OnPropertyChanged(); } }
 
-        // NUEVA PROPIEDAD PARA LA GRÁFICA DE CONSUMO LINEAL
+        // PROPIEDADES PARA LA GRÁFICA DE CONSUMO
         private ChartValues<double> _valoresConsumoAlimento;
         public ChartValues<double> ValoresConsumoAlimento
         {
@@ -52,10 +52,26 @@ namespace loginavicola.ViewModel
             set { _valoresConsumoAlimento = value; OnPropertyChanged(); }
         }
 
+        // PROPIEDADES PARA LA GRÁFICA DE PRODUCCIÓN SEMANAL
+        private ChartValues<int> _valoresProduccionSemanal;
+        public ChartValues<int> ValoresProduccionSemanal
+        {
+            get => _valoresProduccionSemanal;
+            set { _valoresProduccionSemanal = value; OnPropertyChanged(); }
+        }
+
+        private string[] _etiquetasDiasSemana = new[] { "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom" };
+        public string[] EtiquetasDiasSemana
+        {
+            get => _etiquetasDiasSemana;
+            set { _etiquetasDiasSemana = value; OnPropertyChanged(); }
+        }
+
         public homeViewModel()
         {
             // Inicializar con valores vacíos
             ValoresConsumoAlimento = new ChartValues<double>();
+            ValoresProduccionSemanal = new ChartValues<int>();
             EtiquetasDias = new string[0];
 
             ActualizarCards();
@@ -77,7 +93,8 @@ namespace loginavicola.ViewModel
 
             CargarGraficaSalud();
             CargarGraficaProduccion();
-            CargarGraficaConsumo(); // NUEVO: Cargar gráfica de consumo
+            CargarGraficaConsumo();
+            CargarProduccionSemanal();
 
             var listaItems = inventarioDb.ObtenerTodosItems();
             TotalAlimento = listaItems?.Where(i => i.Categoria != null && i.Categoria.ToLower().Contains("alimento"))
@@ -86,25 +103,32 @@ namespace loginavicola.ViewModel
 
         private void CargarGraficaSalud()
         {
-            var listaDiagnosticos = diagDb.ObtenerTodosDiagnosticos();
+            // Obtener aves en producción (Estado = Activo)
+            int avesEnProduccion = database.ObtenerTotalAvesEnProduccion();
+
+            // Obtener aves que terminaron su etapa (Estado = Pensionado)
+            int avesPensionadas = database.ObtenerTotalAvesPensionadas();
+
             var series = new SeriesCollection();
-            int afectados = 0;
 
-            if (listaDiagnosticos != null)
+            // Agregar aves en producción
+            series.Add(new PieSeries
             {
-                var grupos = listaDiagnosticos.Where(d => d.Estado == "Activo")
-                    .GroupBy(d => d.Tipo)
-                    .Select(g => new { Tipo = g.Key, Cantidad = g.Sum(d => d.GallinasAfectadas) });
+                Title = "En producción",
+                Values = new ChartValues<int> { avesEnProduccion },
+                Fill = Brushes.MediumSeaGreen,
+                DataLabels = true
+            });
 
-                foreach (var g in grupos)
-                {
-                    series.Add(new PieSeries { Title = g.Tipo, Values = new ChartValues<int> { g.Cantidad }, DataLabels = true });
-                    afectados += g.Cantidad;
-                }
-            }
+            // Agregar aves pensionadas
+            series.Add(new PieSeries
+            {
+                Title = "Pensionadas",
+                Values = new ChartValues<int> { avesPensionadas },
+                Fill = Brushes.OrangeRed,
+                DataLabels = true
+            });
 
-            int sanas = Math.Max(0, TotalAves - afectados);
-            series.Add(new PieSeries { Title = "Sanas", Values = new ChartValues<int> { sanas }, Fill = Brushes.MediumSeaGreen, DataLabels = true });
             EstadoAvesSeries = series;
         }
 
@@ -123,7 +147,6 @@ namespace loginavicola.ViewModel
             ProduccionCategoriaSeries = series;
         }
 
-        // NUEVO MÉTODO: Cargar gráfica de consumo directamente en el ViewModel
         private void CargarGraficaConsumo()
         {
             var consumos = ObtenerConsumosRecientes(7);
@@ -137,6 +160,43 @@ namespace loginavicola.ViewModel
 
             EtiquetasDias = consumos.Select(c => c.FechaConsumo.ToString("dd/MMM")).ToArray();
             ValoresConsumoAlimento = new ChartValues<double>(consumos.Select(c => (double)c.CantidadConsumida));
+        }
+
+        private void CargarProduccionSemanal()
+        {
+            try
+            {
+                var produccionSemanal = _produccionDb.ObtenerProduccionUltimos7Dias();
+
+                if (produccionSemanal != null && produccionSemanal.Any())
+                {
+                    var valores = new ChartValues<int>();
+                    var etiquetas = new List<string>();
+
+                    // Ordenar por día de la semana
+                    var ordenados = produccionSemanal.OrderBy(p => p.DiaSemanaNum).ToList();
+
+                    foreach (var item in ordenados)
+                    {
+                        valores.Add(item.Cantidad);
+                        etiquetas.Add(item.DiaSemana);
+                    }
+
+                    ValoresProduccionSemanal = valores;
+                    EtiquetasDiasSemana = etiquetas.ToArray();
+                }
+                else
+                {
+                    // Datos de ejemplo si no hay datos en la BD
+                    ValoresProduccionSemanal = new ChartValues<int> { 0, 0, 0, 0, 0, 0, 0 };
+                    EtiquetasDiasSemana = new[] { "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom" };
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error al cargar producción semanal: {ex.Message}");
+                ValoresProduccionSemanal = new ChartValues<int> { 0, 0, 0, 0, 0, 0, 0 };
+            }
         }
 
         public List<Consumo> ObtenerConsumosRecientes(int cantidad = 7)

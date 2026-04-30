@@ -198,7 +198,23 @@ namespace loginavicola.View
 
         private void ProcesarLogicaHuevo(Image<Bgr, byte> imagen)
         {
-            Rectangle zonaHuevo = new Rectangle(100, 50, 400, 300);
+
+
+            // Definición de zonas
+
+            // ── ZONAS DE DETECCIÓN ─────────────────────────────────────
+            // Zona del huevo (verde): ajusta para centrar sobre el huevo
+
+            Rectangle zonaHuevo = new Rectangle(80, 50, 440, 300);
+
+            // ⚠️ ZONA DEL PESO (azul): AJUSTA ESTOS 4 VALORES hasta que
+            //    el rectángulo azul quede EXACTAMENTE sobre los números
+            int posicionX = 200;  // ← izquierda/derecha
+            int posicionY = 350;  // ← arriba/abajo
+            int ancho = 160;  // ← ancho del recuadro
+            int alto = 70;   // ← alto del recuadro
+
+            Rectangle zonaPeso = new Rectangle(posicionX, posicionY, ancho, alto);
 
             try
             {
