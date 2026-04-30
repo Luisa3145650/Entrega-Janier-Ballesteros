@@ -1,285 +1,205 @@
 ﻿<UserControl x:Class="loginavicola.View.produccionView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:loginavicola.View"
-             mc:Ignorable="d" 
-             d:DesignHeight="1000" d:DesignWidth="1200"
-             Background="Transparent">
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" d:DesignHeight="700" d:DesignWidth="1100"
+             Background="#F1F5F9">
 
     <UserControl.Resources>
-        <Style x:Key="StatCardStyle" TargetType="Border">
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="20"/>
-            <Setter Property="Margin" Value="10"/>
-            <Setter Property="Height" Value="130"/>
-            <Setter Property="Width" Value="300"/>
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Padding" Value="15" />
+            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#000000" Opacity="0.05" BlurRadius="10" ShadowDepth="2" />
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <Style x:Key="SectionCardStyle" TargetType="Border">
-            <Setter Property="Background" Value="#E8E8E8"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="20"/>
-            <Setter Property="Margin" Value="10"/>
-        </Style>
-
-        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#4CAF50"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="20,10"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Margin" Value="5"/>
+        <Style x:Key="ProButton" TargetType="Button">
+            <Setter Property="Background" Value="#39A900" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding" Value="15,8" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="6"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" 
-                                            VerticalAlignment="Center"/>
+                        <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Opacity" Value="0.9"/>
+                    <Setter Property="Background" Value="#2D8600" />
                 </Trigger>
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
-            <Setter Property="Background" Value="#FFC107"/>
-            <Setter Property="Foreground" Value="Black"/>
-        </Style>
-
-        <Style x:Key="InfoButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
-            <Setter Property="Background" Value="#17A2B8"/>
-        </Style>
-
-        <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
-            <Setter Property="Background" Value="#DC3545"/>
-        </Style>
-
-        <Style x:Key="GrayButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
-            <Setter Property="Background" Value="#6C757D"/>
-        </Style>
-
-        <Style x:Key="PurpleButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
-            <Setter Property="Background" Value="#6F42C1"/>
-        </Style>
-
-        <Style x:Key="ComboBoxStyle" TargetType="ComboBox">
-            <Setter Property="Padding" Value="8,6"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="BorderBrush" Value="#DDDDDD"/>
-            <Setter Property="BorderThickness" Value="1"/>
+        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource ProButton}">
+            <Setter Property="Background" Value="#64748B" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#475569" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <Grid Margin="30">
+    <Grid Margin="15">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="6*" />
+            <ColumnDefinition Width="4*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0" Margin="0,0,10,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Style="{StaticResource CardStyle}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ComboBox x:Name="cbCamaras" Width="200" Height="30" VerticalAlignment="Center" Margin="0,0,15,0"
+                              ToolTip="Seleccione la cámara web"/>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Button x:Name="btnConectarCamara" Content="Conectar" Style="{StaticResource ProButton}" />
+                        <Button x:Name="btnDesconectarCamara" Content="Desconectar" Style="{StaticResource SecondaryButton}" />
+                        <Button x:Name="btnRefrescarCamaras" Content="Refrescar" Style="{StaticResource SecondaryButton}" />
+                        <Button x:Name="btnCapturarFoto" Content="📸 Tomar Foto" Style="{StaticResource SecondaryButton}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Style="{StaticResource CardStyle}">
+                <Grid Background="#1E293B">
+                    <TextBlock Text="CÁMARA DESCONECTADA" Foreground="#475569" FontWeight="Bold" FontSize="20"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Image x:Name="imgCamara" Stretch="Uniform" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="2" Style="{StaticResource CardStyle}" Background="#0F172A" BorderThickness="0">
+                <TextBlock x:Name="txtEstadoCamara" Text="Esperando conexión..." 
+                           Foreground="#38BDF8" FontWeight="SemiBold" FontSize="14" HorizontalAlignment="Center"/>
+            </Border>
+        </Grid>
+
+        <Grid Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,20">
-                <Border Style="{StaticResource StatCardStyle}" Background="#F39C12">
+            <Border Grid.Row="0" Style="{StaticResource CardStyle}" BorderBrush="#39A900" BorderThickness="2,0,0,0">
+                <StackPanel>
+                    <TextBlock Text="LECTURA ACTUAL" FontSize="12" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,10"/>
+
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock x:Name="lblProduccionHoy" Text="0" FontSize="32" FontWeight="Bold" Foreground="White"/>
-                            <TextBlock Text="Producción Hoy" FontSize="12" Foreground="White" Opacity="0.9"/>
-                        </StackPanel>
-                        <Border Grid.Column="1" Background="#33FFFFFF" CornerRadius="12" Width="50" Height="50" VerticalAlignment="Center">
-                            <TextBlock Text="🥚" FontSize="28" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </Grid>
-                </Border>
-
-                <Border Style="{StaticResource StatCardStyle}" Background="#9C27B0">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="0" FontSize="32" FontWeight="Bold" Foreground="White"/>
-                            <TextBlock Text="Lotes activos" FontSize="12" Foreground="White" Opacity="0.9"/>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Peso" FontSize="14" Foreground="#94A3B8"/>
+                            <TextBlock x:Name="lblPesoReal" Text="0 g" FontSize="42" FontWeight="Black" Foreground="#0F172A"/>
                         </StackPanel>
-                        <Border Grid.Column="1" Background="#33FFFFFF" CornerRadius="12" Width="50" Height="50" VerticalAlignment="Center">
-                            <TextBlock x:Name="lblLotesActivos" Text="📦" FontSize="28" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </Grid>
-                </Border>
 
-                <Border Style="{StaticResource StatCardStyle}" Background="#17A2B8">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="0%" FontSize="32" FontWeight="Bold" Foreground="White"/>
-                            <TextBlock Text="Eficiencia" FontSize="12" Foreground="White" Opacity="0.9"/>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Categoría" FontSize="14" Foreground="#94A3B8"/>
+                            <TextBlock x:Name="lblCategoria" Text="-" FontSize="42" FontWeight="Black" Foreground="#39A900"/>
                         </StackPanel>
-                        <Border Grid.Column="1" Background="#33FFFFFF" CornerRadius="12" Width="50" Height="50" VerticalAlignment="Center">
-                            <TextBlock x:Name="lblEficiencia" Text="✓" FontSize="28" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,6"/>
-                        </Border>
                     </Grid>
-                </Border>
-            </StackPanel>
 
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="600"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+                    <Separator Margin="0,15" Background="#E2E8F0"/>
 
-                <Border Grid.Column="0" Style="{StaticResource SectionCardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="CÁMARA" FontSize="14" FontWeight="Bold" Foreground="#333" Margin="0,0,0,15"/>
-                        <TextBlock Text="Integrar" FontSize="11" Foreground="#666" Margin="0,0,0,8"/>
-
-                        <Grid Margin="0,0,0,15">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <ComboBox x:Name="cbCamaras" DisplayMemberPath="Nombre" Style="{StaticResource ComboBoxStyle}" Height="36" VerticalContentAlignment="Center" Margin="0,0,8,0"/>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <Button x:Name="btnConectarCamara" Content="▶" ToolTip="Conectar" Style="{StaticResource InfoButtonStyle}" Width="36" Height="36" Padding="0" FontSize="12" Margin="0,0,4,0"/>
-                                <Button x:Name="btnDesconectarCamara" Content="⏹" ToolTip="Desconectar" Style="{StaticResource DangerButtonStyle}" Width="36" Height="36" Padding="0" FontSize="12" Margin="0,0,4,0"/>
-                                <Button x:Name="btnRefrescarCamaras" Content="🔄" ToolTip="Buscar cámaras" Style="{StaticResource GrayButtonStyle}" Width="36" Height="36" Padding="0" FontSize="12"/>
-                            </StackPanel>
-                        </Grid>
-
-                        <Border BorderBrush="#DDDDDD" BorderThickness="1" Background="Black" Height="450" CornerRadius="8" Margin="0,0,0,10">
-                            <Grid>
-                                <Image x:Name="imgCamara" Stretch="Uniform"/>
-                                <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10">
-                                    <TextBlock x:Name="lblCategoria" Text="Categoría: --" FontSize="24" FontWeight="Bold" Foreground="Lime"/>
-                                    <TextBlock x:Name="lblPesoReal" Text="Peso: 0.0 g" FontSize="20" Foreground="White"/>
-                                    <TextBlock x:Name="lblVolumen" Text="Volumen: 0.0 cm³" FontSize="16" Foreground="#DDD"/>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-
-                        <Button x:Name="btnCapturarFoto" Content="Capturar foto" Style="{StaticResource PurpleButtonStyle}" HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="txtEstadoCamara" Text="2 cámara(s) detectada(s)" FontSize="11" Foreground="#666" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="Volumen estimado (Cámara): " FontSize="16" Foreground="#64748B" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="lblVolumen" Text="-" FontSize="16" FontWeight="Bold" Foreground="#0F172A"/>
                     </StackPanel>
-                </Border>
-
-                <StackPanel Grid.Column="1">
-                    <Border Style="{StaticResource SectionCardStyle}">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0" Text="RESUMEN DE PRODUCCIÓN" FontSize="14" FontWeight="Bold" Foreground="#333" Margin="0,0,0,15"/>
-
-                            <Border Grid.Row="1" Background="#FDF2E9" CornerRadius="8" Padding="12,8" Margin="0,0,0,15" BorderBrush="#FAD7A0" BorderThickness="1">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="👤 RECOLECTOR ASIGNADO:" FontWeight="Bold" FontSize="11" Foreground="#A04000" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="lblNombreRecolector" Text="NO IDENTIFICADO" FontWeight="Bold" FontSize="12" Foreground="#D35400" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
-
-                            <Grid Grid.Row="2">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="200"/>
-                                </Grid.ColumnDefinitions>
-
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Detalles por Categoría:" FontSize="12" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,10"/>
-                                    <StackPanel Orientation="Horizontal" Margin="0,3">
-                                        <Rectangle Width="12" Height="12" Fill="#00BCD4" Margin="0,0,10,0"/>
-                                        <TextBlock Text="Jumbo" Width="80" Foreground="#333" FontSize="11"/>
-                                        <TextBlock x:Name="lblResumenJumbo" Text="0" Foreground="#666" FontSize="11"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,3">
-                                        <Rectangle Width="12" Height="12" Fill="#2196F3" Margin="0,0,10,0"/>
-                                        <TextBlock Text="AAA" Width="80" Foreground="#333" FontSize="11"/>
-                                        <TextBlock x:Name="lblResumenAAA" Text="0" Foreground="#666" FontSize="11"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,3">
-                                        <Rectangle Width="12" Height="12" Fill="#FFC107" Margin="0,0,10,0"/>
-                                        <TextBlock Text="AA" Width="80" Foreground="#333" FontSize="11"/>
-                                        <TextBlock x:Name="lblResumenAA" Text="0" Foreground="#666" FontSize="11"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,3">
-                                        <Rectangle Width="12" Height="12" Fill="#4CAF50" Margin="0,0,10,0"/>
-                                        <TextBlock Text="A" Width="80" Foreground="#333" FontSize="11"/>
-                                        <TextBlock x:Name="lblResumenA" Text="0" Foreground="#666" FontSize="11"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,3">
-                                        <Rectangle Width="12" Height="12" Fill="#FF9800" Margin="0,0,10,0"/>
-                                        <TextBlock Text="B" Width="80" Foreground="#333" FontSize="11"/>
-                                        <TextBlock x:Name="lblResumenB" Text="0" Foreground="#666" FontSize="11"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,3">
-                                        <Rectangle Width="12" Height="12" Fill="#F44336" Margin="0,0,10,0"/>
-                                        <TextBlock Text="C" Width="80" Foreground="#333" FontSize="11"/>
-                                        <TextBlock x:Name="lblResumenC" Text="0" Foreground="#666" FontSize="11"/>
-                                    </StackPanel>
-                                </StackPanel>
-
-                                <StackPanel Grid.Column="1" Margin="20,0,0,0">
-                                    <TextBlock Text="Estadísticas:" FontSize="12" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,10"/>
-                                    <StackPanel Margin="0,5">
-                                        <TextBlock Text="Total" FontSize="11" Foreground="#666"/>
-                                        <TextBlock x:Name="lblTotalResumen" Text="0" FontSize="20" FontWeight="Bold" Foreground="#333"/>
-                                    </StackPanel>
-                                    <StackPanel Margin="0,15,0,0">
-                                        <TextBlock Text="Peso Promedio" FontSize="11" Foreground="#666"/>
-                                        <TextBlock x:Name="lblPesoPromedio" Text="0 g" FontSize="20" FontWeight="Bold" Foreground="#333"/>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Grid>
-                        </Grid>
-                    </Border>
-
-                    <Border Style="{StaticResource SectionCardStyle}">
-                        <StackPanel>
-                            <TextBlock Text="HISTORIAL RECIENTE" FontSize="14" FontWeight="Bold" Foreground="#333" Margin="0,0,0,15"/>
-                            <DataGrid x:Name="dgHistorial" AutoGenerateColumns="False" Background="Transparent" Foreground="#333" BorderBrush="#DDDDDD" BorderThickness="1" HeadersVisibility="Column" CanUserAddRows="False" IsReadOnly="True" Height="180" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F0F0F0" SelectionChanged="dgHistorial_SelectionChanged">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Fecha" Binding="{Binding Fecha, StringFormat=dd/MM/yyyy}" Width="90"/>
-                                    <DataGridTextColumn Header="Hora" Binding="{Binding Hora, StringFormat=hh\\:mm\\:ss}" Width="80"/>
-                                    <DataGridTextColumn Header="Tipo" Binding="{Binding TipoClasificacion}" Width="90"/>
-                                    <DataGridTextColumn Header="Recolector" Binding="{Binding Recolector}" Width="120"/>
-                                    <DataGridTextColumn Header="Total" Binding="{Binding Total}" Width="60"/>
-                                    <DataGridTextColumn Header="Jumbo" Binding="{Binding Jumbo}" Width="60"/>
-                                    <DataGridTextColumn Header="AAA" Binding="{Binding AAA}" Width="50"/>
-                                    <DataGridTextColumn Header="AA" Binding="{Binding AA}" Width="50"/>
-                                    <DataGridTextColumn Header="A" Binding="{Binding A}" Width="50"/>
-                                    <DataGridTextColumn Header="B" Binding="{Binding B}" Width="50"/>
-                                    <DataGridTextColumn Header="C" Binding="{Binding C}" Width="50"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </Grid>
-
-            <Border Grid.Row="2" Background="Transparent" CornerRadius="8" Padding="15" Margin="10,20,10,0">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button x:Name="btnClasificarManual" Content="Clasificación Manual" Foreground="White" Style="{StaticResource SecondaryButtonStyle}" Click="btnClasificacionManual_Click"/>
-                    <Button x:Name="btnGuardar" Content="Guardar Registro" Foreground="White" Style="{StaticResource PrimaryButtonStyle}"/>
                 </StackPanel>
             </Border>
+
+            <Border Grid.Row="1" Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <Button x:Name="btnGuardar" Content="💾 GUARDAR SESIÓN AUTOMÁTICA" Style="{StaticResource ProButton}" FontSize="14" Padding="15,12"/>
+                    <Button x:Name="btnClasificacionManual" Content="Ingresar Registro Manual" Style="{StaticResource SecondaryButton}" Click="btnClasificacionManual_Click"/>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="2" Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <TextBlock Text="RESUMEN DE PRODUCCIÓN (HOY)" FontSize="12" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,10"/>
+
+                    <UniformGrid Columns="3" Rows="2">
+                        <StackPanel Margin="5">
+                            <TextBlock Text="JUMBO" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="lblResumenJumbo" Text="0" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#8B5CF6"/>
+                        </StackPanel>
+                        <StackPanel Margin="5">
+                            <TextBlock Text="AAA" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="lblResumenAAA" Text="0" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#3B82F6"/>
+                        </StackPanel>
+                        <StackPanel Margin="5">
+                            <TextBlock Text="AA" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="lblResumenAA" Text="0" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#10B981"/>
+                        </StackPanel>
+                        <StackPanel Margin="5">
+                            <TextBlock Text="A" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="lblResumenA" Text="0" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#EAB308"/>
+                        </StackPanel>
+                        <StackPanel Margin="5">
+                            <TextBlock Text="B" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="lblResumenB" Text="0" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#F97316"/>
+                        </StackPanel>
+                        <StackPanel Margin="5">
+                            <TextBlock Text="C" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="lblResumenC" Text="0" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#EF4444"/>
+                        </StackPanel>
+                    </UniformGrid>
+
+                    <Separator Margin="0,10" Background="#E2E8F0"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="TOTAL CLASIFICADOS:" FontSize="14" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,10,0"/>
+                        <TextBlock x:Name="lblTotalResumen" Text="0" FontSize="16" FontWeight="Black" Foreground="#39A900"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="3" Style="{StaticResource CardStyle}" VerticalAlignment="Stretch">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="ÚLTIMOS REGISTROS" FontSize="12" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,10"/>
+                    <DataGrid x:Name="dgHistorial" Grid.Row="1" AutoGenerateColumns="True" HeadersVisibility="Column" 
+                              Background="White" RowBackground="White" AlternatingRowBackground="#F8FAFC"
+                              BorderBrush="#E2E8F0" HorizontalGridLinesBrush="#E2E8F0" VerticalGridLinesBrush="Transparent"
+                              IsReadOnly="True" />
+                </Grid>
+            </Border>
+
         </Grid>
-    </ScrollViewer>
+    </Grid>
 </UserControl>

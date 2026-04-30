@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using loginavicola.ViewModel;
+using loginavicola.Model; // Asegúrate de tener este using para UserSession
 
 namespace loginavicola.View
 {

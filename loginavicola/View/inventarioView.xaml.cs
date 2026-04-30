@@ -48,6 +48,13 @@ namespace loginavicola.View
 
         private void BtnEditar_Click(object sender, RoutedEventArgs e)
         {
+            // Validación para abrir el editor
+            if (!UserSession.EsAdministrador)
+            {
+                MessageBox.Show("Solo el administrador puede editar el inventario.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
             ModalOverlay.Visibility = Visibility.Visible;
         }
     }

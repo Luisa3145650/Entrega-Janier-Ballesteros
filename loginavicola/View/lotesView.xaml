@@ -4,10 +4,13 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:loginavicola.View"
+             xmlns:helpers="clr-namespace:loginavicola.Helpers"
+             xmlns:root="clr-namespace:loginavicola"
              mc:Ignorable="d" 
              d:DesignHeight="1300" d:DesignWidth="800">
 
     <UserControl.Resources>
+        <helpers:RoleToVisibilityConverter x:Key="RoleConverter"/>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <Style x:Key="StatCardStyle" TargetType="Border">
             <Setter Property="CornerRadius" Value="12"/>
@@ -226,15 +229,32 @@
                                 <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="100"/>
                                 <DataGridTextColumn Header="Observaciones" Binding="{Binding Observaciones}" Width="*"/>
                                 <DataGridTemplateColumn Header="Acciones" Width="120">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                <Button Content="✏️" Command="{Binding DataContext.EditarCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}" Background="#E3F2FD" BorderThickness="0" Margin="2" Padding="8,4" Cursor="Hand"/>
-                                                <Button Content="🗑️" Command="{Binding DataContext.EliminarCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}" Background="#FFEBEE" BorderThickness="0" Margin="2" Padding="8,4" Cursor="Hand"/>
+    <DataGridTemplateColumn.CellTemplate>
+        <DataTemplate>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+
+                                                <Button Content="✏️" 
+    Command="{Binding DataContext.EditarCommand, 
+              RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+    CommandParameter="{Binding}" 
+    Background="#E3F2FD" BorderThickness="0" Margin="2" Padding="8,4" Cursor="Hand"
+    Visibility="{Binding DataContext.RolUsuarioActual, 
+                 RelativeSource={RelativeSource AncestorType=DataGrid},
+                 Converter={StaticResource RoleConverter}}"/>
+
+                                                <Button Content="🗑️" 
+    Command="{Binding DataContext.EliminarCommand, 
+              RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+    CommandParameter="{Binding}" 
+    Background="#FFEBEE" BorderThickness="0" Margin="2" Padding="8,4" Cursor="Hand"
+    Visibility="{Binding DataContext.RolUsuarioActual, 
+                 RelativeSource={RelativeSource AncestorType=DataGrid},
+                 Converter={StaticResource RoleConverter}}"/>
+
                                             </StackPanel>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
+        </DataTemplate>
+    </DataGridTemplateColumn.CellTemplate>
+</DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>

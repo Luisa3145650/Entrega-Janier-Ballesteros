@@ -3,12 +3,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:helpers="clr-namespace:loginavicola.Helpers"
              xmlns:local="clr-namespace:loginavicola.View"
              mc:Ignorable="d" 
              d:DesignHeight="1000" d:DesignWidth="1000"
-             Background="Transparent">
+             Background="Transparent"
+             >
 
     <UserControl.Resources>
+
+        <helpers:RoleToVisibilityConverter x:Key="RoleConverter"/>
         <!-- Estilos para las tarjetas de estadísticas -->
         <Style x:Key="StatCardStyle" TargetType="Border">
             <Setter Property="CornerRadius" Value="15"/>
@@ -405,6 +409,7 @@
                                                             Margin="2" 
                                                             Padding="8,4"
                                                             Cursor="Hand"
+                                                            Visibility="{Binding DisplayRol, Converter={StaticResource RoleConverter}}"
                                                             ToolTip="Editar producto"
                                                             Click="BtnEditar_Click"/>
 
