@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -7,12 +8,20 @@ using loginavicola.View;
 using loginavicola.Model;
 using loginavicola.ViewModel;
 using FontAwesome.Sharp;
-
+// ══════════════════════════════════════════════════
+// NUEVAS DIRECTIVAS PARA CONECTAR LA API DE PYTHON
+// ══════════════════════════════════════════════════
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace loginavicola
 {
     public partial class MainWindow : Window
     {
+        // Instancia única de HttpClient para evitar agotar sockets de red
+        private static readonly HttpClient client = new HttpClient();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -33,6 +42,60 @@ namespace loginavicola
 
             // Aplicar permisos
             AplicarPermisos();
+
+            // ══════════════════════════════════════════════════
+            // ESCUCHAR TECLADO PARA LA API
+            // ══════════════════════════════════════════════════
+            this.KeyDown += MainWindow_KeyDown;
+        }
+
+        // ══════════════════════════════════════════════════
+        // EVENTO DEL TECLADO (BARRA ESPACIADORA)
+        // ══════════════════════════════════════════════════
+        private async void MainWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Space)
+            {
+                // Solo ejecutamos la consulta si la vista actual es la de Producción
+                if (MainContentArea.Content is produccionView vistaProduccion)
+                {
+                    await ConsultarHardwarePython(vistaProduccion);
+                }
+            }
+        }
+
+        // ══════════════════════════════════════════════════
+        // CONSUMO DE LA API DE VISIÓN ARTIFICIAL Y BÁSCULA
+        // ══════════════════════════════════════════════════
+        private async Task ConsultarHardwarePython(produccionView vistaActiva)
+        {
+            string url = "http://localhost:5001/datos-huevo";
+
+            try
+            {
+                HttpResponseMessage response = await client.GetAsync(url);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string jsonResponse = await response.Content.ReadAsStringAsync();
+
+                    var opciones = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    DatosHuevo datos = JsonSerializer.Deserialize<DatosHuevo>(jsonResponse, opciones);
+
+                    // Asignamos las lecturas reales a los TextBlocks de produccionView
+                    vistaActiva.lblPesoReal.Text = $"{datos.Peso} g";
+                    vistaActiva.lblCategoria.Text = datos.Categoria;
+                    vistaActiva.lblVolumen.Text = $"{datos.Volumen_Real:F2} cm³";
+                }
+                else
+                {
+                    MessageBox.Show("El servidor de visión artificial devolvió un error de procesamiento.", "Error API", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"No se pudo conectar con el hardware (Python local caído): {ex.Message}", "Error de Comunicación", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void ActualizarInfoUsuario()
@@ -187,13 +250,12 @@ namespace loginavicola
 
         private bool _sidebarCollapsed = false;
 
-        // Todos los TextBlock del menú agrupados para fácil control
         private IEnumerable<TextBlock> GetMenuTexts() => new[]
         {
-    TxtInicio, TxtLotes, TxtProduccion, TxtAlimentacion,
-    TxtDiagnostico, TxtInventario, TxtGestion, TxtReportes,
-    TxtCerrarSesion
-};
+            TxtInicio, TxtLotes, TxtProduccion, TxtAlimentacion,
+            TxtDiagnostico, TxtInventario, TxtGestion, TxtReportes,
+            TxtCerrarSesion
+        };
 
         private void btnHamburger_Click(object sender, RoutedEventArgs e)
         {
@@ -207,24 +269,18 @@ namespace loginavicola
 
         private void ColapsarMenu()
         {
-            // Anima el ancho de la columna de 250 → 60
             AnimarColumna(250, 60);
 
-            // Oculta textos y logo
             foreach (var txt in GetMenuTexts())
                 txt.Visibility = Visibility.Collapsed;
 
             PanelLogo.Visibility = Visibility.Collapsed;
-
-            // Los tooltips se muestran al hacer hover (ya configurado en XAML)
         }
 
         private void ExpandirMenu()
         {
-            // Anima el ancho de la columna de 60 → 250
             AnimarColumna(60, 250);
 
-            // Muestra textos y logo
             foreach (var txt in GetMenuTexts())
                 txt.Visibility = Visibility.Visible;
 
@@ -233,7 +289,6 @@ namespace loginavicola
 
         private void AnimarColumna(double desde, double hasta)
         {
-            // Usamos MaxWidth del Border del sidebar para animar suavemente
             SidebarBorder.BeginAnimation(
                 FrameworkElement.MaxWidthProperty,
                 new System.Windows.Media.Animation.DoubleAnimation
@@ -248,18 +303,30 @@ namespace loginavicola
                 }
             );
 
-            // Actualiza también el ancho de la columna para que el área principal se reajuste
             SidebarColumn.Width = new GridLength(hasta);
         }
 
+        // ══════════════════════════════════════════════════
+        //  CERRAR SESIÓN (con confirmación estilo moderno)
+        // ══════════════════════════════════════════════════
         private void btnVolverLogin_Click(object sender, RoutedEventArgs e)
         {
-            UserSession.UsuarioActual = null;
-            UserSession.EsVisitante = false;
+            var confirmDialog = new ConfirmExitView
+            {
+                Owner = this
+            };
 
-            loginView login = new loginView();
-            login.Show();
-            this.Close();
+            bool? resultado = confirmDialog.ShowDialog();
+
+            if (resultado == true)
+            {
+                UserSession.UsuarioActual = null;
+                UserSession.EsVisitante = false;
+
+                loginView login = new loginView();
+                login.Show();
+                this.Close();
+            }
         }
     }
 }

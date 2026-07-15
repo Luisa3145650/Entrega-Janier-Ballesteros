@@ -21,6 +21,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.Windows.Input;
 using System.Threading.Tasks;
+using System.Net.Http;
+using System.Text.Json;
 
 namespace loginavicola.View
 {
@@ -31,10 +33,7 @@ namespace loginavicola.View
         private bool camaraConectada = false;
         private bool procesandoFrame = false;
 
-        private string bufferSerial = "";
         private bool leyendoBascula = false;
-        private double pesoAnteriorPantalla = -1;
-
         private ClasificacionProduccionDatabase database;
         private loginavicola.Database.ClasificacionProduccionDatabase dbProduccion = new loginavicola.Database.ClasificacionProduccionDatabase();
 
@@ -48,14 +47,22 @@ namespace loginavicola.View
         private int contadorB = 0;
         private int contadorC = 0;
 
+        // Cliente HTTP reutilizable para consultar la API de Python
+        private static readonly HttpClient client = new HttpClient();
+
         public produccionView()
         {
             InitializeComponent();
             database = new ClasificacionProduccionDatabase();
 
+            // INTEGRACIÓN: Hilo en segundo plano que consulta constantemente a Python (Flask)
             Task.Run(async () => {
-                await Task.Delay(1500);
-                ConectarBasculaAutomatica();
+                leyendoBascula = true;
+                while (leyendoBascula)
+                {
+                    await ConsultarHardwarePython();
+                    await Task.Delay(300); // Consulta el peso y volumen cada 300ms
+                }
             });
 
             InitializeComponentEventHandlers();
@@ -185,7 +192,6 @@ namespace loginavicola.View
             }
             catch (Exception ex)
             {
-                // EL CHISMOSO DE LA CÁMARA: Te dirá si te falta instalar un paquete NuGet
                 Dispatcher.BeginInvoke(new Action(() => {
                     txtEstadoCamara.Text = $"❌ Error en IA de cámara: {ex.Message}";
                 }));
@@ -198,23 +204,7 @@ namespace loginavicola.View
 
         private void ProcesarLogicaHuevo(Image<Bgr, byte> imagen)
         {
-
-
-            // Definición de zonas
-
-            // ── ZONAS DE DETECCIÓN ─────────────────────────────────────
-            // Zona del huevo (verde): ajusta para centrar sobre el huevo
-
             Rectangle zonaHuevo = new Rectangle(80, 50, 440, 300);
-
-            // ⚠️ ZONA DEL PESO (azul): AJUSTA ESTOS 4 VALORES hasta que
-            //    el rectángulo azul quede EXACTAMENTE sobre los números
-            int posicionX = 200;  // ← izquierda/derecha
-            int posicionY = 350;  // ← arriba/abajo
-            int ancho = 160;  // ← ancho del recuadro
-            int alto = 70;   // ← alto del recuadro
-
-            Rectangle zonaPeso = new Rectangle(posicionX, posicionY, ancho, alto);
 
             try
             {
@@ -261,7 +251,6 @@ namespace loginavicola.View
             }
             catch (Exception ex)
             {
-                // Re-lanzar error para que lo atrape el chismoso
                 throw new Exception("Fallo en OpenCV (¿Falta Emgu.CV.runtime.windows?) " + ex.Message);
             }
         }
@@ -377,101 +366,46 @@ namespace loginavicola.View
         }
 
         // =====================================================================
-        // BÁSCULA MODO ARCHIVO DE TEXTO TURBO ⚡
+        // NUEVA INTEGRACIÓN: PETICIONES HTTP A LA API FLASK EN PYTHON 🚀
         // =====================================================================
-        private void ConectarBasculaAutomatica()
+        private async Task ConsultarHardwarePython()
         {
-            string[] puertos = SerialPort.GetPortNames();
-
-            if (puertos.Length == 0)
-            {
-                ActualizarEstado("⚠️ No detecto el cable. Reconéctalo.");
-                return;
-            }
-
-            string puertoObjetivo = puertos.Contains("COM3") ? "COM3" : puertos.Last();
+            string url = "http://localhost:5001/datos-huevo";
 
             try
             {
-                var proceso = new System.Diagnostics.Process();
-                proceso.StartInfo.FileName = "cmd.exe";
-                proceso.StartInfo.Arguments = $"/c mode {puertoObjetivo} BAUD=9600 PARITY=n DATA=8 STOP=1";
-                proceso.StartInfo.UseShellExecute = false;
-                proceso.StartInfo.CreateNoWindow = true;
-                proceso.Start();
-                proceso.WaitForExit();
+                HttpResponseMessage response = await client.GetAsync(url);
 
-                leyendoBascula = true;
+                if (response.IsSuccessStatusCode)
+                {
+                    string jsonResponse = await response.Content.ReadAsStringAsync();
 
-                Task.Run(() => HiloLecturaTurbo(puertoObjetivo));
+                    var opciones = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    DatosHuevo datos = JsonSerializer.Deserialize<DatosHuevo>(jsonResponse, opciones);
+
+                    // Mapeo directo y seguro a los elementos visuales en el hilo de la UI
+                    Dispatcher.Invoke(() => {
+                        this.pesoGramos = datos.Peso;
+                        lblPesoReal.Text = $"{datos.Peso} g";
+                        lblCategoria.Text = string.IsNullOrEmpty(datos.Categoria) ? "-" : datos.Categoria;
+                        lblVolumen.Text = $"{datos.Volumen:F1} cm³";
+                    });
+                }
             }
             catch (Exception ex)
             {
-                ActualizarEstado($"⚠️ Error al conectar báscula: {ex.Message}");
+                Dispatcher.Invoke(() => {
+                    txtEstadoCamara.Text = $"⚠️ Buscando API Python... {ex.Message}";
+                });
             }
         }
 
-        private void HiloLecturaTurbo(string puerto)
+        // Clase Modelo para deserializar la respuesta JSON de Python
+        public class DatosHuevo
         {
-            string rutaArchivo = @"\\.\" + puerto;
-
-            try
-            {
-                using (FileStream fs = new FileStream(rutaArchivo, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                {
-                    byte[] buffer = new byte[64];
-
-                    while (leyendoBascula)
-                    {
-                        if (fs.CanRead)
-                        {
-                            int bytesLeidos = fs.Read(buffer, 0, buffer.Length);
-
-                            if (bytesLeidos > 0)
-                            {
-                                string raw = System.Text.Encoding.ASCII.GetString(buffer, 0, bytesLeidos);
-                                bufferSerial += raw;
-
-                                if (bufferSerial.Length > 50) bufferSerial = bufferSerial.Substring(bufferSerial.Length - 50);
-
-                                if (bufferSerial.Contains("\n") || bufferSerial.Contains("\r") || bufferSerial.Contains("="))
-                                {
-                                    Match m = Regex.Match(bufferSerial, @"\d+[\.,]\d+|\d+");
-                                    if (m.Success)
-                                    {
-                                        string cleanNum = m.Value.Replace(',', '.');
-                                        if (double.TryParse(cleanNum, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double p))
-                                        {
-
-                                            double final = (p < 10 && p > 0) ? p * 1000 : p;
-                                            final = Math.Round(final);
-
-                                            if (final != pesoAnteriorPantalla)
-                                            {
-                                                pesoAnteriorPantalla = final;
-
-                                                Dispatcher.InvokeAsync(() => {
-                                                    this.pesoGramos = final;
-                                                    lblPesoReal.Text = $"{this.pesoGramos} g";
-
-                                                    if (this.pesoGramos == 0) lblCategoria.Text = "-";
-                                                    else lblCategoria.Text = ClasificarHuevo(this.pesoGramos);
-                                                }, DispatcherPriority.Render);
-                                            }
-                                        }
-                                    }
-                                    bufferSerial = "";
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                leyendoBascula = false;
-                Dispatcher.InvokeAsync(() => { txtEstadoCamara.Text = $"⚠️ Archivo bloqueado. Desconecta el cable."; });
-            }
+            public double Peso { get; set; }
+            public string Categoria { get; set; }
+            public double Volumen { get; set; }
         }
 
         public class CamaraUSB { public string Nombre { get; set; } public string MonikerString { get; set; } public override string ToString() => Nombre; }
