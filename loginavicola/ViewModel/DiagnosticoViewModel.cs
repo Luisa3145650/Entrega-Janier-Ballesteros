@@ -20,6 +20,9 @@ namespace loginavicola.ViewModel
         private readonly LoteDatabase loteDatabase;
         private readonly InventarioDatabase inventarioDatabase;
 
+        // ✅ LISTA PRIVADA PARA ALMACENAR LOS REGISTROS ORIGINALES SIN PAGINAR
+        private List<Diagnostico> _listaDiagnosticosCompleta = new List<Diagnostico>();
+
         // ✅ CONSTRUCTOR
         public DiagnosticoViewModel()
         {
@@ -40,10 +43,14 @@ namespace loginavicola.ViewModel
                 "Revisión"
             };
 
-            // Inicialización de Comandos
+            // Inicialización de Comandos Existentes
             MarcarComoResueltoCommand = new RelayCommand(MarcarComoResuelto);
             ReabrirCasoCommand = new RelayCommand(ReabrirCaso);
             EliminarDiagnosticoCommand = new RelayCommand(EliminarDiagnostico);
+
+            // 🛠️ FUNCIONALIDAD FALTANTE: Inicialización de Comandos de Paginación
+            PaginaAnteriorCommand = new RelayCommand(_ => PaginaAnterior(), _ => PaginaActual > 1);
+            PaginaSiguienteCommand = new RelayCommand(_ => PaginaSiguiente(), _ => PaginaActual < TotalPaginas);
 
             // Carga inicial de datos
             CargarDatos();
@@ -55,6 +62,10 @@ namespace loginavicola.ViewModel
         public ICommand MarcarComoResueltoCommand { get; }
         public ICommand ReabrirCasoCommand { get; }
         public ICommand EliminarDiagnosticoCommand { get; }
+
+        // 🛠️ FUNCIONALIDAD FALTANTE: Comandos de paginación
+        public ICommand PaginaAnteriorCommand { get; }
+        public ICommand PaginaSiguienteCommand { get; }
 
         // ✅ COLECCIONES
         public ObservableCollection<Diagnostico> Diagnosticos { get; set; }
@@ -71,25 +82,85 @@ namespace loginavicola.ViewModel
             {
                 _textoBusqueda = value;
                 OnPropertyChanged(nameof(TextoBusqueda));
-                FiltrarDiagnosticos();
+                PaginaActual = 1; // Reiniciar a la primera página al buscar
+                FiltrarYPaginar();
             }
         }
 
-        private void FiltrarDiagnosticos()
+        // 🛠️ FUNCIONALIDAD FALTANTE: Propiedades de Control de Paginación
+        private int _elementosPorPagina = 10;
+        public string ElementosPorPagina
         {
-            var listaCompleta = database.ObtenerTodosDiagnosticos();
-            var inventario = inventarioDatabase.ObtenerTodosItems();
-            Diagnosticos.Clear();
-
-            var filtrados = listaCompleta.Where(d =>
-                string.IsNullOrEmpty(TextoBusqueda) ||
-                d.DiagnosticoMedico.ToLower().Contains(TextoBusqueda.ToLower()) ||
-                d.Tipo.ToLower().Contains(TextoBusqueda.ToLower())
-            );
-
-            foreach (var d in filtrados)
+            get => _elementosPorPagina.ToString();
+            set
             {
-                // Cruce de nombre de medicamento en el filtrado
+                if (int.TryParse(value, out int result))
+                {
+                    _elementosPorPagina = result;
+                    OnPropertyChanged(nameof(ElementosPorPagina));
+                    PaginaActual = 1; // Reiniciar a la página 1 cuando cambie la escala
+                    FiltrarYPaginar();
+                }
+            }
+        }
+
+        private int _paginaActual = 1;
+        public int PaginaActual
+        {
+            get => _paginaActual;
+            set
+            {
+                _paginaActual = value;
+                OnPropertyChanged(nameof(PaginaActual));
+            }
+        }
+
+        private int _totalPaginas = 1;
+        public int TotalPaginas
+        {
+            get => _totalPaginas;
+            set
+            {
+                _totalPaginas = value;
+                OnPropertyChanged(nameof(TotalPaginas));
+            }
+        }
+
+
+        // 🛠️ MÉTODO OPTIMIZADO: Filtra la lista completa y aplica Skip / Take para segmentar por páginas
+        private void FiltrarYPaginar()
+        {
+            var inventario = inventarioDatabase.ObtenerTodosItems();
+
+            // 1. Filtrar la lista en memoria según la búsqueda
+            var filtrados = _listaDiagnosticosCompleta.Where(d =>
+                string.IsNullOrEmpty(TextoBusqueda) ||
+                (d.DiagnosticoMedico != null && d.DiagnosticoMedico.ToLower().Contains(TextoBusqueda.ToLower())) ||
+                (d.Tipo != null && d.Tipo.ToLower().Contains(TextoBusqueda.ToLower()))
+            ).ToList();
+
+            // 2. Calcular estadísticas en base al universo filtrado total
+            TotalDiagnosticos = filtrados.Count;
+            CasosActivos = filtrados.Count(d => d.Estado == "Activo");
+            CasosResueltos = filtrados.Count(d => d.Estado == "Resuelto");
+            AvesAfectadas = filtrados.Where(d => d.Estado == "Activo").Sum(d => d.GallinasAfectadas);
+
+            // 3. Calcular el total de páginas necesarias
+            TotalPaginas = (int)Math.Ceiling((double)TotalDiagnosticos / _elementosPorPagina);
+            if (TotalPaginas == 0) TotalPaginas = 1;
+
+            // Asegurar que la página actual no quede desfasada si se reduce drásticamente el volumen de datos
+            if (PaginaActual > TotalPaginas) PaginaActual = TotalPaginas;
+
+            // 4. Segmentar datos con LINQ (Skip y Take hacen la magia de paginación)
+            var datosPaginados = filtrados
+                .Skip((PaginaActual - 1) * _elementosPorPagina)
+                .Take(_elementosPorPagina);
+
+            // 5. Limpiar y rellenar la colección observable para la UI
+            Diagnosticos.Clear();
+            foreach (var d in datosPaginados)
+            {
                 if (d.IdMedicamento.HasValue)
                 {
                     var med = inventario.FirstOrDefault(i => i.IdItem == d.IdMedicamento.Value);
@@ -99,9 +170,27 @@ namespace loginavicola.ViewModel
 
                 Diagnosticos.Add(d);
             }
-
-            ActualizarEstadisticas();
         }
+
+        // 🛠️ ACCIONES DE PAGINACIÓN
+        private void PaginaAnterior()
+        {
+            if (PaginaActual > 1)
+            {
+                PaginaActual--;
+                FiltrarYPaginar();
+            }
+        }
+
+        private void PaginaSiguiente()
+        {
+            if (PaginaActual < TotalPaginas)
+            {
+                PaginaActual++;
+                FiltrarYPaginar();
+            }
+        }
+
 
         // ✅ ESTADÍSTICAS
         private int _totalDiagnosticos;
@@ -146,36 +235,13 @@ namespace loginavicola.ViewModel
         }
 
         // ✅ MÉTODOS DE ACTUALIZACIÓN Y CARGA
-        private void ActualizarEstadisticas()
-        {
-            TotalDiagnosticos = Diagnosticos.Count;
-            CasosActivos = Diagnosticos.Count(d => d.Estado == "Activo");
-            CasosResueltos = Diagnosticos.Count(d => d.Estado == "Resuelto");
-            AvesAfectadas = Diagnosticos.Where(d => d.Estado == "Activo").Sum(d => d.GallinasAfectadas);
-        }
-
         public void CargarDatos()
         {
-            Diagnosticos.Clear();
-            var lista = database.ObtenerTodosDiagnosticos();
-            var inventario = inventarioDatabase.ObtenerTodosItems();
+            // Descarga el bruto de la base de datos a una lista interna una sola vez por actualización
+            _listaDiagnosticosCompleta = database.ObtenerTodosDiagnosticos();
 
-            foreach (var d in lista)
-            {
-                // Cruce de datos para obtener el nombre real del medicamento
-                if (d.IdMedicamento.HasValue)
-                {
-                    var item = inventario.FirstOrDefault(i => i.IdItem == d.IdMedicamento.Value);
-                    d.NombreMedicamento = item != null ? item.Nombre : "ID Inexistente";
-                }
-                else
-                {
-                    d.NombreMedicamento = "Sin Medicamento";
-                }
-                Diagnosticos.Add(d);
-            }
-
-            ActualizarEstadisticas();
+            // Ejecuta el flujo combinado de filtrado, estadísticas y corte por páginas
+            FiltrarYPaginar();
         }
 
         private void CargarMedicamentos()
@@ -202,7 +268,6 @@ namespace loginavicola.ViewModel
         {
             if (!ValidarDiagnostico()) return false;
 
-            // Lógica de descuento de inventario
             if (DiagnosticoActual.IdMedicamento.HasValue && DiagnosticoActual.CantidadMedicamentoUsado > 0)
             {
                 var medicamento = inventarioDatabase.ObtenerTodosItems()
@@ -218,8 +283,8 @@ namespace loginavicola.ViewModel
             bool resultado = database.InsertarDiagnostico(DiagnosticoActual);
             if (resultado)
             {
-                CargarDatos(); // Recargar la tabla con nombres cruzados
-                CargarMedicamentos(); // Actualizar stock visual
+                CargarDatos();
+                CargarMedicamentos();
                 LimpiarFormulario();
                 return true;
             }

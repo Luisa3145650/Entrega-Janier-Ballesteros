@@ -12,7 +12,7 @@ namespace loginavicola.ViewModel
     public class LotesViewModel : INotifyPropertyChanged
     {
         private readonly LoteDatabase database;
-
+        private System.Collections.Generic.List<Lote> _todosLosFiltrados = new();
 
         public string RolUsuarioActual => UserSession.UsuarioActual?.Rol ?? string.Empty;
 
@@ -25,22 +25,29 @@ namespace loginavicola.ViewModel
 
             LotesRegistrados = new ObservableCollection<Lote>();
 
-            // Estados disponibles para el ComboBox
             EstadosDisponibles = new ObservableCollection<string>
             {
                 "Activo",
                 "Pensionado"
             };
 
+            // CORREGIDO: Cambiado a 'OpcionesTamanoPagina' para que coincida con el XAML
+            OpcionesTamanoPagina = new ObservableCollection<int> { 5, 10, 20, 50 };
+            _tamanoPagina = 10;
+            _paginaActual = 1;
+
             AbrirModalCommand = new RelayCommand(AbrirModal);
             CerrarModalCommand = new RelayCommand(CerrarModal);
             RegistrarCommand = new RelayCommand(RegistrarLote);
             EditarCommand = new RelayCommand(EditarLote);
             EliminarCommand = new RelayCommand(EliminarLote);
+            PaginaAnteriorCommand = new RelayCommand(_ => CambiarPagina(-1), _ => PaginaActual > 1);
+            PaginaSiguienteCommand = new RelayCommand(_ => CambiarPagina(1), _ => PaginaActual < TotalPaginas);
 
             CargarDatos();
         }
 
+        // ── Estadísticas ──────────────────────────────────────────────
         private int _totalLotes;
         public int TotalLotes
         {
@@ -62,6 +69,54 @@ namespace loginavicola.ViewModel
             set { _totalAves = value; OnPropertyChanged(nameof(TotalAves)); }
         }
 
+        // ── Paginación ────────────────────────────────────────────────
+        private int _paginaActual;
+        public int PaginaActual
+        {
+            get => _paginaActual;
+            set
+            {
+                _paginaActual = value;
+                OnPropertyChanged(nameof(PaginaActual));
+                OnPropertyChanged(nameof(InfoPagina));
+                AplicarPagina();
+            }
+        }
+
+        private int _tamanoPagina;
+        // CORREGIDO: Cambiado a 'TamanoPagina' (sin 'ñ') para emparejar con el XAML
+        public int TamanoPagina
+        {
+            get => _tamanoPagina;
+            set
+            {
+                _tamanoPagina = value;
+                OnPropertyChanged(nameof(TamanoPagina));
+                _paginaActual = 1;
+                OnPropertyChanged(nameof(PaginaActual));
+                RecalcularPaginas();
+                AplicarPagina();
+            }
+        }
+
+        private int _totalPaginas = 1;
+        public int TotalPaginas
+        {
+            get => _totalPaginas;
+            set
+            {
+                _totalPaginas = value;
+                OnPropertyChanged(nameof(TotalPaginas));
+                OnPropertyChanged(nameof(InfoPagina));
+            }
+        }
+
+        public string InfoPagina => $"Página {PaginaActual} de {TotalPaginas}  ({_todosLosFiltrados.Count} registros)";
+
+        // CORREGIDO: Cambiado a 'OpcionesTamanoPagina' (sin 'ñ')
+        public ObservableCollection<int> OpcionesTamanoPagina { get; }
+
+        // ── Colecciones y estado ──────────────────────────────────────
         public ObservableCollection<Lote> LotesRegistrados { get; set; }
         public ObservableCollection<string> EstadosDisponibles { get; set; }
 
@@ -93,22 +148,29 @@ namespace loginavicola.ViewModel
 
         private bool _esEdicion;
 
+        // ── Comandos ──────────────────────────────────────────────────
         public ICommand AbrirModalCommand { get; }
         public ICommand CerrarModalCommand { get; }
         public ICommand RegistrarCommand { get; }
         public ICommand EditarCommand { get; }
         public ICommand EliminarCommand { get; }
+        public ICommand PaginaAnteriorCommand { get; }
+        public ICommand PaginaSiguienteCommand { get; }
 
+        // ── Lógica interna ────────────────────────────────────────────
         private void CargarDatos()
         {
-            LotesRegistrados.Clear();
             var lotes = database.ObtenerTodosLosLotes();
-            foreach (var lote in lotes)
-                LotesRegistrados.Add(lote);
 
+            _todosLosFiltrados = string.IsNullOrWhiteSpace(TextoBusqueda)
+                ? lotes
+                : FiltrarLista(lotes, TextoBusqueda.ToLower());
+
+            _paginaActual = 1;
+            RecalcularPaginas();
+            AplicarPagina();
             ActualizarEstadisticas();
 
-            // Notificar el rol después de cargar
             OnPropertyChanged(nameof(RolUsuarioActual));
             System.Diagnostics.Debug.WriteLine($"=== ROL EN CargarDatos: '{RolUsuarioActual}' ===");
         }
@@ -120,6 +182,59 @@ namespace loginavicola.ViewModel
             TotalAves = database.ObtenerTotalAves();
         }
 
+        private void RecalcularPaginas()
+        {
+            // CORREGIDO: Reemplazado por TamanoPagina
+            TotalPaginas = Math.Max(1, (int)Math.Ceiling(_todosLosFiltrados.Count / (double)TamanoPagina));
+            if (_paginaActual > TotalPaginas) _paginaActual = TotalPaginas;
+        }
+
+        private void AplicarPagina()
+        {
+            // CORREGIDO: Reemplazado por TamanoPagina
+            var pagina = _todosLosFiltrados
+                .Skip((_paginaActual - 1) * TamanoPagina)
+                .Take(TamanoPagina)
+                .ToList();
+
+            LotesRegistrados.Clear();
+            foreach (var l in pagina) LotesRegistrados.Add(l);
+
+            OnPropertyChanged(nameof(InfoPagina));
+        }
+
+        private void CambiarPagina(int delta)
+        {
+            var nueva = _paginaActual + delta;
+            if (nueva >= 1 && nueva <= TotalPaginas)
+                PaginaActual = nueva;
+        }
+
+        private void FiltrarLotes()
+        {
+            var todos = database.ObtenerTodosLosLotes();
+
+            _todosLosFiltrados = string.IsNullOrWhiteSpace(TextoBusqueda)
+                ? todos
+                : FiltrarLista(todos, TextoBusqueda.ToLower());
+
+            _paginaActual = 1;
+            RecalcularPaginas();
+            AplicarPagina();
+        }
+
+        private static System.Collections.Generic.List<Lote> FiltrarLista(
+            System.Collections.Generic.List<Lote> lotes, string busqueda)
+        {
+            return lotes.Where(l =>
+                (l.Raza?.ToLower().Contains(busqueda) ?? false) ||
+                (l.GranjaOrigen?.ToLower().Contains(busqueda) ?? false) ||
+                (l.Estado?.ToLower().Contains(busqueda) ?? false) ||
+                l.IdLote.ToString().Contains(busqueda)
+            ).ToList();
+        }
+
+        // ── Modal ─────────────────────────────────────────────────────
         private void AbrirModal(object parameter)
         {
             _esEdicion = false;
@@ -127,41 +242,22 @@ namespace loginavicola.ViewModel
             MostrarModal = true;
         }
 
-        private void CerrarModal(object parameter)
-        {
-            MostrarModal = false;
-        }
+        private void CerrarModal(object parameter) => MostrarModal = false;
 
         private void RegistrarLote(object parameter)
         {
-            if (ValidarLote())
+            if (!ValidarLote()) return;
+
+            bool resultado = _esEdicion
+                ? database.ActualizarLote(LoteActual)
+                : database.InsertarLote(LoteActual);
+
+            if (resultado)
             {
-                bool resultado;
-
-                if (_esEdicion)
-                {
-                    resultado = database.ActualizarLote(LoteActual);
-                    if (resultado)
-                    {
-                        MessageBox.Show("Lote actualizado exitosamente", "Éxito",
-                            MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                }
-                else
-                {
-                    resultado = database.InsertarLote(LoteActual);
-                    if (resultado)
-                    {
-                        MessageBox.Show("Lote registrado exitosamente", "Éxito",
-                            MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                }
-
-                if (resultado)
-                {
-                    CargarDatos();
-                    MostrarModal = false;
-                }
+                string msg = _esEdicion ? "Lote actualizado exitosamente" : "Lote registrado exitosamente";
+                MessageBox.Show(msg, "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                CargarDatos();
+                MostrarModal = false;
             }
         }
 
@@ -194,14 +290,11 @@ namespace loginavicola.ViewModel
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question);
 
-                if (resultado == MessageBoxResult.Yes)
+                if (resultado == MessageBoxResult.Yes && database.EliminarLote(lote.IdLote))
                 {
-                    if (database.EliminarLote(lote.IdLote))
-                    {
-                        MessageBox.Show("Lote eliminado exitosamente", "Éxito",
-                            MessageBoxButton.OK, MessageBoxImage.Information);
-                        CargarDatos();
-                    }
+                    MessageBox.Show("Lote eliminado exitosamente", "Éxito",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    CargarDatos();
                 }
             }
         }
@@ -210,56 +303,25 @@ namespace loginavicola.ViewModel
         {
             if (string.IsNullOrWhiteSpace(LoteActual.Raza))
             {
-                MessageBox.Show("Debe ingresar una raza", "Validación",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Debe ingresar una raza", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
-
             if (LoteActual.CantidadGallinas <= 0)
             {
-                MessageBox.Show("La cantidad debe ser mayor a 0", "Validación",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("La cantidad debe ser mayor a 0", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
-
             if (string.IsNullOrWhiteSpace(LoteActual.Estado))
             {
-                MessageBox.Show("Debe seleccionar un estado", "Validación",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Debe seleccionar un estado", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
-
             return true;
         }
 
-        private void FiltrarLotes()
-        {
-            var todosLosLotes = database.ObtenerTodosLosLotes();
-
-            if (string.IsNullOrWhiteSpace(TextoBusqueda))
-            {
-                LotesRegistrados.Clear();
-                foreach (var l in todosLosLotes) LotesRegistrados.Add(l);
-                return;
-            }
-
-            var busqueda = TextoBusqueda.ToLower();
-            var filtrados = todosLosLotes.Where(l =>
-                (l.Raza?.ToLower().Contains(busqueda) ?? false) ||
-                (l.GranjaOrigen?.ToLower().Contains(busqueda) ?? false) ||
-                (l.Estado?.ToLower().Contains(busqueda) ?? false) ||
-                l.IdLote.ToString().Contains(busqueda)
-            ).ToList();
-
-            LotesRegistrados.Clear();
-            foreach (var lote in filtrados) LotesRegistrados.Add(lote);
-        }
-
         public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged(string propertyName)
-        {
+        protected void OnPropertyChanged(string propertyName) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
     }
 
     public class RelayCommand : ICommand
@@ -279,14 +341,7 @@ namespace loginavicola.ViewModel
             remove { CommandManager.RequerySuggested -= value; }
         }
 
-        public bool CanExecute(object parameter)
-        {
-            return _canExecute == null || _canExecute(parameter);
-        }
-
-        public void Execute(object parameter)
-        {
-            _execute(parameter);
-        }
+        public bool CanExecute(object parameter) => _canExecute == null || _canExecute(parameter);
+        public void Execute(object parameter) => _execute(parameter);
     }
 }

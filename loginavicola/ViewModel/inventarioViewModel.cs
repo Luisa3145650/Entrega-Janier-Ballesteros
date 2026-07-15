@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Input;
-using System.Linq;
 using System.Windows;
 using loginavicola.Database;
 using loginavicola.Model;
@@ -16,6 +15,8 @@ namespace loginavicola.ViewModel
     public class InventarioViewModel : INotifyPropertyChanged
     {
         private readonly InventarioDatabase database;
+        // Lista privada para almacenar los datos completos filtrados antes de paginar
+        private List<ItemInventario> _todosLosFiltrados = new();
 
         public InventarioViewModel()
         {
@@ -34,10 +35,19 @@ namespace loginavicola.ViewModel
                 "Otro"
             };
 
-            // Inicializar comandos
+            // Inicializar propiedades de paginación de forma segura
+            OpcionesTamanoPagina = new ObservableCollection<int> { 5, 10, 20, 50 };
+            _tamanoPagina = 10;
+            _paginaActual = 1;
+
+            // Inicializar comandos existentes
             EditarItemCommand = new RelayCommand(EditarItem);
             EliminarItemCommand = new RelayCommand(EliminarItem);
             AjustarStockCommand = new RelayCommand(AjustarStock);
+
+            // Inicializar comandos de paginación (Hacen match con el XAML)
+            PaginaAnteriorCommand = new RelayCommand(_ => CambiarPagina(-1), _ => PaginaActual > 1);
+            PaginaSiguienteCommand = new RelayCommand(_ => CambiarPagina(1), _ => PaginaActual < TotalPaginas);
 
             // Cargar datos
             CargarDatos();
@@ -72,6 +82,51 @@ namespace loginavicola.ViewModel
             set { _valorTotal = value; OnPropertyChanged(nameof(ValorTotal)); }
         }
 
+        // ── Paginación ────────────────────────────────────────────────
+        private int _paginaActual;
+        public int PaginaActual
+        {
+            get => _paginaActual;
+            set
+            {
+                _paginaActual = value;
+                OnPropertyChanged(nameof(PaginaActual));
+                OnPropertyChanged(nameof(InfoPagina));
+                AplicarPagina();
+            }
+        }
+
+        private int _tamanoPagina;
+        public int TamanoPagina
+        {
+            get => _tamanoPagina;
+            set
+            {
+                _tamanoPagina = value;
+                OnPropertyChanged(nameof(TamanoPagina));
+                _paginaActual = 1;
+                OnPropertyChanged(nameof(PaginaActual));
+                RecalcularPaginas();
+                AplicarPagina();
+            }
+        }
+
+        private int _totalPaginas = 1;
+        public int TotalPaginas
+        {
+            get => _totalPaginas;
+            set
+            {
+                _totalPaginas = value;
+                OnPropertyChanged(nameof(TotalPaginas));
+                OnPropertyChanged(nameof(InfoPagina));
+            }
+        }
+
+        public string InfoPagina => $"Página {PaginaActual} de {TotalPaginas}  ({_todosLosFiltrados.Count} registros)";
+
+        public ObservableCollection<int> OpcionesTamanoPagina { get; }
+
         // Colecciones
         public ObservableCollection<ItemInventario> ItemsInventario { get; set; }
         public ObservableCollection<string> Categorias { get; set; }
@@ -101,19 +156,56 @@ namespace loginavicola.ViewModel
         public ICommand EditarItemCommand { get; }
         public ICommand EliminarItemCommand { get; }
         public ICommand AjustarStockCommand { get; }
+        public ICommand PaginaAnteriorCommand { get; }
+        public ICommand PaginaSiguienteCommand { get; }
 
         // Métodos
         public void CargarDatos()
         {
-            ItemsInventario.Clear();
             var items = database.ObtenerTodosItems();
 
-            foreach (var item in items)
+            _todosLosFiltrados = string.IsNullOrWhiteSpace(TextoBusqueda)
+                ? items
+                : items.Where(i =>
+                    (i.Nombre?.ToLower().Contains(TextoBusqueda.ToLower()) ?? false) ||
+                    (i.Categoria?.ToLower().Contains(TextoBusqueda.ToLower()) ?? false) ||
+                    (i.Ubicacion?.ToLower().Contains(TextoBusqueda.ToLower()) ?? false) ||
+                    i.IdItem.ToString().Contains(TextoBusqueda)
+                ).ToList();
+
+            _paginaActual = 1;
+            RecalcularPaginas();
+            AplicarPagina();
+            ActualizarEstadisticas();
+        }
+
+        private void RecalcularPaginas()
+        {
+            TotalPaginas = Math.Max(1, (int)Math.Ceiling(_todosLosFiltrados.Count / (double)TamanoPagina));
+            if (_paginaActual > TotalPaginas) _paginaActual = TotalPaginas;
+        }
+
+        private void AplicarPagina()
+        {
+            var pagina = _todosLosFiltrados
+                .Skip((_paginaActual - 1) * TamanoPagina)
+                .Take(TamanoPagina)
+                .ToList();
+
+            ItemsInventario.Clear();
+            foreach (var item in pagina)
             {
                 ItemsInventario.Add(item);
             }
 
-            ActualizarEstadisticas();
+            OnPropertyChanged(nameof(InfoPagina));
+        }
+
+        private void CambiarPagina(int delta)
+        {
+            var nueva = _paginaActual + delta;
+            if (nueva >= 1 && nueva <= TotalPaginas)
+                PaginaActual = nueva;
         }
 
         private void ActualizarEstadisticas()
@@ -228,7 +320,6 @@ namespace loginavicola.ViewModel
             if (parameter is ItemInventario item)
             {
                 PrepararEdicion(item);
-                // El modal se abrirá desde el code-behind
             }
         }
 
@@ -256,31 +347,14 @@ namespace loginavicola.ViewModel
 
         private void AjustarStock(object parameter)
         {
-            // Esta funcionalidad se puede implementar con un mini-modal adicional
             MessageBox.Show("Funcionalidad de ajuste de stock pendiente", "Info");
         }
 
         private void FiltrarItems()
         {
-            if (string.IsNullOrWhiteSpace(TextoBusqueda))
-            {
-                CargarDatos();
-                return;
-            }
-
-            var itemsFiltrados = database.ObtenerTodosItems()
-                .Where(i =>
-                    i.Nombre.ToLower().Contains(TextoBusqueda.ToLower()) ||
-                    i.Categoria.ToLower().Contains(TextoBusqueda.ToLower()) ||
-                    i.Ubicacion.ToLower().Contains(TextoBusqueda.ToLower()) ||
-                    i.IdItem.ToString().Contains(TextoBusqueda)
-                ).ToList();
-
-            ItemsInventario.Clear();
-            foreach (var item in itemsFiltrados)
-            {
-                ItemsInventario.Add(item);
-            }
+            // Redirigimos la lógica al método centralizado CargarDatos
+            // para que maneje el filtrado y aplique correctamente la segmentación desde la página 1
+            CargarDatos();
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

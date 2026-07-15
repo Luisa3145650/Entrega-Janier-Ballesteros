@@ -106,14 +106,25 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <Border DockPanel.Dock="Bottom" Background="#E74C3C" CornerRadius="8" Margin="10,10,10,15" Height="45">
-                        <Button x:Name="btnVolverLogin" Background="Transparent" BorderThickness="0" Click="btnVolverLogin_Click" Cursor="Hand" ToolTip="Cerrar sesión">
+                    <Border DockPanel.Dock="Bottom" Background="Transparent" CornerRadius="8" Margin="10,10,10,15" Height="45">
+                        <Button x:Name="btnVolverLogin" 
+            HorizontalAlignment="Stretch" 
+            VerticalAlignment="Stretch" 
+            Background="#4CAF50" 
+            BorderBrush="#A5D6A7" 
+            BorderThickness="1" 
+            Click="btnVolverLogin_Click" 
+            Cursor="Hand" 
+            ToolTip="Cerrar sesión">
                             <Button.Style>
                                 <Style TargetType="Button">
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="Button">
-                                                <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                                                <Border Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}" 
+                                    CornerRadius="10">
                                                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                 </Border>
                                             </ControlTemplate>
@@ -122,8 +133,14 @@
                                 </Style>
                             </Button.Style>
                             <StackPanel Orientation="Horizontal">
-                                <fa:IconImage Icon="ArrowRightFromBracket" Width="16" Height="16" Foreground="White" Margin="0,0,8,0"/>
-                                <TextBlock x:Name="TxtCerrarSesion" Text="Cerrar sesión" Foreground="White" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <fa:IconImage Icon="ArrowRightFromBracket" Width="16" Height="16" Foreground="White" Margin="0,0,10,0"/>
+                                <TextBlock x:Name="TxtCerrarSesion" 
+                                           Text="Cerrar sesión" 
+                                           Foreground="White" 
+                                           FontSize="14" 
+                                           FontWeight="SemiBold" 
+                                           VerticalAlignment="Center" 
+                                           FontFamily="Arial"/>
                             </StackPanel>
                         </Button>
                     </Border>

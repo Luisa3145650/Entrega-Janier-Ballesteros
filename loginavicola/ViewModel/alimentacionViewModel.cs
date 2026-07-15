@@ -3,8 +3,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
-using loginavícola.Model;
-using loginavicola.Helpers;
+using loginavicola.Model;
+using loginavicola.Helpers; // <-- Usa el RelayCommand original de aquí
 using System.Collections.Generic;
 using loginavicola.Database;
 using System.Windows;
@@ -32,7 +32,10 @@ namespace loginavicola.ViewModel
         private decimal _consumoSemanal;
         private decimal _alimentoDisponible;
 
-        // ✅ FIX: Propiedad para el alimento seleccionado directamente
+        private int _elementosPorPagina = 10;
+        private int _paginaActual = 1;
+        private int _totalPaginas = 1;
+
         private ModelAlimento? _alimentoSeleccionado;
         public ModelAlimento? AlimentoSeleccionado
         {
@@ -42,7 +45,6 @@ namespace loginavicola.ViewModel
                 _alimentoSeleccionado = value;
                 OnPropertyChanged(nameof(AlimentoSeleccionado));
 
-                // ✅ Actualiza IdAlimento en ConsumoActual automáticamente
                 if (value != null && ConsumoActual != null)
                 {
                     ConsumoActual.IdAlimento = value.IdAlimento;
@@ -62,8 +64,51 @@ namespace loginavicola.ViewModel
             UnidadesMedida = new ObservableCollection<string> { "kg" };
             Turnos = new ObservableCollection<string> { "Semanal" };
 
+            // Instanciación usando los comandos de tus Helpers globales
+            PaginaAnteriorCommand = new RelayCommand(param => { PaginaActual--; }, param => PaginaActual > 1);
+            PaginaSiguienteCommand = new RelayCommand(param => { PaginaActual++; }, param => PaginaActual < TotalPaginas);
+
             CargarDatos();
         }
+
+        public int ElementosPorPagina
+        {
+            get => _elementosPorPagina;
+            set
+            {
+                if (_elementosPorPagina != value)
+                {
+                    _elementosPorPagina = value;
+                    OnPropertyChanged(nameof(ElementosPorPagina));
+                    _paginaActual = 1;
+                    OnPropertyChanged(nameof(PaginaActual));
+                    CargarConsumos();
+                }
+            }
+        }
+
+        public int PaginaActual
+        {
+            get => _paginaActual;
+            set
+            {
+                if (_paginaActual != value)
+                {
+                    _paginaActual = value;
+                    OnPropertyChanged(nameof(PaginaActual));
+                    CargarConsumos();
+                }
+            }
+        }
+
+        public int TotalPaginas
+        {
+            get => _totalPaginas;
+            set { _totalPaginas = value; OnPropertyChanged(nameof(TotalPaginas)); }
+        }
+
+        public ICommand PaginaAnteriorCommand { get; }
+        public ICommand PaginaSiguienteCommand { get; }
 
         public decimal ConsumoDia
         {
@@ -102,6 +147,8 @@ namespace loginavicola.ViewModel
             {
                 _textoBusqueda = value;
                 OnPropertyChanged(nameof(TextoBusqueda));
+                _paginaActual = 1;
+                OnPropertyChanged(nameof(PaginaActual));
                 FiltrarConsumos();
             }
         }
@@ -117,40 +164,42 @@ namespace loginavicola.ViewModel
         private void CargarConsumos()
         {
             Consumos.Clear();
-            var consumos = database.ObtenerConsumos();
-            foreach (var consumo in consumos)
-                Consumos.Add(consumo);
+            var todosConsumos = database.ObtenerConsumos();
+
+            if (todosConsumos != null && todosConsumos.Any())
+            {
+                TotalPaginas = (int)Math.Ceiling((double)todosConsumos.Count / ElementosPorPagina);
+                if (TotalPaginas < 1) TotalPaginas = 1;
+
+                int omitirRegistros = (PaginaActual - 1) * ElementosPorPagina;
+                var consumosPaginados = todosConsumos.Skip(omitirRegistros).Take(ElementosPorPagina).ToList();
+
+                foreach (var consumo in consumosPaginados)
+                    Consumos.Add(consumo);
+            }
+            else
+            {
+                TotalPaginas = 1;
+            }
         }
 
         private void CargarAlimentos()
         {
             Alimentos.Clear();
-
-            // ✅ FIX: Categoría insensible a mayúsculas
             var itemsInventario = inventarioDatabase.ObtenerTodosItems()
-                .Where(i => i.Categoria.ToLower().Contains("alimento")
-                         && i.CantidadStock > 0)
+                .Where(i => i.Categoria.ToLower().Contains("alimento") && i.CantidadStock > 0)
                 .ToList();
 
-            // ✅ DEBUG: Muestra qué encontró en inventario
             if (itemsInventario.Count == 0)
             {
-                // Verificar si existen items pero con otra categoría o sin stock
                 var todosItems = inventarioDatabase.ObtenerTodosItems();
                 string detalleItems = todosItems.Any()
-                    ? string.Join("\n", todosItems.Select(i =>
-                        $"• {i.Nombre} | Categoría: '{i.Categoria}' | Stock: {i.CantidadStock}"))
+                    ? string.Join("\n", todosItems.Select(i => $"• {i.Nombre} | Categoría: '{i.Categoria}' | Stock: {i.CantidadStock}"))
                     : "No hay productos registrados en inventario.";
 
                 MessageBox.Show(
-                    $"No se encontraron alimentos disponibles.\n\n" +
-                    $"Productos en inventario:\n{detalleItems}\n\n" +
-                    $"Asegúrese de que:\n" +
-                    $"1. La categoría sea 'Alimento'\n" +
-                    $"2. El stock actual sea mayor a 0",
-                    "Sin Alimentos Disponibles",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                    $"No se encontraron alimentos disponibles.\n\nProductos en inventario:\n{detalleItems}",
+                    "Sin Alimentos Disponibles", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -190,15 +239,8 @@ namespace loginavicola.ViewModel
         {
             if (ValidarConsumo())
             {
-                var loteSeleccionado = LotesActivos
-                    .FirstOrDefault(l => l.IdLote == ConsumoActual.IdLoteGallinas);
-
-                if (loteSeleccionado == null)
-                {
-                    MessageBox.Show("No se pudo obtener la información del lote.", "Error",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                    return false;
-                }
+                var loteSeleccionado = LotesActivos.FirstOrDefault(l => l.IdLote == ConsumoActual.IdLoteGallinas);
+                if (loteSeleccionado == null) return false;
 
                 ConsumoActual.CantidadGallinas = loteSeleccionado.CantidadActual;
 
@@ -210,61 +252,20 @@ namespace loginavicola.ViewModel
                 ConsumoActual.Merma = merma;
                 ConsumoActual.AlertaMerma = alertaMerma;
 
-                // ✅ FIX: Usa AlimentoSeleccionado directamente (más confiable)
                 string nombreAlimento = AlimentoSeleccionado?.Nombre ?? "Concentrado";
 
-                // Validar stock suficiente
-                if (AlimentoSeleccionado != null &&
-                    ConsumoActual.CantidadConsumida > AlimentoSeleccionado.StockDisponible)
+                if (AlimentoSeleccionado != null && ConsumoActual.CantidadConsumida > AlimentoSeleccionado.StockDisponible)
                 {
-                    MessageBox.Show(
-                        $"⚠️ Stock insuficiente para '{nombreAlimento}'.\n\n" +
-                        $"Stock disponible: {AlimentoSeleccionado.StockDisponible} kg\n" +
-                        $"Cantidad requerida: {ConsumoActual.CantidadConsumida} kg",
-                        "Stock Insuficiente",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
+                    MessageBox.Show("Stock insuficiente.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return false;
                 }
 
-                string iconoMerma = alertaMerma ? "⚠️" : "✅";
-                string mensajeMerma = alertaMerma
-                    ? $"\n\n{iconoMerma} ALERTA: Merma excesiva detectada"
-                    : $"\n\n{iconoMerma} Merma dentro del rango permitido";
-
-                var resultado = MessageBox.Show(
-                    $"📊 RESUMEN DE CONSUMO SEMANAL\n" +
-                    $"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" +
-                    $"🐔 Lote: {loteSeleccionado.IdLote} - {loteSeleccionado.Raza}\n" +
-                    $"📌 Gallinas: {ConsumoActual.CantidadGallinas}\n" +
-                    $"🌾 Alimento: {nombreAlimento}\n" +
-                    $"📦 Stock actual: {AlimentoSeleccionado?.StockDisponible} kg\n" +
-                    $"📦 Stock tras registro: {AlimentoSeleccionado?.StockDisponible - ConsumoActual.CantidadConsumida} kg\n\n" +
-                    $"📋 RACIÓN DIARIA POR GALLINA:\n" +
-                    $"   • Mañana: 60g | Tarde: 60g | Total: 120g\n\n" +
-                    $"📊 CONSUMO:\n" +
-                    $"   • Esperado: {consumoEsperado:F2} kg\n" +
-                    $"   • Registrado: {ConsumoActual.CantidadConsumida:F2} kg\n" +
-                    $"   • Diferencia: {merma:F2} kg" +
-                    mensajeMerma + "\n\n¿Confirmar registro?",
-                    "Confirmar Registro Semanal",
-                    MessageBoxButton.YesNo,
-                    alertaMerma ? MessageBoxImage.Warning : MessageBoxImage.Question);
-
-                if (resultado == MessageBoxResult.Yes)
+                if (database.InsertarConsumoSemanal(ConsumoActual))
                 {
-                    bool guardado = database.InsertarConsumoSemanal(ConsumoActual);
-
-                    if (guardado)
-                    {
-                        DescontarStockInventario(
-                            ConsumoActual.IdAlimento,
-                            (int)ConsumoActual.CantidadConsumida);
-
-                        CargarDatos();
-                        LimpiarFormulario();
-                    }
-                    return guardado;
+                    DescontarStockInventario(ConsumoActual.IdAlimento, (int)ConsumoActual.CantidadConsumida);
+                    CargarDatos();
+                    LimpiarFormulario();
+                    return true;
                 }
             }
             return false;
@@ -273,102 +274,53 @@ namespace loginavicola.ViewModel
         private void DescontarStockInventario(int idAlimento, int cantidad)
         {
             bool descontado = inventarioDatabase.ActualizarStock(idAlimento, cantidad, "resta");
-
             if (!descontado)
             {
-                MessageBox.Show(
-                    "El consumo fue registrado pero hubo un error al actualizar el stock.\n" +
-                    "Por favor verifique el inventario manualmente.",
-                    "Advertencia de Stock",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                MessageBox.Show("Error al actualizar el stock en inventario.", "Advertencia", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
         private bool ValidarConsumo()
         {
-            if (ConsumoActual.IdLoteGallinas == 0)
-            {
-                MessageBox.Show("Debe seleccionar un lote.", "Validación",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            if (ConsumoActual.IdLoteGallinas == 0 || AlimentoSeleccionado == null || ConsumoActual.CantidadConsumida <= 0)
                 return false;
-            }
-
-            // ✅ FIX: Valida usando AlimentoSeleccionado en lugar de solo IdAlimento
-            if (AlimentoSeleccionado == null || ConsumoActual.IdAlimento == 0)
-            {
-                MessageBox.Show("Debe seleccionar un alimento.", "Validación",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return false;
-            }
-
-            if (ConsumoActual.CantidadConsumida <= 0)
-            {
-                MessageBox.Show("La cantidad debe ser mayor a 0.", "Validación",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return false;
-            }
-
-            var loteSeleccionado = LotesActivos
-                .FirstOrDefault(l => l.IdLote == ConsumoActual.IdLoteGallinas);
-
-            if (loteSeleccionado != null)
-            {
-                decimal consumoEsperado = loteSeleccionado.CantidadActual * 0.6m;
-                decimal consumoMaximo = consumoEsperado * 2;
-
-                if (ConsumoActual.CantidadConsumida > consumoMaximo)
-                {
-                    var resultado = MessageBox.Show(
-                        $"⚠️ Cantidad muy alta ({ConsumoActual.CantidadConsumida:F2} kg).\n\n" +
-                        $"Consumo esperado: {consumoEsperado:F2} kg\n" +
-                        $"¿Está seguro?",
-                        "Validar Cantidad",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Warning);
-
-                    return resultado == MessageBoxResult.Yes;
-                }
-            }
-
             return true;
         }
 
         public void LimpiarFormulario()
         {
-            ConsumoActual = new ModelConsumo
-            {
-                FechaConsumo = DateTime.Now,
-                UnidadMedida = "kg",
-                Turno = "Semanal"
-            };
-
-            // ✅ FIX: Limpiar también el alimento seleccionado
+            ConsumoActual = new ModelConsumo { FechaConsumo = DateTime.Now, UnidadMedida = "kg", Turno = "Semanal" };
             AlimentoSeleccionado = null;
         }
 
         private void FiltrarConsumos()
         {
+            var todosConsumos = database.ObtenerConsumos();
+            if (todosConsumos == null) return;
+
             if (string.IsNullOrWhiteSpace(TextoBusqueda))
             {
                 CargarConsumos();
                 return;
             }
 
-            var consumosFiltrados = database.ObtenerConsumos()
-                .Where(c =>
-                    c.NombreAlimento.ToLower().Contains(TextoBusqueda.ToLower()) ||
-                    c.IdLoteGallinas.ToString().Contains(TextoBusqueda) ||
-                    c.Turno.ToLower().Contains(TextoBusqueda.ToLower()))
+            var consumosFiltrados = todosConsumos
+                .Where(c => c.NombreAlimento.ToLower().Contains(TextoBusqueda.ToLower()) ||
+                            c.IdLoteGallinas.ToString().Contains(TextoBusqueda))
                 .ToList();
 
             Consumos.Clear();
-            foreach (var consumo in consumosFiltrados)
+            TotalPaginas = (int)Math.Ceiling((double)consumosFiltrados.Count / ElementosPorPagina);
+            if (TotalPaginas < 1) TotalPaginas = 1;
+
+            int omitirRegistros = (PaginaActual - 1) * ElementosPorPagina;
+            var fragmentoFiltrado = consumosFiltrados.Skip(omitirRegistros).Take(ElementosPorPagina).ToList();
+
+            foreach (var consumo in fragmentoFiltrado)
                 Consumos.Add(consumo);
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
-
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

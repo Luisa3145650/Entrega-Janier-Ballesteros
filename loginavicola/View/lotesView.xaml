@@ -7,40 +7,63 @@
              xmlns:helpers="clr-namespace:loginavicola.Helpers"
              xmlns:root="clr-namespace:loginavicola"
              mc:Ignorable="d" 
+             FontFamily="Segoe UI"
              d:DesignHeight="1300" d:DesignWidth="800">
 
     <UserControl.Resources>
         <helpers:RoleToVisibilityConverter x:Key="RoleConverter"/>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <!-- ESTILO DE TARJETAS DE MÉTRICAS (Limpio y minimalista) -->
         <Style x:Key="StatCardStyle" TargetType="Border">
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="20"/>
-            <Setter Property="Margin" Value="10"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="24"/>
+            <Setter Property="Margin" Value="12,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.3" Color="#000000"/>
+                    <DropShadowEffect BlurRadius="20" ShadowDepth="2" Opacity="0.08" Color="#000000"/>
                 </Setter.Value>
             </Setter>
         </Style>
 
+        <!-- ESTILOS DE TEXTO -->
+        <Style x:Key="CardTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#64748B"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+
+        <Style x:Key="BigValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="32"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#1E293B"/>
+        </Style>
+
+        <Style x:Key="CardSubTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#94A3B8"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+        </Style>
+
+        <!-- BOTÓN VERDE PRINCIPAL -->
         <Style x:Key="GreenButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#4CAF50"/>
+            <Setter Property="Background" Value="#007A1A"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="20,12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="13"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="8"
-                                Padding="{TemplateBinding Padding}">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="12" Padding="{TemplateBinding Padding}">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <TextBlock Text="+" FontSize="18" FontWeight="Bold" 
-                                           VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <ContentPresenter HorizontalAlignment="Center" 
-                                                VerticalAlignment="Center"/>
+                                <TextBlock Text="＋" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
                     </ControlTemplate>
@@ -48,31 +71,75 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#45a049"/>
+                    <Setter Property="Background" Value="#005C13"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="SearchBoxStyle" TargetType="TextBox">
-            <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+        <!-- ESTILO INPUTS MODERNOS (Cajas redondeadas y suaves) -->
+        <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#1E293B"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="8">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="true">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#007A1A"/>
+                                <Setter TargetName="border" Property="Background" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
+        <!-- ESTILO COMBOBOX MODERNO -->
+        <Style x:Key="ModernComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <!-- BOTONES SECUNDARIOS / ACCIONES MODAL -->
         <Style x:Key="ModalButtonStyle" TargetType="Button">
-            <Setter Property="Padding" Value="30,10"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="24,12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="13"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="6"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" 
-                                            VerticalAlignment="Center"/>
+                        <Border Background="{TemplateBinding Background}" CornerRadius="12" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- BOTONES DE PAGINACIÓN -->
+        <Style x:Key="PagerButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#E2E8F0"/>
+            <Setter Property="Foreground" Value="#475569"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -80,152 +147,173 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid>
-        <ScrollViewer VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Margin="20">
+    <Grid Background="#F0F2F5">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="24">
 
-                <!-- Tarjetas de estadísticas -->
-                <Grid>
+                <!-- TÍTULO DE LA SECCIÓN -->
+                <StackPanel Margin="12,0,12,20">
+                    <TextBlock Text="Control de Lotes" FontSize="28" FontWeight="Bold" Foreground="#1E293B"/>
+                    <TextBlock Text="Administra los lotes de gallinas, controle su estado y su procedencia." FontSize="14" Foreground="#64748B" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <!-- === SECTOR DE TARJETAS SUPERIORES === -->
+                <Grid Margin="0,0,0,24">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Style="{StaticResource StatCardStyle}" Background="#17A2B8" Margin="5">
+                    <!-- Tarjeta 1: Total Lotes -->
+                    <Border Grid.Column="0" Style="{StaticResource StatCardStyle}">
                         <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Total Lotes" FontSize="14" Foreground="White" Opacity="0.9"/>
-                                <TextBlock Text="{Binding TotalLotes, FallbackValue=0}" FontSize="36" FontWeight="Bold" Foreground="White" Margin="0,5,0,0"/>
-                                <TextBlock Text="Registrados en el sistema" FontSize="11" Foreground="White" Opacity="0.8" Margin="0,5,0,0"/>
+                            <StackPanel>
+                                <TextBlock Text="TOTAL LOTES" Style="{StaticResource CardTitleStyle}"/>
+                                <TextBlock Text="{Binding TotalLotes, FallbackValue=0}" Style="{StaticResource BigValueStyle}"/>
+                                <TextBlock Text="Registrados en el sistema" Style="{StaticResource CardSubTitleStyle}"/>
                             </StackPanel>
-                            <TextBlock Grid.Column="1" Text="📦" Foreground="White" FontSize="40" VerticalAlignment="Bottom" Opacity="0.5" Margin="0,0,5,0"/>
+                            <TextBlock Text="📦" FontSize="24" HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0.2"/>
                         </Grid>
                     </Border>
 
-                    <Border Grid.Column="1" Style="{StaticResource StatCardStyle}" Background="#9C59B6" Margin="5">
+                    <!-- Tarjeta 2: En Proceso -->
+                    <Border Grid.Column="1" Style="{StaticResource StatCardStyle}">
                         <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="En Proceso" FontSize="14" Foreground="White" Opacity="0.9"/>
-                                <TextBlock Text="{Binding LotesActivos, FallbackValue=0}" FontSize="36" FontWeight="Bold" Foreground="White" Margin="0,5,0,0"/>
-                                <TextBlock Text="Lotes activos" FontSize="11" Foreground="White" Opacity="0.8" Margin="0,5,0,0"/>
+                            <StackPanel>
+                                <TextBlock Text="EN PROCESO" Style="{StaticResource CardTitleStyle}"/>
+                                <TextBlock Text="{Binding LotesActivos, FallbackValue=0}" Style="{StaticResource BigValueStyle}"/>
+                                <TextBlock Text="Lotes productivos activos" Style="{StaticResource CardSubTitleStyle}"/>
                             </StackPanel>
-                            <TextBlock Grid.Column="1" Text="⚙️" Foreground="White" FontSize="40" VerticalAlignment="Bottom" Opacity="0.5" Margin="0,0,5,0"/>
+                            <TextBlock Text="⚙️" FontSize="24" HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0.2"/>
                         </Grid>
                     </Border>
 
-                    <Border Grid.Column="2" Style="{StaticResource StatCardStyle}" Background="#F39C12" Margin="5">
+                    <!-- Tarjeta 3: Cantidad Total Aves -->
+                    <Border Grid.Column="2" Style="{StaticResource StatCardStyle}">
                         <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Cantidad Total" FontSize="14" Foreground="White" Opacity="0.9"/>
-                                <TextBlock Text="{Binding TotalAves, FallbackValue=0}" FontSize="36" FontWeight="Bold" Foreground="White" Margin="0,5,0,0"/>
-                                <TextBlock Text="Aves" FontSize="11" Foreground="White" Opacity="0.8" Margin="0,5,0,0"/>
+                            <StackPanel>
+                                <TextBlock Text="CANTIDAD TOTAL" Style="{StaticResource CardTitleStyle}"/>
+                                <TextBlock Text="{Binding TotalAves, FallbackValue=0, StringFormat={}{0:N0}}" Style="{StaticResource BigValueStyle}"/>
+                                <TextBlock Text="Aves activas actualmente" Style="{StaticResource CardSubTitleStyle}"/>
                             </StackPanel>
-                            <TextBlock Grid.Column="1" Text="🐤" Foreground="White" FontSize="40" VerticalAlignment="Bottom" Opacity="0.5" Margin="0,0,5,0"/>
+                            <TextBlock Text="🐤" FontSize="24" HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0.2"/>
                         </Grid>
                     </Border>
                 </Grid>
 
-                <!-- Barra de búsqueda y botón registrar -->
-                <Grid Margin="0,0,0,20">
+                <!-- === SECTOR BÚSQUEDA Y BOTÓN === -->
+                <Grid Margin="12,0,12,24">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="5" Margin="0,0,15,0">
+                    <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="4" Margin="0,0,16,0" BorderBrush="#E2E8F0" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="🔍" FontSize="16" VerticalAlignment="Center" Margin="10,0"/>
+                            <TextBlock Text="🔍" FontSize="16" VerticalAlignment="Center" Margin="16,0,8,0" Foreground="#64748B"/>
                             <TextBox Grid.Column="1" Text="{Binding TextoBusqueda, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource SearchBoxStyle}" BorderThickness="0" VerticalContentAlignment="Center"/>
+                                     BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center" Padding="4,8" FontSize="14" Foreground="#1E293B"/>
                         </Grid>
                     </Border>
 
-                    <Button Grid.Column="1" Content="REGISTRAR LOTE" 
-                            Command="{Binding AbrirModalCommand}"
-                            Style="{StaticResource GreenButtonStyle}"/>
+                    <Button Grid.Column="1" Content="REGISTRAR LOTE" Command="{Binding AbrirModalCommand}" Style="{StaticResource GreenButtonStyle}"/>
                 </Grid>
 
-                <!-- Tabla de lotes registrados -->
-                <Border Background="White" CornerRadius="12" Padding="15">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.1" Color="#000000"/>
-                    </Border.Effect>
+                <!-- === TABLA DE DATOS === -->
+                <Border Background="White" CornerRadius="16" Padding="24" Margin="12,0" BorderBrush="#E2E8F0" BorderThickness="1">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="Lotes Registrados" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,15"/>
-                        <DataGrid Grid.Row="1" ItemsSource="{Binding LotesRegistrados}" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="None" BorderThickness="0" Background="Transparent" RowBackground="White" AlternatingRowBackground="#F9F9F9">
+
+                        <TextBlock Grid.Row="0" Text="Lotes Registrados" FontSize="18" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,16"/>
+
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding LotesRegistrados}" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" BorderThickness="0" Background="Transparent" RowBackground="White" AlternatingRowBackground="#F8FAFC" RowHeight="44" MinHeight="250">
                             <DataGrid.ColumnHeaderStyle>
                                 <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background" Value="#F5F5F5"/>
-                                    <Setter Property="Foreground" Value="#333333"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="Padding" Value="10,8"/>
+                                    <Setter Property="Background" Value="#F1F5F9"/>
+                                    <Setter Property="Foreground" Value="#475569"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="Padding" Value="12,10"/>
                                     <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                    <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                                    <Setter Property="BorderBrush" Value="#E2E8F0"/>
                                 </Style>
                             </DataGrid.ColumnHeaderStyle>
+                            <DataGrid.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="Padding" Value="12,8"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGrid.CellStyle>
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="ID Lote" Binding="{Binding IdLote}" Width="80"/>
                                 <DataGridTextColumn Header="Raza" Binding="{Binding Raza}" Width="110"/>
-                                <DataGridTextColumn Header="Cantidad" Binding="{Binding CantidadGallinas}" Width="90"/>
+                                <DataGridTextColumn Header="Cantidad" Binding="{Binding CantidadGallinas, StringFormat={}{0:N0}}" Width="90"/>
                                 <DataGridTextColumn Header="Fecha Incorporación" Binding="{Binding FechaIncorporacion, StringFormat=dd/MM/yyyy}" Width="140"/>
                                 <DataGridTextColumn Header="Granja Origen" Binding="{Binding GranjaOrigen}" Width="140"/>
                                 <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="100"/>
                                 <DataGridTextColumn Header="Observaciones" Binding="{Binding Observaciones}" Width="*"/>
                                 <DataGridTemplateColumn Header="Acciones" Width="120">
-    <DataGridTemplateColumn.CellTemplate>
-        <DataTemplate>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-
-                                                <!-- Botón Editar -->
-                                                <Button Content="✏️" 
-    Command="{Binding DataContext.EditarCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
-    CommandParameter="{Binding}" 
-    Background="#E3F2FD" BorderThickness="0" Margin="2" Padding="8,4" Cursor="Hand"
-    Visibility="{Binding RelativeSource={RelativeSource Self}, Converter={StaticResource RoleConverter}}"/>
-
-                                                <!-- Botón Eliminar -->
-                                                <Button Content="🗑️" 
-    Command="{Binding DataContext.EliminarCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
-    CommandParameter="{Binding}" 
-    Background="#FFEBEE" BorderThickness="0" Margin="2" Padding="8,4" Cursor="Hand"
-    Visibility="{Binding RelativeSource={RelativeSource Self}, Converter={StaticResource RoleConverter}}"/>
-
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                <Button Content="✏️" Command="{Binding DataContext.EditarCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}" Background="#E3F2FD" BorderThickness="0" Margin="2" Padding="8,4" Cursor="Hand" Visibility="{Binding RelativeSource={RelativeSource Self}, Converter={StaticResource RoleConverter}}"/>
+                                                <Button Content="🗑️" Command="{Binding DataContext.EliminarCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}" Background="#FFEBEE" BorderThickness="0" Margin="2" Padding="8,4" Cursor="Hand" Visibility="{Binding RelativeSource={RelativeSource Self}, Converter={StaticResource RoleConverter}}"/>
                                             </StackPanel>
-        </DataTemplate>
-    </DataGridTemplateColumn.CellTemplate>
-</DataGridTemplateColumn>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
+
+                        <!-- Paginación -->
+                        <Grid Grid.Row="2" Margin="0,16,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Mostrar:" VerticalAlignment="Center" Foreground="#64748B" FontSize="13" Margin="0,0,6,0"/>
+                                <ComboBox ItemsSource="{Binding OpcionesTamanoPagina}" SelectedItem="{Binding TamanoPagina}" Width="65" Height="28" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                                <TextBlock Text="registros por página" VerticalAlignment="Center" Foreground="#64748B" FontSize="13" Margin="6,0,0,0"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button Content="◀" Command="{Binding PaginaAnteriorCommand}" Style="{StaticResource PagerButtonStyle}" Margin="0,0,4,0"/>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0">
+                                    <TextBlock Text="Página " Foreground="#64748B" FontSize="13"/>
+                                    <TextBlock Text="{Binding PaginaActual, FallbackValue=1}" FontWeight="Bold" Foreground="#1E293B" FontSize="13"/>
+                                    <TextBlock Text=" de " Foreground="#64748B" FontSize="13"/>
+                                    <TextBlock Text="{Binding TotalPaginas, FallbackValue=1}" FontWeight="Bold" Foreground="#1E293B" FontSize="13"/>
+                                </StackPanel>
+                                <Button Content="▶" Command="{Binding PaginaSiguienteCommand}" Style="{StaticResource PagerButtonStyle}" Margin="4,0,0,0"/>
+                            </StackPanel>
+                        </Grid>
                     </Grid>
                 </Border>
             </StackPanel>
         </ScrollViewer>
 
-        <!-- Modal de Registro/Edición de Lote - VERSIÓN CORREGIDA -->
-        <Grid x:Name="ModalOverlay" Background="#80000000" Visibility="{Binding MostrarModal, Converter={StaticResource BoolToVis}}">
-            <Border Background="White" CornerRadius="12" MaxWidth="500" MaxHeight="650" VerticalAlignment="Center" HorizontalAlignment="Center">
+        <!-- ========================================== -->
+        <!-- MODAL DE REGISTRO ESTILO NUEVO PERFIL      -->
+        <!-- ========================================== -->
+        <Grid x:Name="ModalOverlay" Background="#66000000" Visibility="{Binding MostrarModal, Converter={StaticResource BoolToVis}}">
+            <!-- Tarjeta con ancho reducido a 420 y alto máximo de 580 -->
+            <Border Background="White" CornerRadius="16" Width="420" MaxHeight="580" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="24">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="30" ShadowDepth="4" Opacity="0.15" Color="#000000"/>
+                </Border.Effect>
+
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -233,56 +321,53 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Header -->
-                    <Grid Grid.Row="0" Background="#4CAF50">
+                    <!-- Cabecera limpia y minimalista sin fondos de colores -->
+                    <Grid Grid.Row="0" Margin="0,0,0,20">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Registro de Lote" FontSize="18" FontWeight="SemiBold" Foreground="White" Margin="20,15" VerticalAlignment="Center"/>
-                        <Button Grid.Column="1" Content="✕" Command="{Binding CerrarModalCommand}" Background="Transparent" Foreground="White" BorderThickness="0" FontSize="20" Padding="15,10" Cursor="Hand"/>
+                        <TextBlock Grid.Column="0" Text="Registro de Lote" FontSize="22" FontWeight="Bold" Foreground="#1E293B"/>
+                        <Button Grid.Column="1" Content="✕" Command="{Binding CerrarModalCommand}" Background="Transparent" BorderThickness="0" Foreground="#64748B" FontSize="18" FontWeight="Bold" Cursor="Hand" VerticalAlignment="Center"/>
                     </Grid>
 
-                    <!-- Cuerpo del modal -->
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="20">
+                    <!-- Formulario con scroll interno por seguridad -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20">
                         <StackPanel>
-                            <TextBlock Text="ID Lote" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding LoteActual.IdLote}" IsReadOnly="True" Background="#F5F5F5" Padding="10,8" Margin="0,0,0,15"/>
+                            <TextBlock Text="ID Lote" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6" Foreground="#475569"/>
+                            <TextBox Text="{Binding LoteActual.IdLote}" IsReadOnly="True" Background="#E2E8F0" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,16"/>
 
-                            <TextBlock Text="Fecha ingreso" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                            <DatePicker SelectedDate="{Binding LoteActual.FechaIncorporacion}" Padding="10,8" Margin="0,0,0,15"/>
+                            <TextBlock Text="Fecha ingreso" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6" Foreground="#475569"/>
+                            <DatePicker SelectedDate="{Binding LoteActual.FechaIncorporacion}" Margin="0,0,0,16" Padding="6"/>
 
-                            <TextBlock Text="Cantidad de gallinas" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding LoteActual.CantidadGallinas}" Padding="10,8" Margin="0,0,0,15"/>
+                            <TextBlock Text="Cantidad de gallinas" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6" Foreground="#475569"/>
+                            <TextBox Text="{Binding LoteActual.CantidadGallinas}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,16"/>
 
-                            <TextBlock Text="Raza" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding LoteActual.Raza}" Padding="10,8" Margin="0,0,0,15"/>
+                            <TextBlock Text="Raza" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6" Foreground="#475569"/>
+                            <TextBox Text="{Binding LoteActual.Raza}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,16"/>
 
-                            <TextBlock Text="Granja Origen" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding LoteActual.GranjaOrigen}" Padding="10,8" Margin="0,0,0,15"/>
+                            <TextBlock Text="Granja Origen" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6" Foreground="#475569"/>
+                            <TextBox Text="{Binding LoteActual.GranjaOrigen}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,16"/>
 
-                            <!-- CAMPO ESTADO - UN SOLO ComboBox -->
-                            <TextBlock Text="Estado del lote" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                            <ComboBox ItemsSource="{Binding EstadosDisponibles}" 
-                                      SelectedItem="{Binding LoteActual.Estado}"
-                                      Padding="10,8" Margin="0,0,0,15"/>
+                            <TextBlock Text="Estado del lote" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6" Foreground="#475569"/>
+                            <ComboBox ItemsSource="{Binding EstadosDisponibles}" SelectedItem="{Binding LoteActual.Estado}" Style="{StaticResource ModernComboBoxStyle}" Margin="0,0,0,16"/>
 
-                            <TextBlock Text="Observaciones" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding LoteActual.Observaciones}" Height="80" TextWrapping="Wrap" AcceptsReturn="True" Padding="10,8"/>
+                            <TextBlock Text="Observaciones" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6" Foreground="#475569"/>
+                            <TextBox Text="{Binding LoteActual.Observaciones}" Height="80" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Style="{StaticResource ModernTextBoxStyle}"/>
                         </StackPanel>
                     </ScrollViewer>
 
-                    <!-- Footer -->
-                    <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="#E0E0E0" Padding="20,15">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" Content="GUARDAR" Command="{Binding RegistrarCommand}" Style="{StaticResource ModalButtonStyle}" Background="#4CAF50" Foreground="White" Margin="0,0,5,0"/>
-                            <Button Grid.Column="1" Content="CANCELAR" Command="{Binding CerrarModalCommand}" Style="{StaticResource ModalButtonStyle}" Background="#E0E0E0" Foreground="#333333" Margin="5,0,0,0"/>
-                        </Grid>
-                    </Border>
+                    <!-- Acciones Inferiores -->
+                    <Grid Grid.Row="2" Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0" Content="Guardar" Command="{Binding RegistrarCommand}" Style="{StaticResource ModalButtonStyle}" Background="#007A1A" Foreground="White"/>
+                        <Button Grid.Column="2" Content="Cancelar" Command="{Binding CerrarModalCommand}" Style="{StaticResource ModalButtonStyle}" Background="#CBD5E1" Foreground="#475569"/>
+                    </Grid>
                 </Grid>
             </Border>
         </Grid>
