@@ -1,5 +1,6 @@
 ﻿using Emgu.CV.Face;
 using loginavicola.Model;
+using System.Windows;
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
