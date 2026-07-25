@@ -11,43 +11,64 @@
              d:DesignHeight="600" d:DesignWidth="1100">
 
     <UserControl.Resources>
-        <!-- Estilo General para Tarjetas CORREGIDO para dar contraste -->
-        <Style x:Key="ColorCardStyle" TargetType="Border">
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="35,35"/>
+        <!-- ========================================= -->
+        <!-- ESTILOS PARA TARJETAS ESTADÍSTICAS        -->
+        <!-- ========================================= -->
+
+        <!-- Base para todas las tarjetas (igual que en inventarioView) -->
+        <Style x:Key="StatCardBaseStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="25,25,25,25"/>
             <Setter Property="Margin" Value="10,0"/>
-            <Setter Property="MinHeight" Value="140"/>
+            <Setter Property="MinHeight" Value="120"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Background" Value="White"/>
-            <!-- Borde sutil para delimitar la tarjeta si el fondo es claro -->
-            <Setter Property="BorderBrush" Value="#E5E7EB"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <!-- Sombra más pronunciada y oscura -->
+            <Setter Property="BorderThickness" Value="6,0,0,0"/>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect BlurRadius="25" ShadowDepth="3" 
-                                      Opacity="0.12" Color="#000000"/>
+                    <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <!-- Estilo para el Título de las Tarjetas -->
-        <Style x:Key="CardTitleStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="#6B7280"/>
-            <Setter Property="Margin" Value="0,0,0,8"/>
+        <!-- Tarjeta: TOTAL GALLINAS (Amarilla) -->
+        <Style x:Key="CardGallinasStyle" TargetType="Border" BasedOn="{StaticResource StatCardBaseStyle}">
+            <Setter Property="BorderBrush" Value="#FACC15"/>
         </Style>
 
-        <!-- Estilo para el Valor Principal Grande -->
+        <!-- Tarjeta: HUEVOS HOY (Azul) -->
+        <Style x:Key="CardHuevosStyle" TargetType="Border" BasedOn="{StaticResource StatCardBaseStyle}">
+            <Setter Property="BorderBrush" Value="#3B82F6"/>
+        </Style>
+
+        <!-- Tarjeta: STOCK ALIMENTO (Morada) -->
+        <Style x:Key="CardAlimentoStyle" TargetType="Border" BasedOn="{StaticResource StatCardBaseStyle}">
+            <Setter Property="BorderBrush" Value="#A855F7"/>
+        </Style>
+
+        <!-- Tarjeta: ALERTAS STOCK (Roja con fondo de alerta) -->
+        <Style x:Key="CardAlertasStyle" TargetType="Border" BasedOn="{StaticResource StatCardBaseStyle}">
+            <Setter Property="BorderBrush" Value="#EF4444"/>
+            <Setter Property="Background" Value="#FEF2F2"/>
+        </Style>
+
+        <!-- Estilo para el título de las tarjetas -->
+        <Style x:Key="CardTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#9CA3AF"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+
+        <!-- Estilo para el valor principal -->
         <Style x:Key="BigValueStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="48"/>
-            <Setter Property="FontWeight" Value="ExtraBold"/>
+            <Setter Property="FontSize" Value="36"/>
+            <Setter Property="FontWeight" Value="Black"/>
             <Setter Property="Foreground" Value="#111827"/>
             <Setter Property="VerticalAlignment" Value="Bottom"/>
         </Style>
 
-        <!-- Estilo para Unidades (e.g., Kg) -->
+        <!-- Estilo para unidades (Kg) -->
         <Style x:Key="ValueUnitStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="FontWeight" Value="Bold"/>
@@ -56,11 +77,14 @@
             <Setter Property="VerticalAlignment" Value="Bottom"/>
         </Style>
 
-        <!-- Estilo para Texto de Alerta -->
-        <Style x:Key="AlertTextStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="Medium"/>
-            <Setter Property="Foreground" Value="#6B7280"/>
+        <!-- Estilo para el badge de alerta -->
+        <Style x:Key="AlertBadgeStyle" TargetType="Border">
+            <Setter Property="Background" Value="#FEE2E2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
         </Style>
     </UserControl.Resources>
 
@@ -71,19 +95,21 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Margin="20,20,20,0">
+        <!-- ==================== -->
+        <!-- HEADER               -->
+        <!-- ==================== -->
+        <Grid Grid.Row="0" Margin="20,10,20,0">
             <StackPanel HorizontalAlignment="Left">
                 <TextBlock Text="Panel de Control General" 
                            FontSize="28" FontWeight="Bold" Foreground="#111827"/>
                 <TextBlock Text="Monitoreo de producción y analíticas de Yamboró." 
                            FontSize="14" Foreground="#6B7280" Margin="0,4,0,0"/>
             </StackPanel>
-
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-               
-            </StackPanel>
         </Grid>
 
+        <!-- ==================== -->
+        <!-- TARJETAS ESTADÍSTICAS -->
+        <!-- ==================== -->
         <Grid Grid.Row="1" Margin="20,24,20,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -92,63 +118,63 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Style="{StaticResource ColorCardStyle}">
-                <Grid>
-                    <Border CornerRadius="4" Background="#FBBF24" Width="6" HorizontalAlignment="Left" Margin="-24,-20,0,-20"/>
-                    <StackPanel Margin="12,0,0,0">
-                        <TextBlock Text="TOTAL GALLINAS" Style="{StaticResource CardTitleStyle}"/>
-                        <TextBlock x:Name="TotalGallinasValue" Text="{Binding TotalAves, StringFormat={}{0:N0}}" 
+            <!-- Tarjeta 1: TOTAL GALLINAS -->
+            <Border Grid.Column="0" Style="{StaticResource CardGallinasStyle}">
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="TOTAL GALLINAS" Style="{StaticResource CardTitleStyle}"/>
+                    <TextBlock x:Name="TotalGallinasValue" 
+                               Text="{Binding TotalAves, StringFormat={}{0:N0}}" 
+                               Style="{StaticResource BigValueStyle}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Tarjeta 2: HUEVOS HOY -->
+            <Border Grid.Column="1" Style="{StaticResource CardHuevosStyle}">
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="HUEVOS HOY" Style="{StaticResource CardTitleStyle}"/>
+                    <TextBlock x:Name="HuevosHoyValue" 
+                               Text="{Binding TotalHuevosHoy, StringFormat={}{0:N0}}" 
+                               Style="{StaticResource BigValueStyle}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Tarjeta 3: STOCK ALIMENTO -->
+            <Border Grid.Column="2" Style="{StaticResource CardAlimentoStyle}">
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="STOCK ALIMENTO" Style="{StaticResource CardTitleStyle}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock x:Name="AlimentoValue" 
+                                   Text="{Binding TotalAlimento, StringFormat={}{0:N0}}" 
                                    Style="{StaticResource BigValueStyle}"/>
+                        <TextBlock Text="Kg" Style="{StaticResource ValueUnitStyle}"/>
                     </StackPanel>
-                </Grid>
+                </StackPanel>
             </Border>
 
-            <Border Grid.Column="1" Style="{StaticResource ColorCardStyle}">
+            <!-- Tarjeta 4: ALERTAS STOCK (con badge de alerta) -->
+            <Border Grid.Column="3" Style="{StaticResource CardAlertasStyle}">
                 <Grid>
-                    <Border CornerRadius="4" Background="#3B82F6" Width="6" HorizontalAlignment="Left" Margin="-24,-20,0,-20"/>
-                    <StackPanel Margin="12,0,0,0">
-                        <TextBlock Text="HUEVOS HOY" Style="{StaticResource CardTitleStyle}"/>
-                        <TextBlock x:Name="HuevosHoyValue" Text="{Binding TotalHuevosHoy, StringFormat={}{0:N0}}" 
-                                   Style="{StaticResource BigValueStyle}"/>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="ALERTAS STOCK (&lt; 15)" 
+                                   Style="{StaticResource CardTitleStyle}" 
+                                   Foreground="#DC2626"/>
+                        <TextBlock x:Name="LotesValue" 
+                                   Text="{Binding TotalLotes}" 
+                                   Style="{StaticResource BigValueStyle}" 
+                                   Foreground="#DC2626"/>
                     </StackPanel>
-                </Grid>
-            </Border>
-
-            <Border Grid.Column="2" Style="{StaticResource ColorCardStyle}">
-                <Grid>
-                    <Border CornerRadius="4" Background="#A855F7" Width="6" HorizontalAlignment="Left" Margin="-24,-20,0,-20"/>
-                    <StackPanel Margin="12,0,0,0">
-                        <TextBlock Text="STOCK ALIMENTO" Style="{StaticResource CardTitleStyle}"/>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock x:Name="AlimentoValue" Text="{Binding TotalAlimento, StringFormat={}{0:N0}}" 
-                                       Style="{StaticResource BigValueStyle}"/>
-                            <TextBlock Text="Kg" Style="{StaticResource ValueUnitStyle}"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Grid>
-            </Border>
-
-            <Border Grid.Column="3" Style="{StaticResource ColorCardStyle}" Background="#FEF2F2">
-                <Grid>
-                    <Border CornerRadius="4" Background="#EF4444" Width="6" HorizontalAlignment="Left" Margin="-24,-20,0,-20"/>
-                    <Grid Margin="12,0,0,0">
-                        <StackPanel HorizontalAlignment="Left">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="ALERTAS STOCK " Style="{StaticResource CardTitleStyle}" Margin="0,0,4,8"/>
-                                <TextBlock Text="(&lt; 15)" Style="{StaticResource AlertTextStyle}" VerticalAlignment="Center" Margin="0,0,0,8"/>
-                            </StackPanel>
-                            <TextBlock x:Name="LotesValue" Text="{Binding TotalLotes}" 
-                                       Style="{StaticResource BigValueStyle}" Foreground="#EF4444"/>
-                        </StackPanel>
-                        <Border Width="40" Height="40" Background="#FEE2E2" CornerRadius="12" 
-                                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-12,-12,0">
-                            <TextBlock Text="⚠️" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </Grid>
+                    <!-- Badge de alerta -->
+                    <Border Style="{StaticResource AlertBadgeStyle}">
+                        <TextBlock Text="⚠" Foreground="#EF4444" FontSize="16" 
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
                 </Grid>
             </Border>
         </Grid>
 
+        <!-- ==================== -->
+        <!-- GRÁFICAS / CARRUSEL  -->
+        <!-- ==================== -->
         <Grid Grid.Row="2" Margin="20,16,20,20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
@@ -162,6 +188,7 @@
                     <ColumnDefinition Width="60"/>
                 </Grid.ColumnDefinitions>
 
+                <!-- Botón Anterior -->
                 <Button x:Name="btnAnterior" 
                         Grid.Column="0"
                         Width="45" Height="45"
@@ -183,15 +210,18 @@
                     </Button.Template>
                 </Button>
 
+                <!-- Contenedor del carrusel -->
                 <Border x:Name="CarruselContainer" 
                         Grid.Column="1"
                         Background="White" 
                         CornerRadius="12" 
                         Padding="30,24"
-                        Margin="10,0">
+                        Margin="10,0"
+                        BorderBrush="#E5E7EB"
+                        BorderThickness="1">
                     <Border.Effect>
-                        <DropShadowEffect BlurRadius="30" ShadowDepth="0" 
-                                          Opacity="0.08" Color="#000000"/>
+                        <DropShadowEffect BlurRadius="25" ShadowDepth="2" 
+                                          Opacity="0.05" Color="#000000"/>
                     </Border.Effect>
 
                     <Grid x:Name="CarruselContent">
@@ -200,6 +230,7 @@
                     </Grid>
                 </Border>
 
+                <!-- Botón Siguiente -->
                 <Button x:Name="btnSiguiente" 
                         Grid.Column="2"
                         Width="45" Height="45"
@@ -221,6 +252,7 @@
                 </Button>
             </Grid>
 
+            <!-- Indicadores del carrusel -->
             <StackPanel Grid.Row="1" 
                         Orientation="Horizontal" 
                         HorizontalAlignment="Center" 

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
         Title="Confirmar"
-        Height="150" Width="380"
+        Height="220" Width="450"
         WindowStartupLocation="CenterOwner"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -11,86 +11,127 @@
         AllowsTransparency="True"
         ShowInTaskbar="False">
 
-    <Border CornerRadius="14" Background="White" BorderBrush="#C8E6C9" BorderThickness="1">
+    <Border CornerRadius="12" Background="White" BorderBrush="#E5E7EB" BorderThickness="1">
         <Border.Effect>
-            <DropShadowEffect Color="Black" Opacity="0.25" BlurRadius="20" ShadowDepth="3"/>
+            <DropShadowEffect Color="#000000" Opacity="0.15" BlurRadius="25" ShadowDepth="3"/>
         </Border.Effect>
 
-        <Grid Margin="0">
+        <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="70"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="65"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
+            <!-- Cabecera con título y botón cerrar -->
+            <Border Grid.Row="0" Background="#4CAF50" CornerRadius="12,12,0,0" Padding="24,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Título -->
+                    <TextBlock Grid.Column="0" Text="Cerrar Sesión" FontSize="16" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" FontFamily="Segoe UI"/>
+
+                    <!-- Botón Cerrar (X) -->
+                    <Button Grid.Column="1" x:Name="btnCerrar" Content="✕" Click="btnCancelar_Click" 
+                            Background="Transparent" Foreground="White" BorderThickness="0" 
+                            Cursor="Hand" FontSize="18" Opacity="0.7" Width="32" Height="32"
+                            VerticalAlignment="Center" HorizontalAlignment="Right">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#FFFFFF30"/>
+                                                    <Setter Property="Opacity" Value="1"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </Border>
+
             <!-- Mensaje -->
-            <TextBlock Grid.Row="1"
-                       Text="¿Estás seguro de que deseas cerrar sesión?"
-                       Foreground="#333333"
-                       FontSize="14"
-                       FontFamily="Segoe UI"
-                       TextWrapping="Wrap"
-                       TextAlignment="Center"
-                       VerticalAlignment="Center"
-                       HorizontalAlignment="Center"
-                       Margin="25,0,25,0"/>
+            <StackPanel Grid.Row="1" Margin="40,30,40,30" VerticalAlignment="Center">
+                <TextBlock Text="¿Estás seguro de que deseas cerrar sesión?"
+                           Foreground="#1F2937"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           FontFamily="Segoe UI"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           LineHeight="1.5"/>
+            </StackPanel>
 
             <!-- Botones -->
-            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Button x:Name="btnCancelar" Content="Cancelar" Width="120" Height="38"
-                        Click="btnCancelar_Click" Cursor="Hand" Margin="0,0,15,0">
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border Background="#EEEEEE" CornerRadius="8" x:Name="bd">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="bd" Property="Background" Value="#E0E0E0"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter Property="Foreground" Value="#333333"/>
-                            <Setter Property="FontFamily" Value="Segoe UI"/>
-                            <Setter Property="FontSize" Value="13"/>
-                            <Setter Property="FontWeight" Value="SemiBold"/>
-                            <Setter Property="BorderThickness" Value="0"/>
-                        </Style>
-                    </Button.Style>
-                </Button>
+            <Border Grid.Row="2" Background="#F9FAFB" CornerRadius="0,0,12,12" Padding="20,14" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <!-- Botón Cancelar -->
+                    <Button x:Name="btnCancelar" Content="Cancelar" Width="120" Height="40"
+                            Click="btnCancelar_Click" Cursor="Hand" Margin="0,0,20,0">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="#EEEEEE" CornerRadius="8" x:Name="bd">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="bd" Property="Background" Value="#E0E0E0"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Foreground" Value="#333333"/>
+                                <Setter Property="FontFamily" Value="Segoe UI"/>
+                                <Setter Property="FontSize" Value="14"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Style>
+                        </Button.Style>
+                    </Button>
 
-                <Button x:Name="btnConfirmar" Content="SI" Width="120" Height="38"
-                        Click="btnConfirmar_Click" Cursor="Hand">
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border Background="#4CAF50" CornerRadius="8" x:Name="bd">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="bd" Property="Background" Value="#388E3C"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter Property="Foreground" Value="White"/>
-                            <Setter Property="FontFamily" Value="Segoe UI"/>
-                            <Setter Property="FontSize" Value="13"/>
-                            <Setter Property="FontWeight" Value="SemiBold"/>
-                            <Setter Property="BorderThickness" Value="0"/>
-                        </Style>
-                    </Button.Style>
-                </Button>
-            </StackPanel>
+                    <!-- Botón Confirmar -->
+                    <Button x:Name="btnConfirmar" Content="Aceptar" Width="120" Height="40"
+                            Click="btnConfirmar_Click" Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="#4CAF50" CornerRadius="8" x:Name="bd">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="bd" Property="Background" Value="#388E3C"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontFamily" Value="Segoe UI"/>
+                                <Setter Property="FontSize" Value="14"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </Border>
         </Grid>
     </Border>
 </Window>

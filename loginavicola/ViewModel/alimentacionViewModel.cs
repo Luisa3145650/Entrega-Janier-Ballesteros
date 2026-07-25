@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
 using loginavicola.Model;
-using loginavicola.Helpers; // <-- Usa el RelayCommand original de aquí
+using loginavicola.Helpers;
 using System.Collections.Generic;
 using loginavicola.Database;
 using System.Windows;
@@ -64,12 +64,16 @@ namespace loginavicola.ViewModel
             UnidadesMedida = new ObservableCollection<string> { "kg" };
             Turnos = new ObservableCollection<string> { "Semanal" };
 
-            // Instanciación usando los comandos de tus Helpers globales
+            OpcionesTamanoPagina = new ObservableCollection<int> { 5, 10, 15, 20, 50 };
+
             PaginaAnteriorCommand = new RelayCommand(param => { PaginaActual--; }, param => PaginaActual > 1);
             PaginaSiguienteCommand = new RelayCommand(param => { PaginaActual++; }, param => PaginaActual < TotalPaginas);
 
             CargarDatos();
         }
+
+        // ── Propiedades de Paginación ────────────────────────────────────
+        public ObservableCollection<int> OpcionesTamanoPagina { get; }
 
         public int ElementosPorPagina
         {
@@ -92,10 +96,12 @@ namespace loginavicola.ViewModel
             get => _paginaActual;
             set
             {
-                if (_paginaActual != value)
+                if (_paginaActual != value && value >= 1 && value <= TotalPaginas)
                 {
                     _paginaActual = value;
                     OnPropertyChanged(nameof(PaginaActual));
+                    OnPropertyChanged(nameof(CanGoPrevious));
+                    OnPropertyChanged(nameof(CanGoNext));
                     CargarConsumos();
                 }
             }
@@ -107,9 +113,36 @@ namespace loginavicola.ViewModel
             set { _totalPaginas = value; OnPropertyChanged(nameof(TotalPaginas)); }
         }
 
+        public bool CanGoPrevious => PaginaActual > 1;
+        public bool CanGoNext => PaginaActual < TotalPaginas;
+
+        // ── Propiedades de información de registros ──────────────────────
+        private int _totalRegistros;
+        public int TotalRegistros
+        {
+            get => _totalRegistros;
+            set { _totalRegistros = value; OnPropertyChanged(nameof(TotalRegistros)); }
+        }
+
+        private int _registrosInicio;
+        public int RegistrosInicio
+        {
+            get => _registrosInicio;
+            set { _registrosInicio = value; OnPropertyChanged(nameof(RegistrosInicio)); }
+        }
+
+        private int _registrosFin;
+        public int RegistrosFin
+        {
+            get => _registrosFin;
+            set { _registrosFin = value; OnPropertyChanged(nameof(RegistrosFin)); }
+        }
+
+        // ── Comandos ─────────────────────────────────────────────────────
         public ICommand PaginaAnteriorCommand { get; }
         public ICommand PaginaSiguienteCommand { get; }
 
+        // ── Estadísticas ──────────────────────────────────────────────────
         public decimal ConsumoDia
         {
             get => _consumoDia;
@@ -128,6 +161,7 @@ namespace loginavicola.ViewModel
             set { _alimentoDisponible = value; OnPropertyChanged(nameof(AlimentoDisponible)); }
         }
 
+        // ── Colecciones ──────────────────────────────────────────────────
         public ObservableCollection<ModelConsumo> Consumos { get; set; }
         public ObservableCollection<ModelAlimento> Alimentos { get; set; }
         public ObservableCollection<ModelLoteGallina> LotesActivos { get; set; }
@@ -153,6 +187,7 @@ namespace loginavicola.ViewModel
             }
         }
 
+        // ── Métodos de carga ─────────────────────────────────────────────
         public void CargarDatos()
         {
             CargarConsumos();
@@ -163,24 +198,37 @@ namespace loginavicola.ViewModel
 
         private void CargarConsumos()
         {
-            Consumos.Clear();
             var todosConsumos = database.ObtenerConsumos();
+
+            Consumos.Clear();  // ← Usamos Consumos, no ConsumosPaginados
 
             if (todosConsumos != null && todosConsumos.Any())
             {
+                TotalRegistros = todosConsumos.Count;
                 TotalPaginas = (int)Math.Ceiling((double)todosConsumos.Count / ElementosPorPagina);
                 if (TotalPaginas < 1) TotalPaginas = 1;
+
+                if (PaginaActual > TotalPaginas) PaginaActual = TotalPaginas;
 
                 int omitirRegistros = (PaginaActual - 1) * ElementosPorPagina;
                 var consumosPaginados = todosConsumos.Skip(omitirRegistros).Take(ElementosPorPagina).ToList();
 
+                RegistrosInicio = TotalRegistros == 0 ? 0 : omitirRegistros + 1;
+                RegistrosFin = Math.Min(PaginaActual * ElementosPorPagina, TotalRegistros);
+
                 foreach (var consumo in consumosPaginados)
-                    Consumos.Add(consumo);
+                    Consumos.Add(consumo);  // ← Agregamos a Consumos
             }
             else
             {
                 TotalPaginas = 1;
+                TotalRegistros = 0;
+                RegistrosInicio = 0;
+                RegistrosFin = 0;
             }
+
+            OnPropertyChanged(nameof(CanGoPrevious));
+            OnPropertyChanged(nameof(CanGoNext));
         }
 
         private void CargarAlimentos()
@@ -235,6 +283,44 @@ namespace loginavicola.ViewModel
             AlimentoDisponible = totalAlimentoKg;
         }
 
+        private void FiltrarConsumos()
+        {
+            var todosConsumos = database.ObtenerConsumos();
+            if (todosConsumos == null) return;
+
+            Consumos.Clear();  // ← Usamos Consumos
+
+            if (string.IsNullOrWhiteSpace(TextoBusqueda))
+            {
+                CargarConsumos();
+                return;
+            }
+
+            var consumosFiltrados = todosConsumos
+                .Where(c => c.NombreAlimento.ToLower().Contains(TextoBusqueda.ToLower()) ||
+                            c.IdLoteGallinas.ToString().Contains(TextoBusqueda))
+                .ToList();
+
+            TotalRegistros = consumosFiltrados.Count;
+            TotalPaginas = (int)Math.Ceiling((double)consumosFiltrados.Count / ElementosPorPagina);
+            if (TotalPaginas < 1) TotalPaginas = 1;
+
+            if (PaginaActual > TotalPaginas) PaginaActual = TotalPaginas;
+
+            int omitirRegistros = (PaginaActual - 1) * ElementosPorPagina;
+            var fragmentoFiltrado = consumosFiltrados.Skip(omitirRegistros).Take(ElementosPorPagina).ToList();
+
+            RegistrosInicio = TotalRegistros == 0 ? 0 : omitirRegistros + 1;
+            RegistrosFin = Math.Min(PaginaActual * ElementosPorPagina, TotalRegistros);
+
+            foreach (var consumo in fragmentoFiltrado)
+                Consumos.Add(consumo);  // ← Agregamos a Consumos
+
+            OnPropertyChanged(nameof(CanGoPrevious));
+            OnPropertyChanged(nameof(CanGoNext));
+        }
+
+        // ── CRUD ──────────────────────────────────────────────────────────
         public bool GuardarConsumo()
         {
             if (ValidarConsumo())
@@ -293,33 +379,7 @@ namespace loginavicola.ViewModel
             AlimentoSeleccionado = null;
         }
 
-        private void FiltrarConsumos()
-        {
-            var todosConsumos = database.ObtenerConsumos();
-            if (todosConsumos == null) return;
-
-            if (string.IsNullOrWhiteSpace(TextoBusqueda))
-            {
-                CargarConsumos();
-                return;
-            }
-
-            var consumosFiltrados = todosConsumos
-                .Where(c => c.NombreAlimento.ToLower().Contains(TextoBusqueda.ToLower()) ||
-                            c.IdLoteGallinas.ToString().Contains(TextoBusqueda))
-                .ToList();
-
-            Consumos.Clear();
-            TotalPaginas = (int)Math.Ceiling((double)consumosFiltrados.Count / ElementosPorPagina);
-            if (TotalPaginas < 1) TotalPaginas = 1;
-
-            int omitirRegistros = (PaginaActual - 1) * ElementosPorPagina;
-            var fragmentoFiltrado = consumosFiltrados.Skip(omitirRegistros).Take(ElementosPorPagina).ToList();
-
-            foreach (var consumo in fragmentoFiltrado)
-                Consumos.Add(consumo);
-        }
-
+        // ── INotifyPropertyChanged ───────────────────────────────────────
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {

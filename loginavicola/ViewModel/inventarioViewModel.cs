@@ -15,14 +15,12 @@ namespace loginavicola.ViewModel
     public class InventarioViewModel : INotifyPropertyChanged
     {
         private readonly InventarioDatabase database;
-        // Lista privada para almacenar los datos completos filtrados antes de paginar
         private List<ItemInventario> _todosLosFiltrados = new();
 
         public InventarioViewModel()
         {
             database = new InventarioDatabase();
 
-            // Inicializar colecciones
             ItemsInventario = new ObservableCollection<ItemInventario>();
             Categorias = new ObservableCollection<string>
             {
@@ -35,54 +33,23 @@ namespace loginavicola.ViewModel
                 "Otro"
             };
 
-            // Inicializar propiedades de paginación de forma segura
-            OpcionesTamanoPagina = new ObservableCollection<int> { 5, 10, 20, 50 };
+            OpcionesTamanoPagina = new ObservableCollection<int> { 5, 10, 15, 20, 50 };
             _tamanoPagina = 10;
             _paginaActual = 1;
 
-            // Inicializar comandos existentes
             EditarItemCommand = new RelayCommand(EditarItem);
             EliminarItemCommand = new RelayCommand(EliminarItem);
             AjustarStockCommand = new RelayCommand(AjustarStock);
 
-            // Inicializar comandos de paginación (Hacen match con el XAML)
             PaginaAnteriorCommand = new RelayCommand(_ => CambiarPagina(-1), _ => PaginaActual > 1);
             PaginaSiguienteCommand = new RelayCommand(_ => CambiarPagina(1), _ => PaginaActual < TotalPaginas);
 
-            // Cargar datos
             CargarDatos();
         }
 
-        // Propiedades para las tarjetas
-        private int _totalProductos;
-        public int TotalProductos
-        {
-            get => _totalProductos;
-            set { _totalProductos = value; OnPropertyChanged(nameof(TotalProductos)); }
-        }
+        // ── Propiedades de Paginación ────────────────────────────────────
+        public ObservableCollection<int> OpcionesTamanoPagina { get; }
 
-        private int _stockBajo;
-        public int StockBajo
-        {
-            get => _stockBajo;
-            set { _stockBajo = value; OnPropertyChanged(nameof(StockBajo)); }
-        }
-
-        private int _stockOptimo;
-        public int StockOptimo
-        {
-            get => _stockOptimo;
-            set { _stockOptimo = value; OnPropertyChanged(nameof(StockOptimo)); }
-        }
-
-        private decimal _valorTotal;
-        public decimal ValorTotal
-        {
-            get => _valorTotal;
-            set { _valorTotal = value; OnPropertyChanged(nameof(ValorTotal)); }
-        }
-
-        // ── Paginación ────────────────────────────────────────────────
         private int _paginaActual;
         public int PaginaActual
         {
@@ -92,6 +59,8 @@ namespace loginavicola.ViewModel
                 _paginaActual = value;
                 OnPropertyChanged(nameof(PaginaActual));
                 OnPropertyChanged(nameof(InfoPagina));
+                OnPropertyChanged(nameof(CanGoPrevious));
+                OnPropertyChanged(nameof(CanGoNext));
                 AplicarPagina();
             }
         }
@@ -123,11 +92,62 @@ namespace loginavicola.ViewModel
             }
         }
 
+        public bool CanGoPrevious => PaginaActual > 1;
+        public bool CanGoNext => PaginaActual < TotalPaginas;
+
+        private int _totalRegistros;
+        public int TotalRegistros
+        {
+            get => _totalRegistros;
+            set { _totalRegistros = value; OnPropertyChanged(nameof(TotalRegistros)); }
+        }
+
+        private int _registrosInicio;
+        public int RegistrosInicio
+        {
+            get => _registrosInicio;
+            set { _registrosInicio = value; OnPropertyChanged(nameof(RegistrosInicio)); }
+        }
+
+        private int _registrosFin;
+        public int RegistrosFin
+        {
+            get => _registrosFin;
+            set { _registrosFin = value; OnPropertyChanged(nameof(RegistrosFin)); }
+        }
+
         public string InfoPagina => $"Página {PaginaActual} de {TotalPaginas}  ({_todosLosFiltrados.Count} registros)";
 
-        public ObservableCollection<int> OpcionesTamanoPagina { get; }
+        // ── Propiedades de estadísticas ──────────────────────────────────
+        private int _totalProductos;
+        public int TotalProductos
+        {
+            get => _totalProductos;
+            set { _totalProductos = value; OnPropertyChanged(nameof(TotalProductos)); }
+        }
 
-        // Colecciones
+        private int _stockBajo;
+        public int StockBajo
+        {
+            get => _stockBajo;
+            set { _stockBajo = value; OnPropertyChanged(nameof(StockBajo)); }
+        }
+
+        private int _stockOptimo;
+        public int StockOptimo
+        {
+            get => _stockOptimo;
+            set { _stockOptimo = value; OnPropertyChanged(nameof(StockOptimo)); }
+        }
+
+        private decimal _valorTotal;
+        public decimal ValorTotal
+        {
+            get => _valorTotal;
+            set { _valorTotal = value; OnPropertyChanged(nameof(ValorTotal)); }
+        }
+
+        // ── Colecciones ──────────────────────────────────────────────────
         public ObservableCollection<ItemInventario> ItemsInventario { get; set; }
         public ObservableCollection<string> Categorias { get; set; }
 
@@ -152,14 +172,14 @@ namespace loginavicola.ViewModel
 
         private bool _esEdicion;
 
-        // Comandos
+        // ── Comandos ─────────────────────────────────────────────────────
         public ICommand EditarItemCommand { get; }
         public ICommand EliminarItemCommand { get; }
         public ICommand AjustarStockCommand { get; }
         public ICommand PaginaAnteriorCommand { get; }
         public ICommand PaginaSiguienteCommand { get; }
 
-        // Métodos
+        // ── Métodos ──────────────────────────────────────────────────────
         public void CargarDatos()
         {
             var items = database.ObtenerTodosItems();
@@ -181,8 +201,11 @@ namespace loginavicola.ViewModel
 
         private void RecalcularPaginas()
         {
-            TotalPaginas = Math.Max(1, (int)Math.Ceiling(_todosLosFiltrados.Count / (double)TamanoPagina));
+            TotalRegistros = _todosLosFiltrados.Count;
+            TotalPaginas = Math.Max(1, (int)Math.Ceiling(TotalRegistros / (double)TamanoPagina));
             if (_paginaActual > TotalPaginas) _paginaActual = TotalPaginas;
+            OnPropertyChanged(nameof(CanGoPrevious));
+            OnPropertyChanged(nameof(CanGoNext));
         }
 
         private void AplicarPagina()
@@ -191,6 +214,9 @@ namespace loginavicola.ViewModel
                 .Skip((_paginaActual - 1) * TamanoPagina)
                 .Take(TamanoPagina)
                 .ToList();
+
+            RegistrosInicio = TotalRegistros == 0 ? 0 : ((_paginaActual - 1) * TamanoPagina) + 1;
+            RegistrosFin = Math.Min(_paginaActual * TamanoPagina, TotalRegistros);
 
             ItemsInventario.Clear();
             foreach (var item in pagina)
@@ -216,6 +242,7 @@ namespace loginavicola.ViewModel
             ValorTotal = database.ObtenerValorTotal();
         }
 
+        // ── CRUD ──────────────────────────────────────────────────────────
         public bool GuardarItem()
         {
             if (ValidarItem())
@@ -352,11 +379,10 @@ namespace loginavicola.ViewModel
 
         private void FiltrarItems()
         {
-            // Redirigimos la lógica al método centralizado CargarDatos
-            // para que maneje el filtrado y aplique correctamente la segmentación desde la página 1
             CargarDatos();
         }
 
+        // ── INotifyPropertyChanged ───────────────────────────────────────
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {

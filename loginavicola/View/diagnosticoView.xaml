@@ -4,15 +4,30 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:loginavicola.View"
+             xmlns:helpers="clr-namespace:loginavicola.Helpers"
+             xmlns:root="clr-namespace:loginavicola"
              mc:Ignorable="d" 
+<<<<<<< Updated upstream
              d:DesignHeight="800" d:DesignWidth="1000"
              Background="Transparent"
              FontFamily="Segoe UI">
     <!-- Aplica la tipografía limpia a toda la vista -->
+=======
+             FontFamily="Segoe UI"
+             d:DesignHeight="800" d:DesignWidth="1000">
+>>>>>>> Stashed changes
 
     <UserControl.Resources>
-        <!-- Estilo actualizado para tarjetas tipo minimalista -->
+        <helpers:RoleToVisibilityConverter x:Key="RoleConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <!-- ========================================= -->
+        <!-- ESTILOS PARA TARJETAS (IGUAL QUE INVENTARIO) -->
+        <!-- ========================================= -->
+
+        <!-- Base para todas las tarjetas - IGUAL que en inventarioView -->
         <Style x:Key="StatCardStyle" TargetType="Border">
+<<<<<<< Updated upstream
             <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="Padding" Value="35"/>
             <Setter Property="Margin" Value="10"/>
@@ -22,29 +37,40 @@
             <Setter Property="Effect">
                 <Setter.Value>
                     <DropShadowEffect BlurRadius="6" ShadowDepth="1" Opacity="0.06" Color="#000000"/>
+=======
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="35,35,35,35"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="BorderThickness" Value="6,0,0,0"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
+>>>>>>> Stashed changes
                 </Setter.Value>
             </Setter>
         </Style>
 
+        <!-- ESTILO PARA BOTÓN VERDE (IGUAL que inventarioView) -->
         <Style x:Key="GreenButtonStyle" TargetType="Button">
+<<<<<<< Updated upstream
             <Setter Property="Background" Value="#005E1E"/>
+=======
+            <Setter Property="Background" Value="#10B981"/>
+>>>>>>> Stashed changes
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="20,12"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="8"
-                                Padding="{TemplateBinding Padding}">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <TextBlock Text="✚" FontSize="16" FontWeight="Bold" 
-                                           VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <ContentPresenter HorizontalAlignment="Center" 
-                                                 VerticalAlignment="Center"/>
+                                <TextBlock Text="✚" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
                     </ControlTemplate>
@@ -52,11 +78,19 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
+<<<<<<< Updated upstream
                     <Setter Property="Background" Value="#004415"/>
+=======
+                    <Setter Property="Background" Value="#059669"/>
+>>>>>>> Stashed changes
                 </Trigger>
             </Style.Triggers>
         </Style>
 
+<<<<<<< Updated upstream
+=======
+        <!-- CAJA DE BÚSQUEDA (IGUAL que inventarioView) -->
+>>>>>>> Stashed changes
         <Style x:Key="SearchBoxStyle" TargetType="TextBox">
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -64,9 +98,29 @@
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
+        <!-- ESTILOS PARA MODAL (IGUAL que inventarioView) -->
+        <Style x:Key="ModalTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+        </Style>
+
+        <Style x:Key="ModalComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+        </Style>
+
         <Style x:Key="ModalButtonStyle" TargetType="Button">
+<<<<<<< Updated upstream
             <Setter Property="Padding" Value="30,14"/>
             <Setter Property="FontWeight" Value="Bold"/>
+=======
+            <Setter Property="Padding" Value="30,12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+>>>>>>> Stashed changes
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
@@ -80,6 +134,7 @@
             </Setter>
         </Style>
 
+<<<<<<< Updated upstream
         <Style x:Key="ModalTextBoxStyle" TargetType="TextBox">
             <Setter Property="Padding" Value="12,10"/>
             <Setter Property="BorderBrush" Value="#E2E8F0"/>
@@ -116,31 +171,39 @@
             <Setter Property="Foreground" Value="#333333"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="#DDDDDD"/>
+=======
+        <!-- BOTONES DE PAGINACIÓN -->
+        <Style x:Key="PagerButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="0"/>
+>>>>>>> Stashed changes
             <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="Margin" Value="5,0"/>
-            <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#E0E0E0"/>
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Opacity" Value="0.5"/>
-                    <Setter Property="Cursor" Value="Arrow"/>
-                </Trigger>
-            </Style.Triggers>
         </Style>
+
+        <!-- ESTILO PARA DATEPICKER EN MODAL -->
+        <Style x:Key="ModalDatePickerStyle" TargetType="DatePicker">
+            <Setter Property="Padding" Value="6,6"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+        </Style>
+
+        <!-- ESTILO PARA BOTÓN DE PAGINACIÓN -->
+        <Style x:Key="PageNavButtonStyle" TargetType="Button" BasedOn="{StaticResource PagerButtonStyle}"/>
     </UserControl.Resources>
 
+<<<<<<< Updated upstream
     <!-- El Grid principal ahora tiene el fondo gris claro del dashboard -->
     <Grid Background="#F1F5F9">
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
@@ -217,6 +280,95 @@
                     </Grid>
 
                     <!-- Sección del Historial sin bordes redundantes (ya está dentro del contenedor principal) -->
+=======
+    <Grid Background="#F0F2F5">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="24">
+
+                <!-- ==================== -->
+                <!-- TÍTULO SECCIÓN       -->
+                <!-- ==================== -->
+                <StackPanel Margin="12,0,12,20">
+                    <TextBlock Text="Control de Diagnóstico" FontSize="28" FontWeight="Bold" Foreground="#111827"/>
+                    <TextBlock Text="Monitoreo y seguimiento de diagnósticos médicos en las aves." FontSize="14" Foreground="#6B7280" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <!-- ==================== -->
+                <!-- TARJETAS ESTADÍSTICAS -->
+                <!-- ==================== -->
+                <Grid Margin="0,0,0,24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Tarjeta 1: TOTAL DIAGNÓSTICOS (Turquesa) -->
+                    <Border Grid.Column="0" Style="{StaticResource StatCardStyle}" BorderBrush="#17A2B8">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="TOTAL DIAGNÓSTICOS" FontSize="11" Foreground="#9CA3AF" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <TextBlock Text="{Binding TotalDiagnosticos, FallbackValue=0}" FontSize="36" FontWeight="Black" Foreground="#111827"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Tarjeta 2: CASOS ACTIVOS (Morada) -->
+                    <Border Grid.Column="1" Style="{StaticResource StatCardStyle}" BorderBrush="#9C59B6">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="CASOS ACTIVOS" FontSize="11" Foreground="#9CA3AF" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <TextBlock Text="{Binding CasosActivos, FallbackValue=0}" FontSize="36" FontWeight="Black" Foreground="#111827"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Tarjeta 3: CASOS RESUELTOS (Verde) -->
+                    <Border Grid.Column="2" Style="{StaticResource StatCardStyle}" BorderBrush="#10B981">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="CASOS RESUELTOS" FontSize="11" Foreground="#9CA3AF" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <TextBlock Text="{Binding CasosResueltos, FallbackValue=0}" FontSize="36" FontWeight="Black" Foreground="#111827"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Tarjeta 4: AVES AFECTADAS (Naranja) -->
+                    <Border Grid.Column="3" Style="{StaticResource StatCardStyle}" BorderBrush="#F39C12">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="AVES AFECTADAS" FontSize="11" Foreground="#9CA3AF" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <TextBlock Text="{Binding AvesAfectadas, FallbackValue=0}" FontSize="36" FontWeight="Black" Foreground="#111827"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- ==================== -->
+                <!-- BÚSQUEDA Y BOTÓN     -->
+                <!-- ==================== -->
+                <Grid Margin="12,0,12,24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="4" Margin="0,0,15,0" BorderBrush="#E5E7EB" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="🔍" FontSize="16" VerticalAlignment="Center" Margin="12,0"/>
+                            <TextBox Grid.Column="1" Text="{Binding TextoBusqueda, UpdateSourceTrigger=PropertyChanged}" 
+                                     Style="{StaticResource SearchBoxStyle}" FontSize="14"/>
+                        </Grid>
+                    </Border>
+
+                    <Button Grid.Column="1" Content="REGISTRAR DIAGNÓSTICO" x:Name="BtnRegistrarDiagnostico" Click="BtnRegistrarDiagnostico_Click" Style="{StaticResource GreenButtonStyle}"/>
+                </Grid>
+
+                <!-- ==================== -->
+                <!-- TABLA DE DATOS       -->
+                <!-- ==================== -->
+                <Border Background="White" CornerRadius="12" Padding="20" Margin="12,0" BorderBrush="#E5E7EB" BorderThickness="1">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="25" ShadowDepth="2" Opacity="0.05" Color="#000000"/>
+                    </Border.Effect>
+>>>>>>> Stashed changes
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -224,26 +376,29 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
+<<<<<<< Updated upstream
                         <TextBlock Grid.Row="0" Text="Historial diagnóstico" FontSize="16" FontWeight="SemiBold" Foreground="#333333" Margin="5,0,0,15"/>
+=======
+                        <TextBlock Grid.Row="0" Text="Historial diagnóstico" FontSize="18" FontWeight="SemiBold" Foreground="#111827" Margin="0,0,0,15"/>
+>>>>>>> Stashed changes
 
-                        <DataGrid Grid.Row="1" ItemsSource="{Binding Diagnosticos}" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F0F0F0" BorderThickness="0" Background="Transparent" RowBackground="White" AlternatingRowBackground="#FAFAFA" RowHeight="40" MinHeight="300" ColumnWidth="Auto" HorizontalScrollBarVisibility="Auto">
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding Diagnosticos}" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F3F4F6" BorderThickness="0" Background="Transparent" RowBackground="White" AlternatingRowBackground="#F9FAFB" RowHeight="40" MinHeight="300">
                             <DataGrid.ColumnHeaderStyle>
                                 <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background" Value="#F5F5F5"/>
-                                    <Setter Property="Foreground" Value="#666666"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="Background" Value="#F3F4F6"/>
+                                    <Setter Property="Foreground" Value="#4B5563"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
                                     <Setter Property="FontSize" Value="12"/>
                                     <Setter Property="Padding" Value="12,10"/>
-                                    <Setter Property="BorderThickness" Value="0,0,0,2"/>
-                                    <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                    <Setter Property="BorderBrush" Value="#E5E7EB"/>
                                 </Style>
                             </DataGrid.ColumnHeaderStyle>
                             <DataGrid.CellStyle>
                                 <Style TargetType="DataGridCell">
                                     <Setter Property="BorderThickness" Value="0"/>
-                                    <Setter Property="Padding" Value="10,8"/>
+                                    <Setter Property="Padding" Value="12,8"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="FontSize" Value="12"/>
                                 </Style>
                             </DataGrid.CellStyle>
                             <DataGrid.Columns>
@@ -254,10 +409,10 @@
                                             <Border CornerRadius="6" Padding="8,4" HorizontalAlignment="Center">
                                                 <Border.Style>
                                                     <Style TargetType="Border">
-                                                        <Setter Property="Background" Value="#E74C3C"/>
+                                                        <Setter Property="Background" Value="#EF4444"/>
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding Estado}" Value="Resuelto">
-                                                                <Setter Property="Background" Value="#4CAF50"/>
+                                                                <Setter Property="Background" Value="#10B981"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
@@ -300,11 +455,11 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="Acciones" Width="100">
+                                <DataGridTemplateColumn Header="Acciones" Width="120">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                <Button Content="✓" Command="{Binding DataContext.MarcarComoResueltoCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}" Background="#2ECC71" Foreground="White" BorderThickness="0" Margin="2" Padding="8,4" Cursor="Hand" FontSize="12" ToolTip="Marcar como resuelto">
+                                                <Button Content="✓" Command="{Binding DataContext.MarcarComoResueltoCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}" Background="#10B981" Foreground="White" BorderThickness="0" Margin="2" Padding="8,4" Cursor="Hand" FontSize="12" ToolTip="Marcar como resuelto" Visibility="{Binding RelativeSource={RelativeSource Self}, Converter={StaticResource RoleConverter}}">
                                                     <Button.Style>
                                                         <Style TargetType="Button">
                                                             <Setter Property="Visibility" Value="Visible"/>
@@ -316,7 +471,7 @@
                                                         </Style>
                                                     </Button.Style>
                                                 </Button>
-                                                <Button Content="↺" Command="{Binding DataContext.ReabrirCasoCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}" Background="#E67E22" Foreground="White" BorderThickness="0" Margin="2" Padding="8,4" Cursor="Hand" FontSize="12" ToolTip="Reabrir caso">
+                                                <Button Content="↺" Command="{Binding DataContext.ReabrirCasoCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}" Background="#F59E0B" Foreground="White" BorderThickness="0" Margin="2" Padding="8,4" Cursor="Hand" FontSize="12" ToolTip="Reabrir caso" Visibility="{Binding RelativeSource={RelativeSource Self}, Converter={StaticResource RoleConverter}}">
                                                     <Button.Style>
                                                         <Style TargetType="Button">
                                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -328,7 +483,7 @@
                                                         </Style>
                                                     </Button.Style>
                                                 </Button>
-                                                <Button Content="🗑" Command="{Binding DataContext.EliminarDiagnosticoCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}" Background="#E74C3C" Foreground="White" BorderThickness="0" Margin="2" Padding="8,4" Cursor="Hand" FontSize="12" ToolTip="Eliminar diagnóstico"/>
+                                                <Button Content="🗑️" Command="{Binding DataContext.EliminarDiagnosticoCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}" Background="#EF4444" Foreground="White" BorderThickness="0" Margin="2" Padding="8,4" Cursor="Hand" FontSize="12" ToolTip="Eliminar diagnóstico" Visibility="{Binding RelativeSource={RelativeSource Self}, Converter={StaticResource RoleConverter}}"/>
                                             </StackPanel>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
@@ -336,7 +491,10 @@
                             </DataGrid.Columns>
                         </DataGrid>
 
-                        <Grid Grid.Row="2" Margin="0,15,0,0">
+                        <!-- ==================== -->
+                        <!-- PAGINACIÓN           -->
+                        <!-- ==================== -->
+                        <Grid Grid.Row="2" Margin="0,16,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
@@ -344,26 +502,25 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="Mostrar:" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Margin="0,0,5,0"/>
-                                <ComboBox Text="{Binding ElementosPorPagina, UpdateSourceTrigger=PropertyChanged}" Width="60" Padding="5,3">
+                                <TextBlock Text="Mostrar:" VerticalAlignment="Center" Foreground="#6B7280" FontSize="13" Margin="0,0,5,0"/>
+                                <ComboBox Text="{Binding ElementosPorPagina, UpdateSourceTrigger=PropertyChanged}" Width="65" Height="30" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">
                                     <ComboBoxItem Content="5"/>
                                     <ComboBoxItem Content="10" IsSelected="True"/>
                                     <ComboBoxItem Content="20"/>
                                     <ComboBoxItem Content="50"/>
                                 </ComboBox>
-                                <TextBlock Text="registros" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Margin="5,0,0,0"/>
+                                <TextBlock Text="registros por página" VerticalAlignment="Center" Foreground="#6B7280" FontSize="13" Margin="5,0,0,0"/>
                             </StackPanel>
 
-                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Foreground="#666666" VerticalAlignment="Center" FontSize="12" Margin="0,0,10,0">
-                                    <Run Text="Página "/>
-                                    <Run Text="{Binding PaginaActual, FallbackValue=1}" FontWeight="SemiBold" Foreground="#333333"/>
-                                    <Run Text=" de "/>
-                                    <Run Text="{Binding TotalPaginas, FallbackValue=1}" FontWeight="SemiBold" Foreground="#333333"/>
-                                </TextBlock>
-
-                                <Button Content="◀" Command="{Binding PaginaAnteriorCommand}" Style="{StaticResource PageNavButtonStyle}"/>
-                                <Button Content="▶" Command="{Binding PaginaSiguienteCommand}" Style="{StaticResource PageNavButtonStyle}"/>
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button Content="◀" Command="{Binding PaginaAnteriorCommand}" Style="{StaticResource PagerButtonStyle}" Margin="0,0,5,0"/>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
+                                    <TextBlock Text="Página " Foreground="#6B7280" FontSize="13"/>
+                                    <TextBlock Text="{Binding PaginaActual, FallbackValue=1}" FontWeight="Bold" Foreground="#111827" FontSize="13"/>
+                                    <TextBlock Text=" de " Foreground="#6B7280" FontSize="13"/>
+                                    <TextBlock Text="{Binding TotalPaginas, FallbackValue=1}" FontWeight="Bold" Foreground="#111827" FontSize="13"/>
+                                </StackPanel>
+                                <Button Content="▶" Command="{Binding PaginaSiguienteCommand}" Style="{StaticResource PagerButtonStyle}" Margin="5,0,0,0"/>
                             </StackPanel>
                         </Grid>
                     </Grid>
@@ -371,12 +528,23 @@
             </Border>
         </ScrollViewer>
 
+<<<<<<< Updated upstream
         <!-- Modal Actualizado con Bordes Redondeados e Inputs Minimalistas -->
+=======
+        <!-- ==================== -->
+        <!-- MODAL DE REGISTRO     -->
+        <!-- ==================== -->
+>>>>>>> Stashed changes
         <Grid x:Name="ModalOverlay" Background="#80000000" Visibility="Collapsed" IsHitTestVisible="True">
             <Border Background="White" CornerRadius="16" MaxWidth="550" MaxHeight="700" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="0">
                 <Border.Effect>
+<<<<<<< Updated upstream
                     <DropShadowEffect BlurRadius="20" ShadowDepth="5" Opacity="0.3" Color="#000000"/>
+=======
+                    <DropShadowEffect BlurRadius="25" ShadowDepth="4" Opacity="0.3" Color="#000000"/>
+>>>>>>> Stashed changes
                 </Border.Effect>
+
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -384,7 +552,12 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
+<<<<<<< Updated upstream
                     <Grid Grid.Row="0" Background="Transparent">
+=======
+                    <!-- Cabecera del modal - IGUAL que inventario -->
+                    <Grid Grid.Row="0" Background="#10B981">
+>>>>>>> Stashed changes
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
@@ -393,6 +566,7 @@
                         <Button Grid.Column="1" Content="✕" x:Name="BtnCerrarModal" Click="BtnCerrarModal_Click" Background="Transparent" Foreground="#64748B" BorderThickness="0" FontSize="16" FontWeight="Bold" Padding="15,10" Margin="15,15,20,0" Cursor="Hand" ToolTip="Cerrar"/>
                     </Grid>
 
+<<<<<<< Updated upstream
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="30,5,30,20" Margin="0,5">
                         <StackPanel>
                             <TextBlock Text="Fecha" Foreground="#475569" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6"/>
@@ -428,14 +602,68 @@
                     </ScrollViewer>
 
                     <Border Grid.Row="2" BorderThickness="0" Padding="30,15,30,25">
+=======
+                    <!-- Formulario -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="30,20" Margin="0,10">
+                        <StackPanel>
+                            <TextBlock Text="Fecha" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,5" Foreground="#374151"/>
+                            <DatePicker SelectedDate="{Binding DiagnosticoActual.FechaDiagnostico}" Style="{StaticResource ModalDatePickerStyle}"/>
+
+                            <TextBlock Text="Tipo" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,5" Foreground="#374151"/>
+                            <ComboBox ItemsSource="{Binding TiposDiagnostico}" SelectedItem="{Binding DiagnosticoActual.Tipo}" Style="{StaticResource ModalComboBoxStyle}"/>
+
+                            <TextBlock Text="Lote" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,5" Foreground="#374151"/>
+                            <ComboBox ItemsSource="{Binding LotesActivos}" DisplayMemberPath="IdLote" SelectedValuePath="IdLote" SelectedValue="{Binding DiagnosticoActual.IdLote}" Style="{StaticResource ModalComboBoxStyle}"/>
+
+                            <TextBlock Text="Descripción" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,5" Foreground="#374151"/>
+                            <TextBox Text="{Binding DiagnosticoActual.DiagnosticoMedico}" Height="60" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Style="{StaticResource ModalTextBoxStyle}"/>
+
+                            <TextBlock Text="Tratamiento" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,5" Foreground="#374151"/>
+                            <TextBox Text="{Binding DiagnosticoActual.Tratamiento}" Height="60" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Style="{StaticResource ModalTextBoxStyle}"/>
+
+                            <TextBlock Text="Medicamento" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,5" Foreground="#374151"/>
+                            <ComboBox ItemsSource="{Binding MedicamentosDisponibles}" DisplayMemberPath="Nombre" SelectedValuePath="IdItem" SelectedValue="{Binding DiagnosticoActual.IdMedicamento}" Style="{StaticResource ModalComboBoxStyle}"/>
+
+                            <Grid Margin="0,0,0,15">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="15"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Cant. medicamento" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,5" Foreground="#374151"/>
+                                    <TextBox Text="{Binding DiagnosticoActual.CantidadMedicamentoUsado}" Style="{StaticResource ModalTextBoxStyle}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Cant. aves afectadas" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,5" Foreground="#374151"/>
+                                    <TextBox Text="{Binding DiagnosticoActual.GallinasAfectadas}" Style="{StaticResource ModalTextBoxStyle}"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="Veterinario" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,5" Foreground="#374151"/>
+                            <TextBox Text="{Binding DiagnosticoActual.Veterinario}" Style="{StaticResource ModalTextBoxStyle}"/>
+
+                            <TextBlock Text="Observaciones" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,5" Foreground="#374151"/>
+                            <TextBox Text="{Binding DiagnosticoActual.Observaciones}" Height="60" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Style="{StaticResource ModalTextBoxStyle}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Acciones del modal - IGUAL que inventario -->
+                    <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="#E5E7EB" Padding="30,15">
+>>>>>>> Stashed changes
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="15"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
+<<<<<<< Updated upstream
                             <Button Grid.Column="0" Content="Guardar" x:Name="BtnGuardar" Click="BtnGuardar_Click" Style="{StaticResource ModalButtonStyle}" Background="#00872E" Foreground="White"/>
                             <Button Grid.Column="2" Content="Cancelar" x:Name="BtnCancelar" Click="BtnCerrarModal_Click" Style="{StaticResource ModalButtonStyle}" Background="#CBD5E1" Foreground="#475569"/>
+=======
+                            <Button Grid.Column="0" Content="GUARDAR" x:Name="BtnGuardar" Click="BtnGuardar_Click" Style="{StaticResource ModalButtonStyle}" Background="#10B981" Foreground="White"/>
+                            <Button Grid.Column="2" Content="CANCELAR" x:Name="BtnCancelar" Click="BtnCerrarModal_Click" Style="{StaticResource ModalButtonStyle}" Background="#E5E7EB" Foreground="#374151"/>
+>>>>>>> Stashed changes
                         </Grid>
                     </Border>
                 </Grid>

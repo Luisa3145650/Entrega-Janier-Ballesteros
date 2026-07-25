@@ -4,38 +4,49 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:loginavicola.View"
-             mc:Ignorable="d" Height="819" Width="1207"
-             FontFamily="Segoe UI">
+             xmlns:helpers="clr-namespace:loginavicola.Helpers"
+             xmlns:root="clr-namespace:loginavicola"
+             mc:Ignorable="d" 
+             FontFamily="Segoe UI"
+             d:DesignHeight="819" d:DesignWidth="1207">
 
     <UserControl.Resources>
+        <helpers:RoleToVisibilityConverter x:Key="RoleConverter"/>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
-        <Style x:Key="CleanCardStyle" TargetType="Border">
+        <!-- ========================================= -->
+        <!-- ESTILOS PARA TARJETAS (IGUAL QUE INVENTARIO) -->
+        <!-- ========================================= -->
+
+        <!-- Base para todas las tarjetas - IGUAL que en inventarioView -->
+        <Style x:Key="StatCardStyle" TargetType="Border">
             <Setter Property="Background" Value="White"/>
-            <Setter Property="CornerRadius" Value="16"/>
-            <Setter Property="Padding" Value="24"/>
-            <Setter Property="Margin" Value="12,0"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="35,35,35,35"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="BorderThickness" Value="6,0,0,0"/>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect BlurRadius="20" ShadowDepth="2" Opacity="0.08" Color="#000000"/>
+                    <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <Style x:Key="PrimaryGreenButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#007A1A"/>
+        <!-- ESTILO PARA BOTÓN VERDE (IGUAL que inventarioView) -->
+        <Style x:Key="GreenButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#10B981"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="20,12"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="12" Padding="{TemplateBinding Padding}">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <TextBlock Text="＋" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="✚" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
@@ -44,21 +55,43 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#005C13"/>
+                    <Setter Property="Background" Value="#059669"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="ActionButtonStyle" TargetType="Button">
-            <Setter Property="Padding" Value="24,12"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="FontSize" Value="13"/>
+        <!-- CAJA DE BÚSQUEDA (IGUAL que inventarioView) -->
+        <Style x:Key="SearchBoxStyle" TargetType="TextBox">
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <!-- ESTILOS PARA MODAL (IGUAL que inventarioView) -->
+        <Style x:Key="ModalTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+        </Style>
+
+        <Style x:Key="ModalComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+        </Style>
+
+        <Style x:Key="ModalButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="30,12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="12" Padding="{TemplateBinding Padding}">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
@@ -66,36 +99,30 @@
             </Setter>
         </Style>
 
-        <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
-            <Setter Property="Padding" Value="12,10"/>
-            <Setter Property="Background" Value="#F8FAFC"/>
-            <Setter Property="BorderBrush" Value="#CBD5E1"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="#1E293B"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <!-- BOTONES DE PAGINACIÓN -->
+        <Style x:Key="PagerButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="8">
-                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsKeyboardFocused" Value="true">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#007A1A"/>
-                                <Setter TargetName="border" Property="Background" Value="White"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <Style x:Key="ModernComboBoxStyle" TargetType="ComboBox">
-            <Setter Property="Padding" Value="12,10"/>
-            <Setter Property="Background" Value="#F8FAFC"/>
-            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+        <!-- Estilo para DatePicker -->
+        <Style x:Key="ModalDatePickerStyle" TargetType="DatePicker">
+            <Setter Property="Padding" Value="6,6"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
         </Style>
     </UserControl.Resources>
 
@@ -103,11 +130,17 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Margin="24">
 
+                <!-- ==================== -->
+                <!-- TÍTULO SECCIÓN       -->
+                <!-- ==================== -->
                 <StackPanel Margin="12,0,12,20">
-                    <TextBlock Text="Control de Alimentación" FontSize="28" FontWeight="Bold" Foreground="#1E293B"/>
-                    <TextBlock Text="Administra el consumo diario, semanal e inventario disponible de alimento." FontSize="14" Foreground="#64748B" Margin="0,4,0,0"/>
+                    <TextBlock Text="Control de Alimentación" FontSize="28" FontWeight="Bold" Foreground="#111827"/>
+                    <TextBlock Text="Administra el consumo diario, semanal e inventario disponible de alimento." FontSize="14" Foreground="#6B7280" Margin="0,4,0,0"/>
                 </StackPanel>
 
+                <!-- ==================== -->
+                <!-- TARJETAS ESTADÍSTICAS -->
+                <!-- ==================== -->
                 <Grid Margin="0,0,0,24">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -115,52 +148,62 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Style="{StaticResource CleanCardStyle}">
-                        <StackPanel>
-                            <TextBlock Text="CONSUMO ESTIMADO / AVE" FontSize="12" Foreground="#64748B" FontWeight="Bold" Margin="0,0,0,8"/>
-                            <TextBlock Text="120 kg" FontSize="32" FontWeight="Bold" Foreground="#1E293B"/>
+                    <!-- Tarjeta 1: CONSUMO ESTIMADO (Amarilla) -->
+                    <Border Grid.Column="0" Style="{StaticResource StatCardStyle}" BorderBrush="#FACC15">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="CONSUMO ESTIMADO / AVE" FontSize="11" Foreground="#9CA3AF" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <TextBlock Text="120 kg" FontSize="36" FontWeight="Black" Foreground="#111827"/>
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="1" Style="{StaticResource CleanCardStyle}">
-                        <StackPanel>
-                            <TextBlock Text="CONSUMO SEMANAL" FontSize="12" Foreground="#64748B" FontWeight="Bold" Margin="0,0,0,8"/>
-                            <TextBlock Text="{Binding ConsumoSemanal, FallbackValue='0 Kg'}" FontSize="32" FontWeight="Bold" Foreground="#1E293B"/>
+                    <!-- Tarjeta 2: CONSUMO SEMANAL (Azul) -->
+                    <Border Grid.Column="1" Style="{StaticResource StatCardStyle}" BorderBrush="#3B82F6">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="CONSUMO SEMANAL" FontSize="11" Foreground="#9CA3AF" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <TextBlock Text="{Binding ConsumoSemanal, FallbackValue='0 Kg'}" FontSize="36" FontWeight="Black" Foreground="#111827"/>
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="2" Style="{StaticResource CleanCardStyle}">
-                        <StackPanel>
-                            <TextBlock Text="ALIMENTO DISPONIBLE" FontSize="12" Foreground="#64748B" FontWeight="Bold" Margin="0,0,0,8"/>
-                            <TextBlock Text="{Binding AlimentoDisponible, FallbackValue='7349 Kg'}" FontSize="32" FontWeight="Bold" Foreground="#1E293B"/>
+                    <!-- Tarjeta 3: ALIMENTO DISPONIBLE (Morada) -->
+                    <Border Grid.Column="2" Style="{StaticResource StatCardStyle}" BorderBrush="#A855F7">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="ALIMENTO DISPONIBLE" FontSize="11" Foreground="#9CA3AF" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <TextBlock Text="{Binding AlimentoDisponible, FallbackValue='159'}" FontSize="36" FontWeight="Black" Foreground="#111827"/>
                         </StackPanel>
                     </Border>
                 </Grid>
 
+                <!-- ==================== -->
+                <!-- BÚSQUEDA Y BOTÓN     -->
+                <!-- ==================== -->
                 <Grid Margin="12,0,12,24">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="4" Margin="0,0,16,0" BorderBrush="#E2E8F0" BorderThickness="1">
+                    <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="4" Margin="0,0,15,0" BorderBrush="#E5E7EB" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="🔍" FontSize="16" VerticalAlignment="Center" Margin="16,0,8,0" Foreground="#64748B"/>
-                            <TextBox Grid.Column="1" 
-                                     Text="{Binding TextoBusqueda, UpdateSourceTrigger=PropertyChanged}"
-                                     BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center" Padding="4,8"
-                                     x:Name="SearchBox" FontSize="14" Foreground="#1E293B"/>
+                            <TextBlock Text="🔍" FontSize="16" VerticalAlignment="Center" Margin="12,0"/>
+                            <TextBox Grid.Column="1" Text="{Binding TextoBusqueda, UpdateSourceTrigger=PropertyChanged}" 
+                                     Style="{StaticResource SearchBoxStyle}" FontSize="14"/>
                         </Grid>
                     </Border>
 
-                    <Button Grid.Column="1" Content="REGISTRAR CONSUMO" Click="BtnRegistrarConsumo_Click" Style="{StaticResource PrimaryGreenButtonStyle}"/>
+                    <Button Grid.Column="1" Content="REGISTRAR CONSUMO" Click="BtnRegistrarConsumo_Click" Style="{StaticResource GreenButtonStyle}"/>
                 </Grid>
 
-                <Border Background="White" CornerRadius="16" Padding="24" Margin="12,0" BorderBrush="#E2E8F0" BorderThickness="1">
+                <!-- ==================== -->
+                <!-- TABLA DE DATOS       -->
+                <!-- ==================== -->
+                <Border Background="White" CornerRadius="12" Padding="20" Margin="12,0" BorderBrush="#E5E7EB" BorderThickness="1">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="25" ShadowDepth="2" Opacity="0.05" Color="#000000"/>
+                    </Border.Effect>
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -168,17 +211,18 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Text="Historial de Consumo" FontSize="18" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,16"/>
+                        <TextBlock Grid.Row="0" Text="Historial de Consumo" FontSize="18" FontWeight="SemiBold" Foreground="#111827" Margin="0,0,0,15"/>
 
-                        <DataGrid Grid.Row="1" ItemsSource="{Binding Consumos}" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" BorderThickness="0" Background="Transparent" RowBackground="White" AlternatingRowBackground="#F8FAFC" RowHeight="44" MinHeight="250">
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding Consumos}" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F3F4F6" BorderThickness="0" Background="Transparent" RowBackground="White" AlternatingRowBackground="#F9FAFB" RowHeight="40" MinHeight="250">
                             <DataGrid.ColumnHeaderStyle>
                                 <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background" Value="#F1F5F9"/>
-                                    <Setter Property="Foreground" Value="#475569"/>
+                                    <Setter Property="Background" Value="#F3F4F6"/>
+                                    <Setter Property="Foreground" Value="#4B5563"/>
                                     <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="FontSize" Value="12"/>
                                     <Setter Property="Padding" Value="12,10"/>
                                     <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                    <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                                    <Setter Property="BorderBrush" Value="#E5E7EB"/>
                                 </Style>
                             </DataGrid.ColumnHeaderStyle>
                             <DataGrid.CellStyle>
@@ -196,30 +240,48 @@
                                 <DataGridTextColumn Header="Unidad" Binding="{Binding UnidadMedida}" Width="90"/>
                                 <DataGridTextColumn Header="Turno" Binding="{Binding Turno}" Width="90"/>
                                 <DataGridTextColumn Header="Observaciones" Binding="{Binding Observaciones}" Width="*"/>
+                                <DataGridTemplateColumn Header="Acciones" Width="120">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                <Button Content="✏️" Command="{Binding DataContext.EditarCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}" Background="#E3F2FD" BorderThickness="0" Margin="2" Padding="8,4" Cursor="Hand" Visibility="{Binding RelativeSource={RelativeSource Self}, Converter={StaticResource RoleConverter}}" ToolTip="Editar consumo"/>
+                                                <Button Content="🗑️" Command="{Binding DataContext.EliminarCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}" Background="#FFEBEE" BorderThickness="0" Margin="2" Padding="8,4" Cursor="Hand" Visibility="{Binding RelativeSource={RelativeSource Self}, Converter={StaticResource RoleConverter}}" ToolTip="Eliminar consumo"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
 
+                        <!-- ==================== -->
+                        <!-- PAGINACIÓN           -->
+                        <!-- ==================== -->
                         <Grid Grid.Row="2" Margin="0,16,0,0">
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
+
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="Mostrar:" Foreground="#64748B" FontSize="13" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                <ComboBox SelectedValue="{Binding ElementosPorPagina, Mode=TwoWay}" Width="65" Height="28">
+                                <TextBlock Text="Mostrar:" VerticalAlignment="Center" Foreground="#6B7280" FontSize="13" Margin="0,0,5,0"/>
+                                <ComboBox SelectedValue="{Binding ElementosPorPagina, Mode=TwoWay}" Width="65" Height="30" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">
                                     <System:Int32 xmlns:System="clr-namespace:System;assembly=mscorlib">5</System:Int32>
                                     <System:Int32 xmlns:System="clr-namespace:System;assembly=mscorlib">10</System:Int32>
                                     <System:Int32 xmlns:System="clr-namespace:System;assembly=mscorlib">20</System:Int32>
                                 </ComboBox>
-                                <TextBlock Text="registros por página" Foreground="#64748B" FontSize="13" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                                <TextBlock Text="registros por página" VerticalAlignment="Center" Foreground="#6B7280" FontSize="13" Margin="5,0,0,0"/>
                             </StackPanel>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Button Content="◀" Command="{Binding PaginaAnteriorCommand}" Width="32" Height="28" Margin="0,0,4,0"/>
-                                <TextBlock Text="Página " Foreground="#64748B" VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding PaginaActual, FallbackValue=1}" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center"/>
-                                <TextBlock Text=" de " Foreground="#64748B" VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding TotalPaginas, FallbackValue=1}" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <Button Content="▶" Command="{Binding PaginaSiguienteCommand}" Width="32" Height="28"/>
+
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button Content="◀" Command="{Binding PaginaAnteriorCommand}" Style="{StaticResource PagerButtonStyle}" Margin="0,0,5,0"/>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
+                                    <TextBlock Text="Página " Foreground="#6B7280" FontSize="13"/>
+                                    <TextBlock Text="{Binding PaginaActual, FallbackValue=1}" FontWeight="Bold" Foreground="#111827" FontSize="13"/>
+                                    <TextBlock Text=" de " Foreground="#6B7280" FontSize="13"/>
+                                    <TextBlock Text="{Binding TotalPaginas, FallbackValue=1}" FontWeight="Bold" Foreground="#111827" FontSize="13"/>
+                                </StackPanel>
+                                <Button Content="▶" Command="{Binding PaginaSiguienteCommand}" Style="{StaticResource PagerButtonStyle}" Margin="5,0,0,0"/>
                             </StackPanel>
                         </Grid>
                     </Grid>
@@ -227,10 +289,13 @@
             </StackPanel>
         </ScrollViewer>
 
-        <Grid x:Name="ModalOverlay" Background="#66000000" Visibility="Collapsed">
-            <Border Background="White" CornerRadius="16" Width="420" MaxHeight="580" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="28">
+        <!-- ==================== -->
+        <!-- MODAL DE REGISTRO     -->
+        <!-- ==================== -->
+        <Grid x:Name="ModalOverlay" Background="#80000000" Visibility="Collapsed" IsHitTestVisible="True">
+            <Border Background="White" CornerRadius="12" MaxWidth="550" MaxHeight="700" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="0">
                 <Border.Effect>
-                    <DropShadowEffect BlurRadius="30" ShadowDepth="4" Opacity="0.15" Color="#000000"/>
+                    <DropShadowEffect BlurRadius="25" ShadowDepth="4" Opacity="0.3" Color="#000000"/>
                 </Border.Effect>
 
                 <Grid>
@@ -240,65 +305,67 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="0" Margin="0,0,0,20">
+                    <!-- Cabecera del modal - IGUAL que inventario -->
+                    <Grid Grid.Row="0" Background="#10B981">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Crear Nuevo Registro" FontSize="22" FontWeight="Bold" Foreground="#1E293B"/>
-                        <Button Grid.Column="1" Content="✕" Click="BtnCerrarModal_Click" Background="Transparent" BorderThickness="0" Foreground="#64748B" FontSize="18" FontWeight="Bold" Cursor="Hand" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="0" Text="Registro de Consumo" FontSize="16" FontWeight="Bold" Foreground="White" Margin="20,15" VerticalAlignment="Center"/>
+                        <Button Grid.Column="1" Content="✕" Click="BtnCerrarModal_Click" Background="Transparent" Foreground="White" BorderThickness="0" FontSize="18" FontWeight="Bold" Padding="15,10" Cursor="Hand" ToolTip="Cerrar"/>
                     </Grid>
 
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20">
+                    <!-- Formulario -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="30,20" Margin="0,10">
                         <StackPanel>
-                            <TextBlock Text="ID consumo" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6" Foreground="#475569"/>
-                            <TextBox Text="{Binding ConsumoActual.IdConsumo}" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,16"/>
+                            <TextBlock Text="ID consumo" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,5" Foreground="#374151"/>
+                            <TextBox Text="{Binding ConsumoActual.IdConsumo}" Style="{StaticResource ModalTextBoxStyle}"/>
 
-                            <TextBlock Text="Fecha" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6" Foreground="#475569"/>
-                            <DatePicker SelectedDate="{Binding ConsumoActual.FechaConsumo}" Margin="0,0,0,16" Padding="6"/>
+                            <TextBlock Text="Fecha" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,5" Foreground="#374151"/>
+                            <DatePicker SelectedDate="{Binding ConsumoActual.FechaConsumo}" Style="{StaticResource ModalDatePickerStyle}"/>
 
-                            <TextBlock Text="Lote" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6" Foreground="#475569"/>
-                            <ComboBox ItemsSource="{Binding LotesActivos}" DisplayMemberPath="IdLote" SelectedValuePath="IdLote" SelectedValue="{Binding ConsumoActual.IdLoteGallinas}" Style="{StaticResource ModernComboBoxStyle}" Margin="0,0,0,16"/>
+                            <TextBlock Text="Lote" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,5" Foreground="#374151"/>
+                            <ComboBox ItemsSource="{Binding LotesActivos}" DisplayMemberPath="IdLote" SelectedValuePath="IdLote" SelectedValue="{Binding ConsumoActual.IdLoteGallinas}" Style="{StaticResource ModalComboBoxStyle}"/>
 
-                            <TextBlock Text="Alimento" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6" Foreground="#475569"/>
-                            <ComboBox ItemsSource="{Binding Alimentos}" DisplayMemberPath="Nombre" SelectedItem="{Binding AlimentoSeleccionado, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernComboBoxStyle}" Margin="0,0,0,16"/>
+                            <TextBlock Text="Alimento" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,5" Foreground="#374151"/>
+                            <ComboBox ItemsSource="{Binding Alimentos}" DisplayMemberPath="Nombre" SelectedItem="{Binding AlimentoSeleccionado, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModalComboBoxStyle}"/>
 
-                            <Grid Margin="0,0,0,16">
+                            <Grid Margin="0,0,0,15">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="15"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Cantidad" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6" Foreground="#475569"/>
-                                    <TextBox Text="{Binding ConsumoActual.CantidadConsumida}" Style="{StaticResource ModernTextBoxStyle}"/>
+                                    <TextBlock Text="Cantidad" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,5" Foreground="#374151"/>
+                                    <TextBox Text="{Binding ConsumoActual.CantidadConsumida}" Style="{StaticResource ModalTextBoxStyle}"/>
                                 </StackPanel>
-
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Unidad" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6" Foreground="#475569"/>
-                                    <ComboBox ItemsSource="{Binding UnidadesMedida}" SelectedItem="{Binding ConsumoActual.UnidadMedida}" Style="{StaticResource ModernComboBoxStyle}"/>
+                                    <TextBlock Text="Unidad" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,5" Foreground="#374151"/>
+                                    <ComboBox ItemsSource="{Binding UnidadesMedida}" SelectedItem="{Binding ConsumoActual.UnidadMedida}" Style="{StaticResource ModalComboBoxStyle}"/>
                                 </StackPanel>
                             </Grid>
 
-                            <TextBlock Text="Turno" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6" Foreground="#475569"/>
-                            <ComboBox ItemsSource="{Binding Turnos}" SelectedItem="{Binding ConsumoActual.Turno}" Style="{StaticResource ModernComboBoxStyle}" Margin="0,0,0,16"/>
+                            <TextBlock Text="Turno" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,5" Foreground="#374151"/>
+                            <ComboBox ItemsSource="{Binding Turnos}" SelectedItem="{Binding ConsumoActual.Turno}" Style="{StaticResource ModalComboBoxStyle}"/>
 
-                            <TextBlock Text="Observaciones" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6" Foreground="#475569"/>
-                            <TextBox Text="{Binding ConsumoActual.Observaciones}" Height="75" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Style="{StaticResource ModernTextBoxStyle}"/>
+                            <TextBlock Text="Observaciones" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,5" Foreground="#374151"/>
+                            <TextBox Text="{Binding ConsumoActual.Observaciones}" Height="80" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Style="{StaticResource ModalTextBoxStyle}"/>
                         </StackPanel>
                     </ScrollViewer>
 
-                    <Grid Grid.Row="2" Margin="0,10,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="16"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <Button Grid.Column="0" Content="＋ Registrar Usuario" Click="BtnGuardar_Click" Style="{StaticResource ActionButtonStyle}" Background="#007A1A" Foreground="White"/>
-                        <Button Grid.Column="2" Content="Cancelar" Click="BtnCerrarModal_Click" Style="{StaticResource ActionButtonStyle}" Background="#CBD5E1" Foreground="#475569"/>
-                    </Grid>
+                    <!-- Acciones del modal - IGUAL que inventario -->
+                    <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="#E5E7EB" Padding="30,15">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="15"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Content="GUARDAR" Click="BtnGuardar_Click" Style="{StaticResource ModalButtonStyle}" Background="#10B981" Foreground="White"/>
+                            <Button Grid.Column="2" Content="CANCELAR" Click="BtnCerrarModal_Click" Style="{StaticResource ModalButtonStyle}" Background="#E5E7EB" Foreground="#374151"/>
+                        </Grid>
+                    </Border>
                 </Grid>
             </Border>
         </Grid>

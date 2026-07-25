@@ -1,16 +1,15 @@
-﻿using System;
+﻿#nullable disable
+
+using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using loginavicola.View;
 using loginavicola.Model;
 using loginavicola.ViewModel;
 using FontAwesome.Sharp;
-// ══════════════════════════════════════════════════
-// NUEVAS DIRECTIVAS PARA CONECTAR LA API DE PYTHON
-// ══════════════════════════════════════════════════
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -19,44 +18,27 @@ namespace loginavicola
 {
     public partial class MainWindow : Window
     {
-        // Instancia única de HttpClient para evitar agotar sockets de red
         private static readonly HttpClient client = new HttpClient();
 
         public MainWindow()
         {
             InitializeComponent();
 
-            // Creamos e inicializamos el ViewModel
             var viewModel = new MainViewModel();
-
-            // Cargamos los datos del usuario
             viewModel.LoadCurrentUserData();
-
-            // Conectamos el DataContext
             this.DataContext = viewModel;
 
             MainContentArea.Content = new homeView();
-
-            // Actualizar textos de usuario
             ActualizarInfoUsuario();
-
-            // Aplicar permisos
             AplicarPermisos();
 
-            // ══════════════════════════════════════════════════
-            // ESCUCHAR TECLADO PARA LA API
-            // ══════════════════════════════════════════════════
             this.KeyDown += MainWindow_KeyDown;
         }
 
-        // ══════════════════════════════════════════════════
-        // EVENTO DEL TECLADO (BARRA ESPACIADORA)
-        // ══════════════════════════════════════════════════
         private async void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Space)
             {
-                // Solo ejecutamos la consulta si la vista actual es la de Producción
                 if (MainContentArea.Content is produccionView vistaProduccion)
                 {
                     await ConsultarHardwarePython(vistaProduccion);
@@ -64,9 +46,6 @@ namespace loginavicola
             }
         }
 
-        // ══════════════════════════════════════════════════
-        // CONSUMO DE LA API DE VISIÓN ARTIFICIAL Y BÁSCULA
-        // ══════════════════════════════════════════════════
         private async Task ConsultarHardwarePython(produccionView vistaActiva)
         {
             string url = "http://localhost:5001/datos-huevo";
@@ -78,11 +57,9 @@ namespace loginavicola
                 if (response.IsSuccessStatusCode)
                 {
                     string jsonResponse = await response.Content.ReadAsStringAsync();
-
                     var opciones = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                     DatosHuevo datos = JsonSerializer.Deserialize<DatosHuevo>(jsonResponse, opciones);
 
-                    // Asignamos las lecturas reales a los TextBlocks de produccionView
                     vistaActiva.lblPesoReal.Text = $"{datos.Peso} g";
                     vistaActiva.lblCategoria.Text = datos.Categoria;
                     vistaActiva.lblVolumen.Text = $"{datos.Volumen_Real:F2} cm³";
@@ -103,12 +80,22 @@ namespace loginavicola
             if (UserSession.EsVisitante)
             {
                 txtUserName.Text = "Visitante";
-                txtUserRol.Text = "Visitante";
+                txtAvatarInicial.Text = "V";
+                popupUserName.Text = "Visitante";
+                popupUserRol.Text = "Visitante";
             }
             else if (UserSession.UsuarioActual != null)
             {
-                txtUserName.Text = UserSession.UsuarioActual.Nombres;
-                txtUserRol.Text = UserSession.UsuarioActual.Rol;
+                var user = UserSession.UsuarioActual;
+                txtUserName.Text = user.Nombres;
+
+                if (!string.IsNullOrEmpty(user.Nombres))
+                {
+                    txtAvatarInicial.Text = user.Nombres[0].ToString().ToUpper();
+                }
+
+                popupUserName.Text = $"{user.Nombres} {user.Apellidos}";
+                popupUserRol.Text = user.Rol;
             }
         }
 
@@ -116,10 +103,8 @@ namespace loginavicola
         {
             if (UserSession.EsVisitante)
             {
-                // Visitante: solo ve Dashboard y Producción
                 Btndashboar.Visibility = Visibility.Visible;
                 BtnProduccion.Visibility = Visibility.Visible;
-
                 Btnlotes.Visibility = Visibility.Collapsed;
                 Btnalimentacion.Visibility = Visibility.Collapsed;
                 Btndiagnostico.Visibility = Visibility.Collapsed;
@@ -132,11 +117,8 @@ namespace loginavicola
                 var user = UserSession.UsuarioActual;
 
                 Btndashboar.Visibility = Visibility.Visible;
-
-                // Solo el Administrador ve la Gestión de Usuarios
                 Btngestion.Visibility = (user.Rol == "Administrador") ? Visibility.Visible : Visibility.Collapsed;
 
-                // Permisos por módulos
                 Btnlotes.Visibility = user.PermisoLotes ? Visibility.Visible : Visibility.Collapsed;
                 BtnProduccion.Visibility = user.PermisoProduccion ? Visibility.Visible : Visibility.Collapsed;
                 Btnalimentacion.Visibility = user.PermisoAlimentacion ? Visibility.Visible : Visibility.Collapsed;
@@ -244,10 +226,29 @@ namespace loginavicola
             this.WindowState = (this.WindowState == WindowState.Maximized) ? WindowState.Normal : WindowState.Maximized;
         }
 
-        // ══════════════════════════════════════════════════
-        //  MENÚ HAMBURGUESA
-        // ══════════════════════════════════════════════════
+        private void btnVolverLogin_Click(object sender, RoutedEventArgs e)
+        {
+            var confirmDialog = new ConfirmExitView
+            {
+                Owner = this
+            };
 
+            bool? resultado = confirmDialog.ShowDialog();
+
+            if (resultado == true)
+            {
+                UserSession.UsuarioActual = null;
+                UserSession.EsVisitante = false;
+
+                loginView login = new loginView();
+                login.Show();
+                this.Close();
+            }
+        }
+
+        // ==================== //
+        // MENÚ HAMBURGUESA      //
+        // ==================== //
         private bool _sidebarCollapsed = false;
 
         private IEnumerable<TextBlock> GetMenuTexts() => new[]
@@ -306,27 +307,34 @@ namespace loginavicola
             SidebarColumn.Width = new GridLength(hasta);
         }
 
-        // ══════════════════════════════════════════════════
-        //  CERRAR SESIÓN (con confirmación estilo moderno)
-        // ══════════════════════════════════════════════════
-        private void btnVolverLogin_Click(object sender, RoutedEventArgs e)
+        // ==================== //
+        // MENÚ DESPLEGABLE USUARIO //
+        // ==================== //
+        private void btnUserMenu_Click(object sender, RoutedEventArgs e)
         {
-            var confirmDialog = new ConfirmExitView
+            popupUserMenu.IsOpen = !popupUserMenu.IsOpen;
+        }
+
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (popupUserMenu.IsOpen)
             {
-                Owner = this
-            };
-
-            bool? resultado = confirmDialog.ShowDialog();
-
-            if (resultado == true)
-            {
-                UserSession.UsuarioActual = null;
-                UserSession.EsVisitante = false;
-
-                loginView login = new loginView();
-                login.Show();
-                this.Close();
+                var element = e.OriginalSource as DependencyObject;
+                if (element != null && !IsChildOf(element, btnUserMenu))
+                {
+                    popupUserMenu.IsOpen = false;
+                }
             }
+        }
+
+        private bool IsChildOf(DependencyObject child, DependencyObject parent)
+        {
+            while (child != null)
+            {
+                if (child == parent) return true;
+                child = VisualTreeHelper.GetParent(child);
+            }
+            return false;
         }
     }
 }

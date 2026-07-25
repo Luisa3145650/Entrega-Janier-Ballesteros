@@ -24,6 +24,7 @@ namespace loginavicola.ViewModel
             System.Diagnostics.Debug.WriteLine($"=== RolUsuarioActual: '{RolUsuarioActual}' ===");
 
             LotesRegistrados = new ObservableCollection<Lote>();
+            LotesPaginados = new ObservableCollection<Lote>();
 
             EstadosDisponibles = new ObservableCollection<string>
             {
@@ -31,8 +32,7 @@ namespace loginavicola.ViewModel
                 "Pensionado"
             };
 
-            // CORREGIDO: Cambiado a 'OpcionesTamanoPagina' para que coincida con el XAML
-            OpcionesTamanoPagina = new ObservableCollection<int> { 5, 10, 20, 50 };
+            OpcionesTamanoPagina = new ObservableCollection<int> { 5, 10, 15, 20, 50 };
             _tamanoPagina = 10;
             _paginaActual = 1;
 
@@ -76,26 +76,33 @@ namespace loginavicola.ViewModel
             get => _paginaActual;
             set
             {
-                _paginaActual = value;
-                OnPropertyChanged(nameof(PaginaActual));
-                OnPropertyChanged(nameof(InfoPagina));
-                AplicarPagina();
+                if (_paginaActual != value && value >= 1 && value <= TotalPaginas)
+                {
+                    _paginaActual = value;
+                    OnPropertyChanged(nameof(PaginaActual));
+                    OnPropertyChanged(nameof(InfoPagina));
+                    OnPropertyChanged(nameof(CanGoPrevious));
+                    OnPropertyChanged(nameof(CanGoNext));
+                    AplicarPagina();
+                }
             }
         }
 
         private int _tamanoPagina;
-        // CORREGIDO: Cambiado a 'TamanoPagina' (sin 'ñ') para emparejar con el XAML
         public int TamanoPagina
         {
             get => _tamanoPagina;
             set
             {
-                _tamanoPagina = value;
-                OnPropertyChanged(nameof(TamanoPagina));
-                _paginaActual = 1;
-                OnPropertyChanged(nameof(PaginaActual));
-                RecalcularPaginas();
-                AplicarPagina();
+                if (_tamanoPagina != value)
+                {
+                    _tamanoPagina = value;
+                    OnPropertyChanged(nameof(TamanoPagina));
+                    _paginaActual = 1;
+                    OnPropertyChanged(nameof(PaginaActual));
+                    RecalcularPaginas();
+                    AplicarPagina();
+                }
             }
         }
 
@@ -108,16 +115,53 @@ namespace loginavicola.ViewModel
                 _totalPaginas = value;
                 OnPropertyChanged(nameof(TotalPaginas));
                 OnPropertyChanged(nameof(InfoPagina));
+                OnPropertyChanged(nameof(CanGoNext));
             }
         }
 
+        private int _totalRegistros;
+        public int TotalRegistros
+        {
+            get => _totalRegistros;
+            set
+            {
+                _totalRegistros = value;
+                OnPropertyChanged(nameof(TotalRegistros));
+            }
+        }
+
+        private int _registrosInicio;
+        public int RegistrosInicio
+        {
+            get => _registrosInicio;
+            set
+            {
+                _registrosInicio = value;
+                OnPropertyChanged(nameof(RegistrosInicio));
+            }
+        }
+
+        private int _registrosFin;
+        public int RegistrosFin
+        {
+            get => _registrosFin;
+            set
+            {
+                _registrosFin = value;
+                OnPropertyChanged(nameof(RegistrosFin));
+            }
+        }
+
+        public bool CanGoPrevious => PaginaActual > 1;
+        public bool CanGoNext => PaginaActual < TotalPaginas;
+
         public string InfoPagina => $"Página {PaginaActual} de {TotalPaginas}  ({_todosLosFiltrados.Count} registros)";
 
-        // CORREGIDO: Cambiado a 'OpcionesTamanoPagina' (sin 'ñ')
         public ObservableCollection<int> OpcionesTamanoPagina { get; }
 
         // ── Colecciones y estado ──────────────────────────────────────
         public ObservableCollection<Lote> LotesRegistrados { get; set; }
+        public ObservableCollection<Lote> LotesPaginados { get; set; }
         public ObservableCollection<string> EstadosDisponibles { get; set; }
 
         private Lote _loteActual = new Lote { FechaIncorporacion = DateTime.Now };
@@ -140,9 +184,12 @@ namespace loginavicola.ViewModel
             get => _textoBusqueda;
             set
             {
-                _textoBusqueda = value;
-                OnPropertyChanged(nameof(TextoBusqueda));
-                FiltrarLotes();
+                if (_textoBusqueda != value)
+                {
+                    _textoBusqueda = value;
+                    OnPropertyChanged(nameof(TextoBusqueda));
+                    FiltrarLotes();
+                }
             }
         }
 
@@ -184,23 +231,39 @@ namespace loginavicola.ViewModel
 
         private void RecalcularPaginas()
         {
-            // CORREGIDO: Reemplazado por TamanoPagina
-            TotalPaginas = Math.Max(1, (int)Math.Ceiling(_todosLosFiltrados.Count / (double)TamanoPagina));
-            if (_paginaActual > TotalPaginas) _paginaActual = TotalPaginas;
+            TotalRegistros = _todosLosFiltrados.Count;
+            TotalPaginas = Math.Max(1, (int)Math.Ceiling(TotalRegistros / (double)TamanoPagina));
+
+            if (_paginaActual > TotalPaginas)
+                _paginaActual = TotalPaginas;
+
+            OnPropertyChanged(nameof(CanGoPrevious));
+            OnPropertyChanged(nameof(CanGoNext));
         }
 
         private void AplicarPagina()
         {
-            // CORREGIDO: Reemplazado por TamanoPagina
             var pagina = _todosLosFiltrados
                 .Skip((_paginaActual - 1) * TamanoPagina)
                 .Take(TamanoPagina)
                 .ToList();
 
+            LotesPaginados.Clear();
+            foreach (var l in pagina)
+                LotesPaginados.Add(l);
+
+            // También actualizar LotesRegistrados para compatibilidad
             LotesRegistrados.Clear();
-            foreach (var l in pagina) LotesRegistrados.Add(l);
+            foreach (var l in pagina)
+                LotesRegistrados.Add(l);
+
+            // Calcular registros mostrados
+            RegistrosInicio = _todosLosFiltrados.Count == 0 ? 0 : ((_paginaActual - 1) * TamanoPagina) + 1;
+            RegistrosFin = Math.Min(_paginaActual * TamanoPagina, TotalRegistros);
 
             OnPropertyChanged(nameof(InfoPagina));
+            OnPropertyChanged(nameof(CanGoPrevious));
+            OnPropertyChanged(nameof(CanGoNext));
         }
 
         private void CambiarPagina(int delta)

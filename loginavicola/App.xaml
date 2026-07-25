@@ -8,6 +8,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/estilos/UIColors.xaml"/>
                 <ResourceDictionary Source="/estilos/ButtonStylesxaml.xaml"/>
+                <ResourceDictionary Source="/estilos/MainStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

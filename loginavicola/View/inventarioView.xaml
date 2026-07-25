@@ -151,12 +151,29 @@
         </Grid.RowDefinitions>
 
         <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+<<<<<<< Updated upstream
             <StackPanel Margin="35,30,35,30">
 
             
 
                 <!-- Tarjetas superiores (Estadísticas) -->
                 <Grid Margin="0,0,0,25">
+=======
+            <StackPanel Margin="24">
+
+                <!-- ==================== -->
+                <!-- TÍTULO SECCIÓN       -->
+                <!-- ==================== -->
+                <StackPanel Margin="12,0,12,20">
+                    <TextBlock Text="Control de Inventario" FontSize="28" FontWeight="Bold" Foreground="#111827"/>
+                    <TextBlock Text="Administra los productos, stock y categorías del inventario." FontSize="14" Foreground="#6B7280" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <!-- ==================== -->
+                <!-- TARJETAS ESTADÍSTICAS -->
+                <!-- ==================== -->
+                <Grid Margin="0,0,0,24">
+>>>>>>> Stashed changes
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
@@ -170,11 +187,15 @@
                         </StackPanel>
                     </Border>
 
+<<<<<<< Updated upstream
                     <!-- Tarjeta de Alerta Estilo Imagen (Fondo Suave e Icono) -->
                     <Border Grid.Column="1" Background="#FEF2F2" CornerRadius="12" Margin="10" BorderThickness="5,0,0,0" BorderBrush="#EF4444" Padding="25,30">
                         <Border.Effect>
                             <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
                         </Border.Effect>
+=======
+                    <Border Grid.Column="1" Style="{StaticResource StatCardStyle}" BorderBrush="#EF4444" Background="#FEF2F2">
+>>>>>>> Stashed changes
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -196,10 +217,27 @@
                             <TextBlock Text="{Binding StockOptimo, FallbackValue=0}" FontSize="32" FontWeight="Bold" Foreground="#1E293B"/>
                         </StackPanel>
                     </Border>
+<<<<<<< Updated upstream
                 </Grid>
 
                 <!-- Barra de búsqueda y Registro -->
                 <Grid Margin="10,0,10,25">
+=======
+
+                    <!-- Tarjeta 4: STOCK EXCEDIDO (Azul) -->
+                    <Border Grid.Column="3" Style="{StaticResource StatCardStyle}" BorderBrush="#3B82F6">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="STOCK EXCEDIDO" FontSize="11" Foreground="#9CA3AF" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <TextBlock Text="{Binding StockExcedido, FallbackValue=0}" FontSize="36" FontWeight="Black" Foreground="#111827"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- ==================== -->
+                <!-- BÚSQUEDA Y BOTÓN     -->
+                <!-- ==================== -->
+                <Grid Margin="12,0,12,24">
+>>>>>>> Stashed changes
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
@@ -222,8 +260,15 @@
                     <Button Grid.Column="1" Content="REGISTRAR PRODUCTO" x:Name="BtnRegistrarProducto" Click="BtnRegistrarProducto_Click" Style="{StaticResource GreenButtonStyle}"/>
                 </Grid>
 
+<<<<<<< Updated upstream
                 <!-- Tabla principal (Inventario) -->
                 <Border Background="White" CornerRadius="12" Padding="25" Margin="10,0,10,10">
+=======
+                <!-- ==================== -->
+                <!-- TABLA DE DATOS       -->
+                <!-- ==================== -->
+                <Border Background="White" CornerRadius="12" Padding="20" Margin="12,0" BorderBrush="#E5E7EB" BorderThickness="1">
+>>>>>>> Stashed changes
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.05" Color="#000000"/>
                     </Border.Effect>
@@ -284,8 +329,15 @@
             </StackPanel>
         </ScrollViewer>
 
+<<<<<<< Updated upstream
         <!-- Paginador Inferior Limpio -->
         <Border Grid.Row="1" Background="White" BorderThickness="0,1,0,0" BorderBrush="#E2E8F0" Padding="35,14">
+=======
+        <!-- ==================== -->
+        <!-- PAGINACIÓN           -->
+        <!-- ==================== -->
+        <Border Grid.Row="1" Background="White" BorderThickness="0,1,0,0" BorderBrush="#E5E7EB" Padding="25,12">
+>>>>>>> Stashed changes
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -313,9 +365,17 @@
             </Grid>
         </Border>
 
+<<<<<<< Updated upstream
         <!-- Modal con diseño a juego -->
         <Grid x:Name="ModalOverlay" Grid.RowSpan="2" Background="#66000000" Visibility="Collapsed" IsHitTestVisible="True">
             <Border Background="White" CornerRadius="16" MaxWidth="550" MaxHeight="750" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="0">
+=======
+        <!-- ==================== -->
+        <!-- MODAL DE REGISTRO     -->
+        <!-- ==================== -->
+        <Grid x:Name="ModalOverlay" Grid.RowSpan="2" Background="#80000000" Visibility="Collapsed" IsHitTestVisible="True">
+            <Border Background="White" CornerRadius="12" MaxWidth="550" MaxHeight="700" VerticalAlignment="Center" HorizontalAlignment="Center">
+>>>>>>> Stashed changes
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="25" ShadowDepth="5" Opacity="0.2" Color="#000000"/>
                 </Border.Effect>

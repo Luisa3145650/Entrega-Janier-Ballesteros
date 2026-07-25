@@ -3,123 +3,176 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:helpers="clr-namespace:loginavicola.Helpers"
              mc:Ignorable="d" 
+             FontFamily="Segoe UI"
              d:DesignHeight="800" d:DesignWidth="900"
-             Background="#F7F9FC">
+             Background="#F0F2F5">
 
     <UserControl.Resources>
-        <!-- Estilo de tarjeta premium -->
-        <Style x:Key="ReportCardStyle" TargetType="Border">
+        <helpers:RoleToVisibilityConverter x:Key="RoleConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <!-- ========================================= -->
+        <!-- ESTILOS PARA TARJETAS (IGUAL QUE INVENTARIO) -->
+        <!-- ========================================= -->
+
+        <!-- Base para todas las tarjetas - IGUAL que en inventarioView -->
+        <Style x:Key="StatCardStyle" TargetType="Border">
             <Setter Property="Background" Value="White"/>
-            <Setter Property="CornerRadius" Value="16"/>
-            <Setter Property="Padding" Value="24"/>
-            <Setter Property="Margin" Value="15"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="30,25,25,25"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="BorderThickness" Value="6,0,0,0"/>
+            <Setter Property="MinHeight" Value="160"/>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect 
-                BlurRadius="25"    ShadowDepth="8"    Opacity="0.15"     Color="#000000" 
-                Direction="270"/>
+                    <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <!-- Botón de acción con estilo limpio -->
+        <!-- ========================================= -->
+        <!-- ESTILOS PARA BOTONES                      -->
+        <!-- ========================================= -->
+
+        <!-- Botón de descarga verde (igual que GreenButtonStyle) -->
         <Style x:Key="ExportButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#F8F9FA"/>
-            <Setter Property="Foreground" Value="#2D3436"/>
-            <Setter Property="FontSize" Value="11"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="BorderBrush" Value="#E9ECEF"/>
-            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#10B981"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" 
-                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="⬇" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </StackPanel>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#E9ECEF"/>
+                    <Setter Property="Background" Value="#059669"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#047857"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Botón de descarga secundario (gris) -->
+        <Style x:Key="ExportButtonSecondaryStyle" TargetType="Button" BasedOn="{StaticResource ExportButtonStyle}">
+            <Setter Property="Background" Value="#6B7280"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#4B5563"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#374151"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="60">
-            <!-- Header -->
-            <TextBlock Text="Centro de Reportes" FontSize="28" FontWeight="ExtraBold" Foreground="#1A1A1A"/>
-            <TextBlock Text="Exporta registros operativos de la unidad avícola." FontSize="14" Foreground="#6C757D" Margin="0,4,0,30"/>
+    <Grid Background="#F0F2F5">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="24">
 
-            <!-- Grid de Tarjetas -->
-            <UniformGrid Columns="3" VerticalAlignment="Top">
+                <!-- ==================== -->
+                <!-- TÍTULO SECCIÓN       -->
+                <!-- ==================== -->
+                <StackPanel Margin="12,0,12,20">
+                    <TextBlock Text="Centro de Reportes" FontSize="28" FontWeight="Bold" Foreground="#111827"/>
+                    <TextBlock Text="Exporta registros operativos de la unidad avícola." FontSize="14" Foreground="#6B7280" Margin="0,4,0,0"/>
+                </StackPanel>
 
-                <!-- Tarjeta 1: Clasificación -->
-                <Border Style="{StaticResource ReportCardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="📋" FontSize="28" Margin="0,0,0,12"/>
-                        <TextBlock Text="Clasificación" FontSize="16" FontWeight="Bold" Foreground="#212529"/>
-                        <TextBlock Text="Registros de categorización de huevos." FontSize="12" Foreground="#868E96" Margin="0,4,0,20" TextWrapping="Wrap"/>
-                        <Button Content="DESCARGAR CSV" Style="{StaticResource ExportButtonStyle}" Click="BtnExportarClasificacion_Click"/>
+                <!-- ==================== -->
+                <!-- TARJETAS DE REPORTES  -->
+                <!-- ==================== -->
+                <UniformGrid Columns="3" VerticalAlignment="Top" Margin="0,0,0,20">
+
+                    <!-- Tarjeta 1: Clasificación (Amarilla) -->
+                    <Border Style="{StaticResource StatCardStyle}" BorderBrush="#FACC15">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="📋" FontSize="28" Margin="0,0,0,10"/>
+                            <TextBlock Text="Clasificación" FontSize="16" FontWeight="Bold" Foreground="#111827"/>
+                            <TextBlock Text="Registros de categorización de huevos." FontSize="12" Foreground="#6B7280" Margin="0,4,0,16" TextWrapping="Wrap"/>
+                            <Button Content="DESCARGAR CSV" Style="{StaticResource ExportButtonStyle}" Click="BtnExportarClasificacion_Click"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Tarjeta 2: Inventario (Azul) -->
+                    <Border Style="{StaticResource StatCardStyle}" BorderBrush="#3B82F6">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="📦" FontSize="28" Margin="0,0,0,10"/>
+                            <TextBlock Text="Inventario" FontSize="16" FontWeight="Bold" Foreground="#111827"/>
+                            <TextBlock Text="Control de stock y suministros." FontSize="12" Foreground="#6B7280" Margin="0,4,0,16" TextWrapping="Wrap"/>
+                            <Button Content="DESCARGAR CSV" Style="{StaticResource ExportButtonStyle}" Click="BtnExportarInventario_Click"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Tarjeta 3: Insumos (Morada) -->
+                    <Border Style="{StaticResource StatCardStyle}" BorderBrush="#A855F7">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="💰" FontSize="28" Margin="0,0,0,10"/>
+                            <TextBlock Text="Insumos" FontSize="16" FontWeight="Bold" Foreground="#111827"/>
+                            <TextBlock Text="Registro de gastos e insumos." FontSize="12" Foreground="#6B7280" Margin="0,4,0,16" TextWrapping="Wrap"/>
+                            <Button Content="DESCARGAR CSV" Style="{StaticResource ExportButtonStyle}" Click="BtnExportarInsumos_Click"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Tarjeta 4: Lotes (Verde) -->
+                    <Border Style="{StaticResource StatCardStyle}" BorderBrush="#10B981">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="🐔" FontSize="28" Margin="0,0,0,10"/>
+                            <TextBlock Text="Lotes" FontSize="16" FontWeight="Bold" Foreground="#111827"/>
+                            <TextBlock Text="Información detallada de aves." FontSize="12" Foreground="#6B7280" Margin="0,4,0,16" TextWrapping="Wrap"/>
+                            <Button Content="DESCARGAR CSV" Style="{StaticResource ExportButtonStyle}" Click="BtnExportarLotes_Click"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Tarjeta 5: Producción (Naranja) -->
+                    <Border Style="{StaticResource StatCardStyle}" BorderBrush="#F59E0B">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="📈" FontSize="28" Margin="0,0,0,10"/>
+                            <TextBlock Text="Producción" FontSize="16" FontWeight="Bold" Foreground="#111827"/>
+                            <TextBlock Text="Control de producción diaria." FontSize="12" Foreground="#6B7280" Margin="0,4,0,16" TextWrapping="Wrap"/>
+                            <Button Content="DESCARGAR CSV" Style="{StaticResource ExportButtonStyle}" Click="BtnExportarProduccion_Click"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Tarjeta 6: Resumen (Roja) -->
+                    <Border Style="{StaticResource StatCardStyle}" BorderBrush="#EF4444">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="📊" FontSize="28" Margin="0,0,0,10"/>
+                            <TextBlock Text="Resumen" FontSize="16" FontWeight="Bold" Foreground="#111827"/>
+                            <TextBlock Text="Exportación masiva del sistema." FontSize="12" Foreground="#6B7280" Margin="0,4,0,16" TextWrapping="Wrap"/>
+                            <Button Content="DESCARGAR CSV" Style="{StaticResource ExportButtonStyle}" Click="BtnExportarTodo_Click"/>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+
+                <!-- ==================== -->
+                <!-- PIE DE PÁGINA        -->
+                <!-- ==================== -->
+                <Border Background="White" CornerRadius="10" Padding="20" Margin="12,10,12,0" BorderBrush="#E5E7EB" BorderThickness="1">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.05" Color="#000000"/>
+                    </Border.Effect>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="📌" FontSize="16" Margin="0,0,10,0"/>
+                        <TextBlock Text="Los reportes se exportan en formato CSV. Selecciona una opción para comenzar." FontSize="13" Foreground="#6B7280"/>
                     </StackPanel>
                 </Border>
 
-                <!-- Tarjeta 2: Inventario -->
-                <Border Style="{StaticResource ReportCardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="📦" FontSize="28" Margin="0,0,0,12"/>
-                        <TextBlock Text="Inventario" FontSize="16" FontWeight="Bold" Foreground="#212529"/>
-                        <TextBlock Text="Control de stock y suministros." FontSize="12" Foreground="#868E96" Margin="0,4,0,20" TextWrapping="Wrap"/>
-                        <Button Content="DESCARGAR CSV" Style="{StaticResource ExportButtonStyle}" Click="BtnExportarInventario_Click"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Tarjeta 3: Insumos -->
-                <Border Style="{StaticResource ReportCardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="💰" FontSize="28" Margin="0,0,0,12"/>
-                        <TextBlock Text="Insumos" FontSize="16" FontWeight="Bold" Foreground="#212529"/>
-                        <TextBlock Text="Registro de gastos e insumos." FontSize="12" Foreground="#868E96" Margin="0,4,0,20" TextWrapping="Wrap"/>
-                        <Button Content="DESCARGAR CSV" Style="{StaticResource ExportButtonStyle}" Click="BtnExportarInsumos_Click"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Tarjeta 4: Lotes -->
-                <Border Style="{StaticResource ReportCardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="🐔" FontSize="28" Margin="0,0,0,12"/>
-                        <TextBlock Text="Lotes" FontSize="16" FontWeight="Bold" Foreground="#212529"/>
-                        <TextBlock Text="Información detallada de aves." FontSize="12" Foreground="#868E96" Margin="0,4,0,20" TextWrapping="Wrap"/>
-                        <Button Content="DESCARGAR CSV" Style="{StaticResource ExportButtonStyle}" Click="BtnExportarLotes_Click"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Tarjeta 5: Producción -->
-                <Border Style="{StaticResource ReportCardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="📈" FontSize="28" Margin="0,0,0,12"/>
-                        <TextBlock Text="Producción" FontSize="16" FontWeight="Bold" Foreground="#212529"/>
-                        <TextBlock Text="Control de producción diaria." FontSize="12" Foreground="#868E96" Margin="0,4,0,20" TextWrapping="Wrap"/>
-                        <Button Content="DESCARGAR CSV" Style="{StaticResource ExportButtonStyle}" Click="BtnExportarProduccion_Click"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Tarjeta 6: Resumen -->
-                <Border Style="{StaticResource ReportCardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="📊" FontSize="28" Margin="0,0,0,12"/>
-                        <TextBlock Text="Resumen" FontSize="16" FontWeight="Bold" Foreground="#212529"/>
-                        <TextBlock Text="Exportación masiva del sistema." FontSize="12" Foreground="#868E96" Margin="0,4,0,20" TextWrapping="Wrap"/>
-                        <Button Content="DESCARGAR CSV" Style="{StaticResource ExportButtonStyle}" Click="BtnExportarTodo_Click"/>
-                    </StackPanel>
-                </Border>
-            </UniformGrid>
-        </StackPanel>
-    </ScrollViewer>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </UserControl>
