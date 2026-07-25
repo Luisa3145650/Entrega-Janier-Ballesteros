@@ -10,10 +10,13 @@ namespace loginavicola.Model
     public class ClasificacionProduccion : INotifyPropertyChanged
     {
         private int _idClasificacion;
+        private int _idLote;
         private DateTime _fecha;
-        private TimeSpan _hora;
+        private string _horaInicio = string.Empty;
+        private string _horaFin = string.Empty;
         private string _recolector = string.Empty;
         private string _tipoClasificacion = string.Empty; // "Manual" o "Automática"
+        private string _estadoSesion = "Abierta";
         private int _jumbo;
         private int _aaa;
         private int _aa;
@@ -29,16 +32,28 @@ namespace loginavicola.Model
             set { _idClasificacion = value; OnPropertyChanged(nameof(IdClasificacion)); }
         }
 
+        public int IdLote
+        {
+            get => _idLote;
+            set { _idLote = value; OnPropertyChanged(nameof(IdLote)); }
+        }
+
         public DateTime Fecha
         {
             get => _fecha;
             set { _fecha = value; OnPropertyChanged(nameof(Fecha)); }
         }
 
-        public TimeSpan Hora
+        public string HoraInicio
         {
-            get => _hora;
-            set { _hora = value; OnPropertyChanged(nameof(Hora)); }
+            get => _horaInicio;
+            set { _horaInicio = value ?? string.Empty; OnPropertyChanged(nameof(HoraInicio)); }
+        }
+
+        public string HoraFin
+        {
+            get => _horaFin;
+            set { _horaFin = value ?? string.Empty; OnPropertyChanged(nameof(HoraFin)); }
         }
 
         public string Recolector
@@ -51,6 +66,12 @@ namespace loginavicola.Model
         {
             get => _tipoClasificacion;
             set { _tipoClasificacion = value ?? string.Empty; OnPropertyChanged(nameof(TipoClasificacion)); }
+        }
+
+        public string EstadoSesion
+        {
+            get => _estadoSesion;
+            set { _estadoSesion = value ?? string.Empty; OnPropertyChanged(nameof(EstadoSesion)); }
         }
 
         public int Jumbo
@@ -101,15 +122,17 @@ namespace loginavicola.Model
             set { _observaciones = value ?? string.Empty; OnPropertyChanged(nameof(Observaciones)); }
         }
 
-        // Propiedad computada para mostrar fecha y hora juntas
-        public string FechaHoraCompleta => $"{Fecha:dd/MM/yyyy} {Hora:hh\\:mm\\:ss}";
+        // Propiedad computada para mostrar la fecha y hora de inicio juntas
+        public string FechaHoraCompleta => $"{Fecha:dd/MM/yyyy} {HoraInicio}";
 
         private void CalcularTotal()
         {
             Total = Jumbo + AAA + AA + A + B + C;
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged; protected void OnPropertyChanged(string propertyName)
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

@@ -67,6 +67,7 @@
         </Style>
 
         <!-- Botones Redondeados -->
+        <!-- Botones Redondeados (Corregido) -->
         <Style x:Key="PrimaryButton" TargetType="Button">
             <Setter Property="Height" Value="44"/>
             <Setter Property="FontSize" Value="14"/>
@@ -76,9 +77,21 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="12">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border x:Name="border" 
+                        Background="{TemplateBinding Background}" 
+                        CornerRadius="12">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                      VerticalAlignment="Center"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <!-- Agregamos un pequeño efecto visual al presionar -->
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -106,7 +119,7 @@
             <Border Background="White"
                     CornerRadius="20" 
                     Width="460"
-                    Height="620"
+                    Height="640"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center">
 
@@ -158,6 +171,14 @@
                     <!-- Contenido con ScrollViewer Interno Impecable -->
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,12,0" Margin="28,0,16,0">
                         <StackPanel>
+
+                            <!-- Lote seleccionado (llega ya elegido desde la pantalla de Producción, solo lectura) -->
+                            <Border Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,0,0,16">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="📦" FontSize="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock x:Name="txtLoteInfo" Text="Lote: -" FontSize="14" FontWeight="Bold" Foreground="#166534" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
 
                             <TextBlock Text="Recolector" Style="{StaticResource ModernLabel}"/>
                             <TextBox x:Name="txtRecolector" Style="{StaticResource ModernTextBox}" Margin="0,0,0,16"/>
