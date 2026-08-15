@@ -1,0 +1,367 @@
+﻿<UserControl x:Class="loginavicola.View.produccionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d" d:DesignHeight="750" d:DesignWidth="1100"
+             Background="#F1F5F9">
+
+    <UserControl.Resources>
+        <!-- EstStyle de Tarjeta (Sombra más suave y limpia) -->
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Margin" Value="8" />
+            <Setter Property="Padding" Value="20" />
+            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#0F172A" Opacity="0.03" BlurRadius="12" ShadowDepth="2" />
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Botón Principal (Verde Sena) -->
+        <Style x:Key="ProButton" TargetType="Button">
+            <Setter Property="Background" Value="#39A900" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="16,10" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Margin" Value="4" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2D8600" />
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.45" />
+                    <Setter Property="Cursor" Value="Arrow" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Botón Secundario (Oscuro) -->
+        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource ProButton}">
+            <Setter Property="Background" Value="#1E293B" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#334155" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Botón Azul (Acciones especiales de cámara) -->
+        <Style x:Key="BlueButton" TargetType="Button" BasedOn="{StaticResource ProButton}">
+            <Setter Property="Background" Value="#2563EB" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#1D4ED8" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Cabecera de la Tabla -->
+        <Style x:Key="ModernHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#EDF2F7" />
+            <Setter Property="Foreground" Value="#1E293B" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Padding" Value="16,12" />
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+        </Style>
+
+        <!-- Celdas individuales de la Tabla -->
+        <Style x:Key="ModernCellStyle" TargetType="DataGridCell">
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}" BorderThickness="0">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#E2E8F0"/>
+                    <Setter Property="Foreground" Value="#1E293B"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Estilo de Botón para la paginación -->
+        <Style x:Key="PageNavButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="Foreground" Value="#64748B"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="4,0"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#F1F5F9"/>
+                    <Setter Property="Foreground" Value="#1E293B"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.4"/>
+                    <Setter Property="Cursor" Value="Arrow"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="15">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- SECCIÓN: SELECCIÓN DE LOTE (obligatoria antes de clasificar) -->
+            <Border Grid.Row="0" Style="{StaticResource CardStyle}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="320"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="📦 Lote activo:" FontSize="15" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center" Margin="0,0,12,0"/>
+
+                    <ComboBox x:Name="cmbLote" Grid.Column="1" Height="38" FontSize="13" VerticalContentAlignment="Center" Padding="8,0"/>
+
+                    <TextBlock x:Name="txtEstadoLote" Grid.Column="2" Text="⚠️ Selecciona un lote para comenzar a clasificar"
+                               Foreground="#DC2626" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Margin="16,0,0,0"/>
+
+                    <Button x:Name="btnRefrescarLotes" Grid.Column="3" Content="🔄" Width="38" Height="38"
+                            Style="{StaticResource SecondaryButton}" ToolTip="Recargar lista de lotes"/>
+                </Grid>
+            </Border>
+
+            <!-- SECCIÓN SUPERIOR: BÁSCULA + RESUMEN -->
+            <Grid Grid.Row="1" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="6*" />
+                    <ColumnDefinition Width="4*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- 1. BÁSCULA Y CÁMARA -->
+                <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Cabecera Báscula -->
+                        <Grid Grid.Row="0" Margin="0,0,0,12">
+                            <TextBlock Text="BÁSCULA POS (COM7)" FontSize="15" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center" FontFamily="Segoe UI"/>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button x:Name="btnCapturarFoto" Content="📸" Width="40" Height="32" Style="{StaticResource ProButton}" ToolTip="Tomar Foto Manual"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Display de Peso -->
+                        <Border Grid.Row="1" Background="#0F172A" CornerRadius="10" MinHeight="190" Padding="20">
+                            <Grid>
+                                <Image x:Name="imgCamara" Stretch="Uniform" Opacity="1"/>
+
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock Text="PESO ACTUAL" Foreground="#94A3B8" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Name="lblPesoReal" Text="0.0 g" Foreground="White" FontSize="68" FontWeight="Black" HorizontalAlignment="Center" Margin="0,2"/>
+                                    <Border Background="#334155" Padding="12,6" CornerRadius="15" HorizontalAlignment="Center" Margin="0,5,0,0">
+                                        <TextBlock Text="Presiona ESPACIO para clasificar" Foreground="#CBD5E1" FontSize="11" FontWeight="SemiBold"/>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Estado Inferior Báscula -->
+                        <Grid Grid.Row="2" Margin="0,12,0,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Volumen estimado: " FontSize="13" Foreground="#64748B"/>
+                                <TextBlock x:Name="lblVolumen" Text="-" FontSize="13" FontWeight="Bold" Foreground="#0F172A"/>
+                            </StackPanel>
+                            <TextBlock x:Name="txtEstadoCamara" Text="Sistema Listo" Foreground="#39A900" FontWeight="SemiBold" FontSize="12" 
+                                   HorizontalAlignment="Right" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300" TextAlignment="Right"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- 2. RESUMEN DE PRODUCCIÓN -->
+                <Border Grid.Column="1" Style="{StaticResource CardStyle}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Cabecera Resumen -->
+                        <Grid Grid.Row="0" Margin="0,0,0,15">
+                            <TextBlock Text="RESUMEN DE PRODUCCIÓN" FontSize="16" FontWeight="Bold" Foreground="Black" FontFamily="Segoe UI" VerticalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <TextBlock Text="Cat:" FontSize="12" Foreground="#64748B" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="lblCategoria" Text="-" FontSize="24" FontWeight="Black" Foreground="#39A900" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Lista de Categorías -->
+                        <Grid Grid.Row="1" Margin="0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <Grid Margin="0,6">
+                                    <TextBlock Text="🔵 Jumbo" Foreground="Black" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="lblResumenJumbo" Text="0" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Separator Background="#E2E8F0"/>
+                                <Grid Margin="0,6">
+                                    <TextBlock Text="🟡 AA" Foreground="Black" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="lblResumenAA" Text="0" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Separator Background="#E2E8F0"/>
+                                <Grid Margin="0,6">
+                                    <TextBlock Text="🟠 B" Foreground="Black" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="lblResumenB" Text="0" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right"/>
+                                </Grid>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                <Grid Margin="0,6">
+                                    <TextBlock Text="⚫ AAA" Foreground="Black" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="lblResumenAAA" Text="0" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Separator Background="#E2E8F0"/>
+                                <Grid Margin="0,6">
+                                    <TextBlock Text="🟢 A" Foreground="Black" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="lblResumenA" Text="0" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Separator Background="#E2E8F0"/>
+                                <Grid Margin="0,6">
+                                    <TextBlock Text="🔴 C" Foreground="Black" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="lblResumenC" Text="0" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right"/>
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Fila de Guardar y Clasificación -->
+                        <Grid Grid.Row="2" Margin="0,15,0,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="TOTAL LOTE: " FontSize="12" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="lblTotalResumen" Text="0" FontSize="18" FontWeight="Black" Foreground="#39A900" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button x:Name="btnClasificacionManual" Content="Manual" Style="{StaticResource SecondaryButton}" Height="34" Padding="12,0" Margin="0,0,4,0" IsEnabled="False"/>
+                                <Button x:Name="btnGuardar" Content="💾 Guardar" Style="{StaticResource ProButton}" Height="34" Padding="14,0" IsEnabled="False"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- SECCIÓN INFERIOR: HISTORIAL RECIENTE CON PAGINACIÓN -->
+            <Border Grid.Row="2" Style="{StaticResource CardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Título Historial -->
+                    <TextBlock Grid.Row="0" Text="📋 Historial Reciente" FontSize="18" FontWeight="Bold" Foreground="Black" Margin="0,0,0,16" FontFamily="Segoe UI"/>
+
+                    <!-- DataGrid Adaptado con Binding -->
+                    <DataGrid x:Name="dgHistorial" Grid.Row="1" Height="400" ItemsSource="{Binding HistorialPaginado}" AutoGenerateColumns="True" HeadersVisibility="Column" 
+                          Background="White" RowBackground="White" AlternatingRowBackground="#F8FAFC"
+                          BorderBrush="#E2E8F0" HorizontalGridLinesBrush="#E2E8F0" VerticalGridLinesBrush="Transparent"
+                          IsReadOnly="True" FontSize="13" Foreground="Black" RowHeight="38" FontFamily="Segoe UI"
+                          SelectionUnit="FullRow" GridLinesVisibility="Horizontal" BorderThickness="0"
+                          CellStyle="{StaticResource ModernCellStyle}" ColumnHeaderStyle="{StaticResource ModernHeaderStyle}"
+                          CanUserAddRows="False">
+                    </DataGrid>
+
+                    <!-- BARRA DE PAGINACIÓN -->
+                    <Grid Grid.Row="2" Margin="0,15,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Selector de filas corregido con sys:Int32 -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Mostrar:" Foreground="#64748B" VerticalAlignment="Center" FontSize="13" Margin="0,0,6,0" FontFamily="Segoe UI"/>
+                            <ComboBox SelectedValue="{Binding ElementosPorPagina, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Content" Width="65" Padding="6,4">
+                                <ComboBoxItem>
+                                    <sys:Int32>5</sys:Int32>
+                                </ComboBoxItem>
+                                <ComboBoxItem IsSelected="True">
+                                    <sys:Int32>10</sys:Int32>
+                                </ComboBoxItem>
+                                <ComboBoxItem>
+                                    <sys:Int32>20</sys:Int32>
+                                </ComboBoxItem>
+                                <ComboBoxItem>
+                                    <sys:Int32>50</sys:Int32>
+                                </ComboBoxItem>
+                            </ComboBox>
+                            <TextBlock Text="registros" Foreground="#64748B" VerticalAlignment="Center" FontSize="13" Margin="6,0,0,0" FontFamily="Segoe UI"/>
+                        </StackPanel>
+
+                        <!-- Información de navegación -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Foreground="#64748B" VerticalAlignment="Center" FontSize="13" Margin="0,0,12,0" FontFamily="Segoe UI">
+                            <Run Text="Página "/>
+                            <Run Text="{Binding PaginaActual, FallbackValue=1}" FontWeight="SemiBold" Foreground="#1E293B"/>
+                            <Run Text=" de "/>
+                            <Run Text="{Binding TotalPaginas, FallbackValue=1}" FontWeight="SemiBold" Foreground="#1E293B"/>
+                            </TextBlock>
+
+                            <!-- Botones de comando -->
+                            <Button Content="◀" Command="{Binding PaginaAnteriorCommand}" Style="{StaticResource PageNavButtonStyle}"/>
+                            <Button Content="▶" Command="{Binding PaginaSiguienteCommand}" Style="{StaticResource PageNavButtonStyle}"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</UserControl>
