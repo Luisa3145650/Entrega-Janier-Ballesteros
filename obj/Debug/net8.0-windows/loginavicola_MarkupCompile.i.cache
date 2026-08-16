@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
 C:\Users\ferna\OneDrive\Documentos\Janier-repositorio\Janier-repositorio\loginavicola\App.xaml
-31975369760
-1-130010133
-110-933675910
-242-381825377
-estilos\ButtonStylesxaml.xaml;estilos\MainStyles.xaml;estilos\UIColors.xaml;loginavicola\App.xaml;loginavicola\estilos\ButtonStylesxaml.xaml;loginavicola\estilos\UIColors.xaml;loginavicola\MainWindow.xaml;loginavicola\View\alimentacionView.xaml;loginavicola\View\ConfirmExitView.xaml;loginavicola\View\diagnosticoView.xaml;loginavicola\View\gestionView.xaml;loginavicola\View\homeView.xaml;loginavicola\View\inventarioView.xaml;loginavicola\View\loginView.xaml;loginavicola\View\lotesView.xaml;loginavicola\View\ManualView.xaml;loginavicola\View\produccionView.xaml;loginavicola\View\reportesView.xaml;MainWindow.xaml;View\alimentacionView.xaml;View\Configuracionhardwarewindow.xaml;View\ConfirmExitView.xaml;View\diagnosticoView.xaml;View\gestionView.xaml;View\homeView.xaml;View\inventarioView.xaml;View\loginView.xaml;View\lotesView.xaml;View\ManualView.xaml;View\produccionView.xaml;View\reportesView.xaml;
+16-907925195
 
-False
+5860338039
+236-423730162
+estilos\ButtonStylesxaml.xaml;estilos\MainStyles.xaml;estilos\UIColors.xaml;MainWindow.xaml;View\alimentacionView.xaml;View\Configuracionhardwarewindow.xaml;View\ConfirmExitView.xaml;View\diagnosticoView.xaml;View\gestionView.xaml;View\homeView.xaml;View\inventarioView.xaml;View\loginView.xaml;View\lotesView.xaml;View\ManualView.xaml;View\produccionView.xaml;View\reportesView.xaml;
+
+True
 

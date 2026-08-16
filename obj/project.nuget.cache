@@ -1,15 +1,9 @@
 {
   "version": 2,
-  "dgSpecHash": "nfrMhzizNpI=",
+  "dgSpecHash": "c8Zot3PPGiw=",
   "success": true,
   "projectFilePath": "C:\\Users\\ferna\\OneDrive\\Documentos\\Janier-repositorio\\Janier-repositorio\\loginavicola\\loginavicola.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\ferna\\.nuget\\packages\\accord\\3.8.0\\accord.3.8.0.nupkg.sha512",
-    "C:\\Users\\ferna\\.nuget\\packages\\accord.video\\3.8.0\\accord.video.3.8.0.nupkg.sha512",
-    "C:\\Users\\ferna\\.nuget\\packages\\accord.video.directshow\\3.8.0\\accord.video.directshow.3.8.0.nupkg.sha512",
-    "C:\\Users\\ferna\\.nuget\\packages\\aforge\\2.2.5\\aforge.2.2.5.nupkg.sha512",
-    "C:\\Users\\ferna\\.nuget\\packages\\aforge.video\\2.2.5\\aforge.video.2.2.5.nupkg.sha512",
-    "C:\\Users\\ferna\\.nuget\\packages\\aforge.video.directshow\\2.2.5\\aforge.video.directshow.2.2.5.nupkg.sha512",
     "C:\\Users\\ferna\\.nuget\\packages\\closedxml\\0.105.0\\closedxml.0.105.0.nupkg.sha512",
     "C:\\Users\\ferna\\.nuget\\packages\\closedxml.parser\\2.0.0\\closedxml.parser.2.0.0.nupkg.sha512",
     "C:\\Users\\ferna\\.nuget\\packages\\communitytoolkit.mvvm\\8.4.0\\communitytoolkit.mvvm.8.4.0.nupkg.sha512",

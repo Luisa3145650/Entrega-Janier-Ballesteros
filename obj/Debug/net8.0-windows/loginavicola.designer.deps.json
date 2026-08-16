@@ -6,67 +6,6 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v8.0": {
-      "Accord/3.8.0": {
-        "runtime": {
-          "lib/netstandard2.0/Accord.dll": {
-            "assemblyVersion": "3.8.0.0",
-            "fileVersion": "3.8.0.6134"
-          }
-        }
-      },
-      "Accord.Video/3.8.0": {
-        "dependencies": {
-          "Accord": "3.8.0"
-        },
-        "runtime": {
-          "lib/netstandard2.0/Accord.Video.dll": {
-            "assemblyVersion": "3.8.0.0",
-            "fileVersion": "3.8.0.6134"
-          }
-        }
-      },
-      "Accord.Video.DirectShow/3.8.0": {
-        "dependencies": {
-          "Accord": "3.8.0",
-          "Accord.Video": "3.8.0"
-        },
-        "runtime": {
-          "lib/netstandard2.0/Accord.Video.DirectShow.dll": {
-            "assemblyVersion": "3.8.0.0",
-            "fileVersion": "3.8.0.6134"
-          }
-        }
-      },
-      "AForge/2.2.5": {
-        "runtime": {
-          "lib/AForge.dll": {
-            "assemblyVersion": "2.2.5.0",
-            "fileVersion": "2.2.5.0"
-          }
-        }
-      },
-      "AForge.Video/2.2.5": {
-        "dependencies": {
-          "AForge": "2.2.5"
-        },
-        "runtime": {
-          "lib/AForge.Video.dll": {
-            "assemblyVersion": "2.2.5.0",
-            "fileVersion": "2.2.5.0"
-          }
-        }
-      },
-      "AForge.Video.DirectShow/2.2.5": {
-        "dependencies": {
-          "AForge.Video": "2.2.5"
-        },
-        "runtime": {
-          "lib/AForge.Video.DirectShow.dll": {
-            "assemblyVersion": "2.2.5.0",
-            "fileVersion": "2.2.5.0"
-          }
-        }
-      },
       "ClosedXML/0.105.0": {
         "dependencies": {
           "ClosedXML.Parser": "2.0.0",
@@ -1327,48 +1266,6 @@
     }
   },
   "libraries": {
-    "Accord/3.8.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-7kJrB570dO5ELim+2KWQNozuvWO9/BuZfZspdFy36fcWPNF2CEccblLuILeUlI8QJYd2DlBy0bfK8BlCx/uayA==",
-      "path": "accord/3.8.0",
-      "hashPath": "accord.3.8.0.nupkg.sha512"
-    },
-    "Accord.Video/3.8.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-efsmrydC22ZEisWkukqAiCtv27qF0l5/9U1eCCTkbnc5EYYE6F2RSnsfWr8iTELXb3ZsLLGO+Sy+K0NXrHDv4A==",
-      "path": "accord.video/3.8.0",
-      "hashPath": "accord.video.3.8.0.nupkg.sha512"
-    },
-    "Accord.Video.DirectShow/3.8.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-x/8d0KS1pIaaatTEoQifty5+nBvxaQOLY9BmLnreYhOPQdxAhhy4VLpzkkH7uaoFHj0gYnBY23EHavOeW7vaIw==",
-      "path": "accord.video.directshow/3.8.0",
-      "hashPath": "accord.video.directshow.3.8.0.nupkg.sha512"
-    },
-    "AForge/2.2.5": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-clkumhM9DggqIzEXAHgVLeWO4arG5YfoPr7J4jfjJx35AoeEIJSSm49J25bwp/9mXQYLwi7y1Wunc8qgYJsGxg==",
-      "path": "aforge/2.2.5",
-      "hashPath": "aforge.2.2.5.nupkg.sha512"
-    },
-    "AForge.Video/2.2.5": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-XqzcOXtBUagEPRqg/00oayxlCPmxP4284SdM62mVotsNoD03fs19BrzdMBfhUOOYPyd0B/IXH7tEWnSDmc2gxA==",
-      "path": "aforge.video/2.2.5",
-      "hashPath": "aforge.video.2.2.5.nupkg.sha512"
-    },
-    "AForge.Video.DirectShow/2.2.5": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-pEch6felU/RGAbl0A7yjaQjsGxwiRFU9R+qBqR92wQo++XhzPLeQaZHnAPIBYaG7MfoqtjgCDkK4z3Tra4VQ3w==",
-      "path": "aforge.video.directshow/2.2.5",
-      "hashPath": "aforge.video.directshow.2.2.5.nupkg.sha512"
-    },
     "ClosedXML/0.105.0": {
       "type": "package",
       "serviceable": true,

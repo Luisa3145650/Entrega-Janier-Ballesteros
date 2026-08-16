@@ -501,10 +501,10 @@
                             </Border>
 
                             <Border Background="#F8FAFC" CornerRadius="10" Padding="12" Margin="4" BorderBrush="#E2E8F0" BorderThickness="1">
-                                <CheckBox IsChecked="{Binding PermisoEntregas}" Style="{StaticResource ModernToggleStyle}">
+                                <CheckBox IsChecked="{Binding PermisoReportes}" Style="{StaticResource ModernToggleStyle}">
                                     <StackPanel Margin="6,0,0,0">
-                                        <TextBlock Text="Entregas" FontWeight="Bold" Foreground="#111827" FontSize="13"/>
-                                        <TextBlock Text="Salida de pedidos" Foreground="#6B7280" FontSize="11"/>
+                                        <TextBlock Text="Exportar Datos" FontWeight="Bold" Foreground="#111827" FontSize="13"/>
+                                        <TextBlock Text="Descarga de reportes" Foreground="#6B7280" FontSize="11"/>
                                     </StackPanel>
                                 </CheckBox>
                             </Border>

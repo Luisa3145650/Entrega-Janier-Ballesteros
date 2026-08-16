@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 
 using System;
 using System.Collections.Generic;
@@ -33,6 +33,7 @@ namespace loginavicola
             AplicarPermisos();
 
             this.KeyDown += MainWindow_KeyDown;
+            this.Closing += MainWindow_Closing;
         }
 
         private async void MainWindow_KeyDown(object sender, KeyEventArgs e)
@@ -124,7 +125,7 @@ namespace loginavicola
                 Btnalimentacion.Visibility = user.PermisoAlimentacion ? Visibility.Visible : Visibility.Collapsed;
                 Btndiagnostico.Visibility = user.PermisoDiagnostico ? Visibility.Visible : Visibility.Collapsed;
                 Btninventario.Visibility = user.PermisoInventario ? Visibility.Visible : Visibility.Collapsed;
-                Btnreportes.Visibility = user.PermisoInventario ? Visibility.Visible : Visibility.Collapsed;
+                Btnreportes.Visibility = user.PermisoReportes ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -142,9 +143,10 @@ namespace loginavicola
 
         private void Btnlotes_Click(object sender, RoutedEventArgs e)
         {
-            if (UserSession.EsVisitante)
+            var user = UserSession.UsuarioActual;
+            if (UserSession.EsVisitante || user == null || !user.PermisoLotes)
             {
-                MessageBox.Show("Acceso denegado. Los visitantes solo pueden ver Dashboard y Producción.", "Permiso denegado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Acceso denegado. No tienes permisos para acceder a Lotes.", "Permiso Requerido", MessageBoxButton.OK, MessageBoxImage.Warning);
                 Btndashboar.IsChecked = true;
                 return;
             }
@@ -153,14 +155,22 @@ namespace loginavicola
 
         private void BtnProduccion_Click(object sender, RoutedEventArgs e)
         {
+            var user = UserSession.UsuarioActual;
+            if (!UserSession.EsVisitante && (user == null || !user.PermisoProduccion))
+            {
+                MessageBox.Show("Acceso denegado. No tienes permisos para acceder a Producción.", "Permiso Requerido", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Btndashboar.IsChecked = true;
+                return;
+            }
             Navegar(new produccionView(), "Producción", IconChar.Egg);
         }
 
         private void Btnalimentacion_Click(object sender, RoutedEventArgs e)
         {
-            if (UserSession.EsVisitante)
+            var user = UserSession.UsuarioActual;
+            if (UserSession.EsVisitante || user == null || !user.PermisoAlimentacion)
             {
-                MessageBox.Show("Acceso denegado. Los visitantes solo pueden ver Dashboard y Producción.", "Permiso denegado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Acceso denegado. No tienes permisos para acceder a Alimentación.", "Permiso Requerido", MessageBoxButton.OK, MessageBoxImage.Warning);
                 Btndashboar.IsChecked = true;
                 return;
             }
@@ -169,9 +179,10 @@ namespace loginavicola
 
         private void Btndiagnostico_Click(object sender, RoutedEventArgs e)
         {
-            if (UserSession.EsVisitante)
+            var user = UserSession.UsuarioActual;
+            if (UserSession.EsVisitante || user == null || !user.PermisoDiagnostico)
             {
-                MessageBox.Show("Acceso denegado. Los visitantes solo pueden ver Dashboard y Producción.", "Permiso denegado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Acceso denegado. No tienes permisos para acceder a Diagnóstico.", "Permiso Requerido", MessageBoxButton.OK, MessageBoxImage.Warning);
                 Btndashboar.IsChecked = true;
                 return;
             }
@@ -180,9 +191,10 @@ namespace loginavicola
 
         private void Btninventario_Click(object sender, RoutedEventArgs e)
         {
-            if (UserSession.EsVisitante)
+            var user = UserSession.UsuarioActual;
+            if (UserSession.EsVisitante || user == null || !user.PermisoInventario)
             {
-                MessageBox.Show("Acceso denegado. Los visitantes solo pueden ver Dashboard y Producción.", "Permiso denegado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Acceso denegado. No tienes permisos para acceder a Inventario.", "Permiso Requerido", MessageBoxButton.OK, MessageBoxImage.Warning);
                 Btndashboar.IsChecked = true;
                 return;
             }
@@ -202,9 +214,10 @@ namespace loginavicola
 
         private void Btnreportes_Click(object sender, RoutedEventArgs e)
         {
-            if (UserSession.EsVisitante)
+            var user = UserSession.UsuarioActual;
+            if (UserSession.EsVisitante || user == null || !user.PermisoReportes)
             {
-                MessageBox.Show("Acceso denegado. Los visitantes no pueden exportar datos.", "Permiso denegado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Acceso denegado. No tienes permisos para exportar datos.", "Permiso Requerido", MessageBoxButton.OK, MessageBoxImage.Warning);
                 Btndashboar.IsChecked = true;
                 return;
             }
@@ -239,6 +252,7 @@ namespace loginavicola
             {
                 UserSession.UsuarioActual = null;
                 UserSession.EsVisitante = false;
+                _esCierreDeSesion = true;
 
                 loginView login = new loginView();
                 login.Show();
@@ -335,6 +349,37 @@ namespace loginavicola
                 child = VisualTreeHelper.GetParent(child);
             }
             return false;
+        }
+
+        private bool _isShuttingDown = false;
+        private bool _esCierreDeSesion = false;
+
+        private async void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (_isShuttingDown)
+            {
+                return;
+            }
+
+            if (_esCierreDeSesion)
+            {
+                return;
+            }
+            e.Cancel = true;
+            _isShuttingDown = true;
+
+            try
+            {
+                await Helpers.PythonProcessManager.DetenerAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error durante el apagado de Python en MainWindow_Closing: {ex.Message}");
+            }
+            finally
+            {
+                Application.Current.Shutdown();
+            }
         }
     }
 }

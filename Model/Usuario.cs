@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -62,8 +62,8 @@ namespace loginavicola.Model
         private bool _pAlimentacion;
         public bool PermisoAlimentacion { get => _pAlimentacion; set { _pAlimentacion = value; OnPropertyChanged(nameof(PermisoAlimentacion)); } }
 
-        private bool _pEntregas;
-        public bool PermisoEntregas { get => _pEntregas; set { _pEntregas = value; OnPropertyChanged(nameof(PermisoEntregas)); } }
+        private bool _pReportes;
+        public bool PermisoReportes { get => _pReportes; set { _pReportes = value; OnPropertyChanged(nameof(PermisoReportes)); } }
 
         private bool _pDiagnostico;
         public bool PermisoDiagnostico { get => _pDiagnostico; set { _pDiagnostico = value; OnPropertyChanged(nameof(PermisoDiagnostico)); } }

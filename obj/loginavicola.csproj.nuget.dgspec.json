@@ -53,26 +53,6 @@
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
           "dependencies": {
-            "AForge": {
-              "target": "Package",
-              "version": "[2.2.5, )"
-            },
-            "AForge.Video": {
-              "target": "Package",
-              "version": "[2.2.5, )"
-            },
-            "AForge.Video.DirectShow": {
-              "target": "Package",
-              "version": "[2.2.5, )"
-            },
-            "Accord.Video": {
-              "target": "Package",
-              "version": "[3.8.0, )"
-            },
-            "Accord.Video.DirectShow": {
-              "target": "Package",
-              "version": "[3.8.0, )"
-            },
             "ClosedXML": {
               "target": "Package",
               "version": "[0.105.0, )"

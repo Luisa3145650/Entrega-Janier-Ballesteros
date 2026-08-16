@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -64,7 +64,7 @@ namespace loginavicola.Database
                             PermisoLotes BOOLEAN DEFAULT 0,
                             PermisoProduccion BOOLEAN DEFAULT 0,
                             PermisoAlimentacion BOOLEAN DEFAULT 0,
-                            PermisoEntregas BOOLEAN DEFAULT 0,
+                            PermisoReportes BOOLEAN DEFAULT 0,
                             PermisoDiagnostico BOOLEAN DEFAULT 0,
                             PermisoInventario BOOLEAN DEFAULT 0,
                             PermisoGestionUsuarios BOOLEAN DEFAULT 0
@@ -73,6 +73,35 @@ namespace loginavicola.Database
                     using (var command = new SQLiteCommand(createTable, connection))
                     {
                         command.ExecuteNonQuery();
+                    }
+
+                    // Migración de esquema: Si existe PermisoEntregas y no PermisoReportes, renombrar la columna sin perder datos
+                    try
+                    {
+                        bool tieneEntregas = false;
+                        bool tieneReportes = false;
+                        using (var checkCmd = new SQLiteCommand("PRAGMA table_info(Usuario);", connection))
+                        using (var reader = checkCmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                string colName = reader["name"]?.ToString() ?? string.Empty;
+                                if (colName.Equals("PermisoEntregas", StringComparison.OrdinalIgnoreCase)) tieneEntregas = true;
+                                if (colName.Equals("PermisoReportes", StringComparison.OrdinalIgnoreCase)) tieneReportes = true;
+                            }
+                        }
+
+                        if (tieneEntregas && !tieneReportes)
+                        {
+                            using (var alterCmd = new SQLiteCommand("ALTER TABLE Usuario RENAME COLUMN PermisoEntregas TO PermisoReportes;", connection))
+                            {
+                                alterCmd.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Migración de esquema Usuario: {ex.Message}");
                     }
 
                     CrearAdministradorPorDefecto(connection);
@@ -102,7 +131,7 @@ namespace loginavicola.Database
                             INSERT INTO Usuario 
                             (Nombres, Apellidos, Username, Documento, Telefono, Direccion, Email, Password, Rol, 
                              PermisoInicio, PermisoLotes, PermisoProduccion, PermisoAlimentacion, 
-                             PermisoEntregas, PermisoDiagnostico, PermisoInventario, PermisoGestionUsuarios)
+                             PermisoReportes, PermisoDiagnostico, PermisoInventario, PermisoGestionUsuarios)
                             VALUES 
                             ('Administrador', 'Sistema', 'admin', '00000000', '000-0000', 'Oficina Principal', 
                              'admin@avicola.com', @Password, 'Administrador', 1, 1, 1, 1, 1, 1, 1, 1)";
@@ -167,19 +196,17 @@ namespace loginavicola.Database
             }
             return null;
         }
-        // Este es el método que falta y que quita los errores rojos
+
         private void SetPermisos(Usuario u, bool inicio, bool lotes, bool prod, bool alim, bool ent, bool diag, bool inv, bool gest, bool export)
         {
             u.PermisoInicio = inicio;
             u.PermisoLotes = lotes;
             u.PermisoProduccion = prod;
             u.PermisoAlimentacion = alim;
-            u.PermisoEntregas = ent;
+            u.PermisoReportes = ent;
             u.PermisoDiagnostico = diag;
             u.PermisoInventario = inv;
             u.PermisoGestionUsuarios = gest;
-            // Si agregaste el booleano para exportar en el modelo, úsalo aquí. 
-            // Si no, puedes quitar el último parámetro 'export'
         }
 
         public bool InsertarUsuario(Usuario usuario, string password)
@@ -194,7 +221,7 @@ namespace loginavicola.Database
 
                 case "Aprendiz":
                     // Ve todo EXCEPTO "Gestión de usuarios"
-                    // (Inicio, Lotes, Producción, Alimentación, Entregas, Diagnóstico, Inventario, Exportar)
+                    // (Inicio, Lotes, Producción, Alimentación, Reportes, Diagnóstico, Inventario)
                     SetPermisos(usuario, true, true, true, true, true, true, true, false, true);
                     break;
 
@@ -218,11 +245,11 @@ namespace loginavicola.Database
                         INSERT INTO Usuario 
                         (Nombres, Apellidos, Username, Documento, Telefono, Direccion, Email, Password, Rol,
                          PermisoInicio, PermisoLotes, PermisoProduccion, PermisoAlimentacion,
-                         PermisoEntregas, PermisoDiagnostico, PermisoInventario, PermisoGestionUsuarios)
+                         PermisoReportes, PermisoDiagnostico, PermisoInventario, PermisoGestionUsuarios)
                         VALUES 
                         (@Nombres, @Apellidos, @Username, @Documento, @Telefono, @Direccion, @Email, @Password, @Rol,
                          @PermisoInicio, @PermisoLotes, @PermisoProduccion, @PermisoAlimentacion,
-                         @PermisoEntregas, @PermisoDiagnostico, @PermisoInventario, @PermisoGestionUsuarios)";
+                         @PermisoReportes, @PermisoDiagnostico, @PermisoInventario, @PermisoGestionUsuarios)";
 
                     using (var command = new SQLiteCommand(query, connection))
                     {
@@ -239,7 +266,7 @@ namespace loginavicola.Database
                         command.Parameters.AddWithValue("@PermisoLotes", usuario.PermisoLotes);
                         command.Parameters.AddWithValue("@PermisoProduccion", usuario.PermisoProduccion);
                         command.Parameters.AddWithValue("@PermisoAlimentacion", usuario.PermisoAlimentacion);
-                        command.Parameters.AddWithValue("@PermisoEntregas", usuario.PermisoEntregas);
+                        command.Parameters.AddWithValue("@PermisoReportes", usuario.PermisoReportes);
                         command.Parameters.AddWithValue("@PermisoDiagnostico", usuario.PermisoDiagnostico);
                         command.Parameters.AddWithValue("@PermisoInventario", usuario.PermisoInventario);
                         command.Parameters.AddWithValue("@PermisoGestionUsuarios", usuario.PermisoGestionUsuarios);
@@ -269,7 +296,7 @@ namespace loginavicola.Database
                             PermisoLotes = @PermisoLotes,
                             PermisoProduccion = @PermisoProduccion,
                             PermisoAlimentacion = @PermisoAlimentacion,
-                            PermisoEntregas = @PermisoEntregas,
+                            PermisoReportes = @PermisoReportes,
                             PermisoDiagnostico = @PermisoDiagnostico,
                             PermisoInventario = @PermisoInventario,
                             PermisoGestionUsuarios = @PermisoGestionUsuarios
@@ -282,7 +309,7 @@ namespace loginavicola.Database
                         command.Parameters.AddWithValue("@PermisoLotes", usuario.PermisoLotes);
                         command.Parameters.AddWithValue("@PermisoProduccion", usuario.PermisoProduccion);
                         command.Parameters.AddWithValue("@PermisoAlimentacion", usuario.PermisoAlimentacion);
-                        command.Parameters.AddWithValue("@PermisoEntregas", usuario.PermisoEntregas);
+                        command.Parameters.AddWithValue("@PermisoReportes", usuario.PermisoReportes);
                         command.Parameters.AddWithValue("@PermisoDiagnostico", usuario.PermisoDiagnostico);
                         command.Parameters.AddWithValue("@PermisoInventario", usuario.PermisoInventario);
                         command.Parameters.AddWithValue("@PermisoGestionUsuarios", usuario.PermisoGestionUsuarios);
@@ -328,6 +355,16 @@ namespace loginavicola.Database
 
         private Usuario MapearUsuario(SQLiteDataReader reader)
         {
+            bool permisoReportes = false;
+            try
+            {
+                permisoReportes = Convert.ToBoolean(reader["PermisoReportes"]);
+            }
+            catch
+            {
+                try { permisoReportes = Convert.ToBoolean(reader["PermisoEntregas"]); } catch { }
+            }
+
             return new Usuario
             {
                 IdUsuario = Convert.ToInt32(reader["IdUsuario"]),
@@ -343,7 +380,7 @@ namespace loginavicola.Database
                 PermisoLotes = Convert.ToBoolean(reader["PermisoLotes"]),
                 PermisoProduccion = Convert.ToBoolean(reader["PermisoProduccion"]),
                 PermisoAlimentacion = Convert.ToBoolean(reader["PermisoAlimentacion"]),
-                PermisoEntregas = Convert.ToBoolean(reader["PermisoEntregas"]),
+                PermisoReportes = permisoReportes,
                 PermisoDiagnostico = Convert.ToBoolean(reader["PermisoDiagnostico"]),
                 PermisoInventario = Convert.ToBoolean(reader["PermisoInventario"]),
                 PermisoGestionUsuarios = Convert.ToBoolean(reader["PermisoGestionUsuarios"])

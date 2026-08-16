@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="loginavicola.View.produccionView"
+<UserControl x:Class="loginavicola.View.produccionView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -8,7 +8,7 @@
              Background="#F1F5F9">
 
     <UserControl.Resources>
-        <!-- Estilo de Tarjeta (Sombra más suave y limpia) -->
+        <!-- EstStyle de Tarjeta (Sombra más suave y limpia) -->
         <Style x:Key="CardStyle" TargetType="Border">
             <Setter Property="Background" Value="White" />
             <Setter Property="CornerRadius" Value="12" />
@@ -146,7 +146,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- SECCIÓN: SELECCIÓN DE LOTE -->
+            <!-- SECCIÓN: SELECCIÓN DE LOTE (obligatoria antes de clasificar) -->
             <Border Grid.Row="0" Style="{StaticResource CardStyle}">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -157,11 +157,14 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Grid.Column="0" Text="📦 Lote activo:" FontSize="15" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                    <ComboBox x:Name="cmbLote" Grid.Column="1" Height="38" FontSize="13" VerticalContentAlignment="Center" Padding="8,0" Focusable="False"/>
+
+                    <ComboBox x:Name="cmbLote" Grid.Column="1" Height="38" FontSize="13" VerticalContentAlignment="Center" Padding="8,0"/>
+
                     <TextBlock x:Name="txtEstadoLote" Grid.Column="2" Text="⚠️ Selecciona un lote para comenzar a clasificar"
                                Foreground="#DC2626" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Margin="16,0,0,0"/>
+
                     <Button x:Name="btnRefrescarLotes" Grid.Column="3" Content="🔄" Width="38" Height="38"
-                            Style="{StaticResource SecondaryButton}" ToolTip="Recargar lista de lotes" Focusable="False"/>
+                            Style="{StaticResource SecondaryButton}" ToolTip="Recargar lista de lotes"/>
                 </Grid>
             </Border>
 
@@ -177,50 +180,66 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Barra de Control de Cámara -->
+                        <!-- Cabecera Báscula y Estado -->
                         <Grid Grid.Row="0" Margin="0,0,0,10">
-                            <TextBlock Text="📹 Cámara en Vivo" FontSize="15" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center"/>
-
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <Button x:Name="btnConectarCamara" Content="▶ Conectar" Style="{StaticResource BlueButton}" Height="32" Padding="12,0" Margin="0,0,6,0" Click="BtnConectarCamara_Click" Focusable="False"/>
-                                <Button x:Name="btnDesconectarCamara" Content="⏹ Desconectar" Style="{StaticResource SecondaryButton}" Height="32" Padding="12,0" Click="BtnDesconectarCamara_Click" Focusable="False"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="BÁSCULA Y CÁMARA" FontSize="15" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center" FontFamily="Segoe UI"/>
+                                <Border x:Name="brdEstadoConexion" Background="#FEE2E2" CornerRadius="12" Padding="8,3" Margin="10,0,0,0" VerticalAlignment="Center">
+                                    <TextBlock x:Name="txtEstadoConexionHardware" Text="🔴 Desconectado" FontSize="11" FontWeight="Bold" Foreground="#DC2626"/>
+                                </Border>
                             </StackPanel>
+
+                            <Button x:Name="btnCapturarFoto" Content="📸 Foto" Width="70" Height="30" Style="{StaticResource ProButton}" HorizontalAlignment="Right" ToolTip="Tomar Foto Manual"/>
                         </Grid>
 
-                        <!-- Display Dividido de Peso e Imagen (Cámara no obstruida) -->
-                        <Border Grid.Row="1" Background="#0F172A" CornerRadius="10" MinHeight="210" Padding="12">
+                        <!-- Panel de Selección de Dispositivos -->
+                        <Border Grid.Row="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,0,12">
+                            <WrapPanel VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Margin="0,2,12,2">
+                                    <TextBlock Text="📷 Cámara:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <ComboBox x:Name="cmbCamaras" Width="145" Height="30" FontSize="12" VerticalContentAlignment="Center"/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,2,12,2">
+                                    <TextBlock Text="⚖️ Báscula:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <ComboBox x:Name="cmbPuertos" Width="145" Height="30" FontSize="12" VerticalContentAlignment="Center"/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,2,0,2">
+                                    <Button x:Name="btnConectarHardware" Content="🔌 Conectar" Style="{StaticResource BlueButton}" Height="30" Padding="12,0" Margin="0,0,4,0"/>
+                                    <Button x:Name="btnRefrescarHardware" Content="🔄" Width="30" Height="30" Style="{StaticResource SecondaryButton}" Padding="0" ToolTip="Buscar dispositivos disponibles"/>
+                                </StackPanel>
+                            </WrapPanel>
+                        </Border>
+
+                        <!-- Display de Peso -->
+                        <Border Grid.Row="2" Background="#0F172A" CornerRadius="10" MinHeight="190" Padding="20">
                             <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="6.5*"/>
-                                    <ColumnDefinition Width="3.5*"/>
-                                </Grid.ColumnDefinitions>
+                                <Image x:Name="imgCamara" Stretch="Uniform" Opacity="1"/>
 
-                                <!-- Área limpia para el Feed de Video -->
-                                <Image x:Name="imgCamara" Grid.Column="0" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="1"/>
-
-                                <!-- Panel separado para los datos de Báscula -->
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8,0,0,0">
-                                    <TextBlock Text="PESO ACTUAL" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                    <TextBlock x:Name="lblPesoReal" Text="0.0 g" Foreground="#38BDF8" FontSize="44" FontWeight="Black" HorizontalAlignment="Center" Margin="0,4"/>
-                                    <Border Background="#334155" Padding="8,5" CornerRadius="12" HorizontalAlignment="Center" Margin="0,6,0,0">
-                                        <TextBlock Text="[ESPACIO] Clasificar" Foreground="#CBD5E1" FontSize="10" FontWeight="SemiBold"/>
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock Text="PESO ACTUAL" Foreground="#94A3B8" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Name="lblPesoReal" Text="0.0 g" Foreground="White" FontSize="68" FontWeight="Black" HorizontalAlignment="Center" Margin="0,2"/>
+                                    <Border Background="#334155" Padding="12,6" CornerRadius="15" HorizontalAlignment="Center" Margin="0,5,0,0">
+                                        <TextBlock Text="Presiona ESPACIO para clasificar" Foreground="#CBD5E1" FontSize="11" FontWeight="SemiBold"/>
                                     </Border>
                                 </StackPanel>
                             </Grid>
                         </Border>
 
                         <!-- Estado Inferior Báscula -->
-                        <Grid Grid.Row="2" Margin="0,12,0,0">
+                        <Grid Grid.Row="3" Margin="0,12,0,0">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="Volumen estimado: " FontSize="13" Foreground="#64748B"/>
                                 <TextBlock x:Name="lblVolumen" Text="-" FontSize="13" FontWeight="Bold" Foreground="#0F172A"/>
                             </StackPanel>
                             <TextBlock x:Name="txtEstadoCamara" Text="Sistema Listo" Foreground="#39A900" FontWeight="SemiBold" FontSize="12" 
-                                       HorizontalAlignment="Right" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300" TextAlignment="Right"/>
+                                   HorizontalAlignment="Right" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300" TextAlignment="Right"/>
                         </Grid>
                     </Grid>
                 </Border>
@@ -293,8 +312,8 @@
                             </StackPanel>
 
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <Button x:Name="btnClasificacionManual" Content="Manual" Style="{StaticResource SecondaryButton}" Height="34" Padding="12,0" Margin="0,0,4,0" IsEnabled="False" Focusable="False"/>
-                                <Button x:Name="btnGuardar" Content="💾 Guardar" Style="{StaticResource ProButton}" Height="34" Padding="14,0" IsEnabled="False" Focusable="False"/>
+                                <Button x:Name="btnClasificacionManual" Content="Manual" Style="{StaticResource SecondaryButton}" Height="34" Padding="12,0" Margin="0,0,4,0" IsEnabled="False"/>
+                                <Button x:Name="btnGuardar" Content="💾 Guardar" Style="{StaticResource ProButton}" Height="34" Padding="14,0" IsEnabled="False"/>
                             </StackPanel>
                         </Grid>
                     </Grid>
@@ -310,17 +329,20 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
+                    <!-- Título Historial -->
                     <TextBlock Grid.Row="0" Text="📋 Historial Reciente" FontSize="18" FontWeight="Bold" Foreground="Black" Margin="0,0,0,16" FontFamily="Segoe UI"/>
 
+                    <!-- DataGrid Adaptado con Binding -->
                     <DataGrid x:Name="dgHistorial" Grid.Row="1" Height="400" ItemsSource="{Binding HistorialPaginado}" AutoGenerateColumns="True" HeadersVisibility="Column" 
-                              Background="White" RowBackground="White" AlternatingRowBackground="#F8FAFC"
-                              BorderBrush="#E2E8F0" HorizontalGridLinesBrush="#E2E8F0" VerticalGridLinesBrush="Transparent"
-                              IsReadOnly="True" FontSize="13" Foreground="Black" RowHeight="38" FontFamily="Segoe UI"
-                              SelectionUnit="FullRow" GridLinesVisibility="Horizontal" BorderThickness="0"
-                              CellStyle="{StaticResource ModernCellStyle}" ColumnHeaderStyle="{StaticResource ModernHeaderStyle}"
-                              CanUserAddRows="False">
+                          Background="White" RowBackground="White" AlternatingRowBackground="#F8FAFC"
+                          BorderBrush="#E2E8F0" HorizontalGridLinesBrush="#E2E8F0" VerticalGridLinesBrush="Transparent"
+                          IsReadOnly="True" FontSize="13" Foreground="Black" RowHeight="38" FontFamily="Segoe UI"
+                          SelectionUnit="FullRow" GridLinesVisibility="Horizontal" BorderThickness="0"
+                          CellStyle="{StaticResource ModernCellStyle}" ColumnHeaderStyle="{StaticResource ModernHeaderStyle}"
+                          CanUserAddRows="False">
                     </DataGrid>
 
+                    <!-- BARRA DE PAGINACIÓN -->
                     <Grid Grid.Row="2" Margin="0,15,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -328,9 +350,10 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
+                        <!-- Selector de filas corregido con sys:Int32 -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="Mostrar:" Foreground="#64748B" VerticalAlignment="Center" FontSize="13" Margin="0,0,6,0" FontFamily="Segoe UI"/>
-                            <ComboBox SelectedValue="{Binding ElementosPorPagina, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Content" Width="65" Padding="6,4" Focusable="False">
+                            <ComboBox SelectedValue="{Binding ElementosPorPagina, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Content" Width="65" Padding="6,4">
                                 <ComboBoxItem>
                                     <sys:Int32>5</sys:Int32>
                                 </ComboBoxItem>
@@ -347,16 +370,18 @@
                             <TextBlock Text="registros" Foreground="#64748B" VerticalAlignment="Center" FontSize="13" Margin="6,0,0,0" FontFamily="Segoe UI"/>
                         </StackPanel>
 
+                        <!-- Información de navegación -->
                         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Foreground="#64748B" VerticalAlignment="Center" FontSize="13" Margin="0,0,12,0" FontFamily="Segoe UI">
-                                <Run Text="Página "/>
-                                <Run Text="{Binding PaginaActual, FallbackValue=1}" FontWeight="SemiBold" Foreground="#1E293B"/>
-                                <Run Text=" de "/>
-                                <Run Text="{Binding TotalPaginas, FallbackValue=1}" FontWeight="SemiBold" Foreground="#1E293B"/>
+                            <Run Text="Página "/>
+                            <Run Text="{Binding PaginaActual, FallbackValue=1}" FontWeight="SemiBold" Foreground="#1E293B"/>
+                            <Run Text=" de "/>
+                            <Run Text="{Binding TotalPaginas, FallbackValue=1}" FontWeight="SemiBold" Foreground="#1E293B"/>
                             </TextBlock>
 
-                            <Button Content="◀" Command="{Binding PaginaAnteriorCommand}" Style="{StaticResource PageNavButtonStyle}" Focusable="False"/>
-                            <Button Content="▶" Command="{Binding PaginaSiguienteCommand}" Style="{StaticResource PageNavButtonStyle}" Focusable="False"/>
+                            <!-- Botones de comando -->
+                            <Button Content="◀" Command="{Binding PaginaAnteriorCommand}" Style="{StaticResource PageNavButtonStyle}"/>
+                            <Button Content="▶" Command="{Binding PaginaSiguienteCommand}" Style="{StaticResource PageNavButtonStyle}"/>
                         </StackPanel>
                     </Grid>
                 </Grid>

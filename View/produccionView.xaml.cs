@@ -1,38 +1,37 @@
-﻿using loginavicola.Database;
+using loginavicola.Database;
 using loginavicola.Model;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
+using System.Text.Json.Serialization;
+using System.Windows.Threading;
+using System.Windows.Input;
+using System.Threading.Tasks;
+using System.Net.Http;
+using System.Text.Json;
 
 namespace loginavicola.View
 {
     public partial class produccionView : UserControl
     {
+
         private bool leyendoBascula = false;
-        private bool camaraActiva = false;
-
-        // Semáforo para controlar y evitar encolamiento de peticiones HTTP del streaming
-        private readonly SemaphoreSlim semaphoreCamara = new SemaphoreSlim(1, 1);
-
         private ClasificacionProduccionDatabase database;
+        private loginavicola.Database.ClasificacionProduccionDatabase dbProduccion = new loginavicola.Database.ClasificacionProduccionDatabase();
         private DetalleClasificacionDatabase dbDetalle = new DetalleClasificacionDatabase();
         private LoteDatabase dbLote = new LoteDatabase();
 
         private double pesoGramos = 0;
         private DateTime ultimaDeteccion = DateTime.MinValue;
 
+        // Contadores en memoria del lote actual. Solo se guardan en la base de
+        // datos cuando el usuario presiona "Guardar" (un único INSERT consolidado).
         private int contadorJumbo = 0;
         private int contadorAAA = 0;
         private int contadorAA = 0;
@@ -40,26 +39,40 @@ namespace loginavicola.View
         private int contadorB = 0;
         private int contadorC = 0;
 
+        // Marca cuándo empezó el lote actual, para guardar HoraInicio correctamente
         private DateTime horaInicioLote = DateTime.Now;
 
+        // Lote seleccionado obligatoriamente antes de poder clasificar (manual o automático)
         private int idLoteSeleccionado = 0;
         private string nombreLoteSeleccionado = "";
 
+        // Cliente HTTP reutilizable para consultar la API de Python
         private static readonly HttpClient client = new HttpClient();
-        private static readonly JsonSerializerOptions jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
         public produccionView()
         {
             InitializeComponent();
             database = new ClasificacionProduccionDatabase();
 
+            // INTEGRACIÓN: dos hilos independientes -- uno para datos (peso/categoria/volumen,
+            // no necesita ser muy frecuente) y otro para el video (necesita refrescar rapido
+            // para que no se vea "lento" al mover el huevo). Si comparten un solo loop
+            // secuencial, el video queda atado a la latencia de la consulta de datos.
             leyendoBascula = true;
 
             Task.Run(async () => {
                 while (leyendoBascula)
                 {
                     await ConsultarDatosHuevo();
-                    await Task.Delay(300);
+                    await Task.Delay(300); // el peso/categoria no necesita refrescar tan rapido
+                }
+            });
+
+            Task.Run(async () => {
+                while (leyendoBascula)
+                {
+                    await ConsultarFrameCamara();
+                    await Task.Delay(80); // video mas fluido (~10-12 fps aprox)
                 }
             });
 
@@ -70,110 +83,45 @@ namespace loginavicola.View
             CargarHistorial();
         }
 
-        private async void IniciarCamara()
-        {
-            if (camaraActiva) return;
-
-            try
-            {
-                var response = await client.PostAsync("http://localhost:5001/iniciar_camara", null);
-                if (response.IsSuccessStatusCode)
-                {
-                    camaraActiva = true;
-
-                    Task.Run(async () => {
-                        while (leyendoBascula && camaraActiva)
-                        {
-                            await ConsultarFrameCamara();
-                            await Task.Delay(80);
-                        }
-                    });
-                }
-                else
-                {
-                    Dispatcher.Invoke(() => {
-                        txtEstadoCamara.Text = $"⚠️ Servidor respondió: {response.StatusCode}";
-                        txtEstadoCamara.Foreground = new SolidColorBrush(Colors.Crimson);
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                Dispatcher.Invoke(() => {
-                    txtEstadoCamara.Text = $"⚠️ Error al conectar cámara: {ex.Message}";
-                    txtEstadoCamara.Foreground = new SolidColorBrush(Colors.Crimson);
-                });
-            }
-        }
-
-        private async void DetenerCamara()
-        {
-            camaraActiva = false;
-
-            try
-            {
-                await client.PostAsync("http://localhost:5001/detener_camara", null);
-            }
-            catch { }
-
-            Dispatcher.Invoke(() => {
-                imgCamara.Source = null;
-                txtEstadoCamara.Text = "📷 Cámara Desconectada";
-                txtEstadoCamara.Foreground = new SolidColorBrush(Colors.Orange);
-            });
-        }
-
-        private void BtnConectarCamara_Click(object sender, RoutedEventArgs e)
-        {
-            IniciarCamara();
-        }
-
-        private void BtnDesconectarCamara_Click(object sender, RoutedEventArgs e)
-        {
-            DetenerCamara();
-        }
-
         private void InitializeComponentEventHandlers()
         {
+            btnCapturarFoto.Click += BtnCapturarFoto_Click;
             btnGuardar.Click += BtnGuardarClasificacionAutomatica_Click;
             btnClasificacionManual.Click += btnClasificacionManual_Click;
             btnRefrescarLotes.Click += (s, e) => CargarLotes();
             cmbLote.SelectionChanged += CmbLote_SelectionChanged;
-
+            btnConectarHardware.Click += async (s, e) => await ConectarHardwareAsync();
+            btnRefrescarHardware.Click += async (s, e) => await CargarDispositivosDisponiblesAsync();
             this.Loaded += ProduccionView_Loaded;
-            this.Unloaded += ProduccionView_Unloaded;
+
+            this.Unloaded += (s, e) =>
+            {
+                leyendoBascula = false;
+                Window window = Window.GetWindow(this);
+                if (window != null) window.PreviewKeyDown -= Window_PreviewKeyDown;
+            };
         }
 
         private void ProduccionView_Loaded(object sender, RoutedEventArgs e)
         {
             Window window = Window.GetWindow(this);
-            if (window != null)
-            {
-                window.PreviewKeyDown -= Window_PreviewKeyDown;
-                window.PreviewKeyDown += Window_PreviewKeyDown;
-            }
-        }
+            if (window != null) window.PreviewKeyDown += Window_PreviewKeyDown;
 
-        private void ProduccionView_Unloaded(object sender, RoutedEventArgs e)
-        {
-            leyendoBascula = false;
-            DetenerCamara();
-
-            Window window = Window.GetWindow(this);
-            if (window != null)
-            {
-                window.PreviewKeyDown -= Window_PreviewKeyDown;
-            }
+            _ = CargarConfiguracionYDispositivosAsync();
         }
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Space)
             {
-                e.Handled = true; // Previene comportamiento predeterminado del foco
                 RegistrarHuevoManual();
+                e.Handled = true;
             }
         }
+
+        // =====================================================================
+        // SELECCIÓN DE LOTE (obligatoria antes de clasificar, manual o automático)
+        // =====================================================================
 
         private class LoteComboItem
         {
@@ -206,6 +154,7 @@ namespace loginavicola.View
                 }
                 txtEstadoLote.Foreground = new SolidColorBrush(Colors.Crimson);
 
+                // Se perdió la selección al recargar; bloquea clasificación hasta elegir de nuevo
                 idLoteSeleccionado = 0;
                 btnGuardar.IsEnabled = false;
                 btnClasificacionManual.IsEnabled = false;
@@ -229,6 +178,7 @@ namespace loginavicola.View
                 btnGuardar.IsEnabled = true;
                 btnClasificacionManual.IsEnabled = true;
 
+                // Al cambiar de lote se reinicia el conteo en memoria del lote anterior
                 contadorJumbo = 0;
                 contadorAAA = 0;
                 contadorAA = 0;
@@ -296,6 +246,10 @@ namespace loginavicola.View
             return "C";
         }
 
+        /// <summary>
+        /// Solo acumula el conteo en memoria y refresca la UI. NO escribe en la base
+        /// de datos: el registro del lote se guarda una única vez al presionar "Guardar".
+        /// </summary>
         private void ContarHuevoEnMemoria(string categoria)
         {
             Dispatcher.BeginInvoke(new Action(() => {
@@ -308,7 +262,6 @@ namespace loginavicola.View
                     case "B": contadorB++; break;
                     case "C": contadorC++; break;
                 }
-                lblCategoria.Text = categoria;
                 ActualizarResumenUI();
             }));
         }
@@ -316,13 +269,14 @@ namespace loginavicola.View
         private void ActualizarResumenUI()
         {
             Dispatcher.Invoke(() => {
-                lblResumenJumbo.Text = contadorJumbo.ToString();
-                lblResumenAAA.Text = contadorAAA.ToString();
-                lblResumenAA.Text = contadorAA.ToString();
-                lblResumenA.Text = contadorA.ToString();
-                lblResumenB.Text = contadorB.ToString();
-                lblResumenC.Text = contadorC.ToString();
-                lblTotalResumen.Text = (contadorJumbo + contadorAAA + contadorAA + contadorA + contadorB + contadorC).ToString();
+            lblResumenJumbo.Text = contadorJumbo.ToString();
+            lblResumenAAA.Text = contadorAAA.ToString();
+            lblResumenAA.Text = contadorAA.ToString();
+            lblResumenA.Text = contadorA.ToString();
+            lblResumenB.Text = contadorB.ToString();
+            lblResumenC.Text = contadorC.ToString();
+            lblTotalResumen.Text = (contadorJumbo + contadorAAA + contadorAA + contadorA + contadorB + contadorC).ToString();
+          
             });
         }
 
@@ -341,6 +295,29 @@ namespace loginavicola.View
             }
         }
 
+        private void BtnCapturarFoto_Click(object sender, RoutedEventArgs e)
+        {
+            // Ya no depende de "camaraConectada" (esa variable era de AForge y fue eliminada).
+            // El video ahora viene siempre del último frame que entrega la API de Python.
+            if (imgCamara.Source == null) return;
+
+            var saveDialog = new Microsoft.Win32.SaveFileDialog { Filter = "JPG|*.jpg", FileName = $"huevo_{DateTime.Now:ss}" };
+            if (saveDialog.ShowDialog() == true)
+            {
+                using (FileStream fs = new FileStream(saveDialog.FileName, FileMode.Create))
+                {
+                    var encoder = new JpegBitmapEncoder();
+                    encoder.Frames.Add(BitmapFrame.Create((BitmapSource)imgCamara.Source));
+                    encoder.Save(fs);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Único punto donde se escribe en la base de datos para la clasificación
+        /// automática: toma los contadores acumulados en memoria durante el lote
+        /// y los guarda como UN SOLO registro consolidado, vinculado al lote elegido.
+        /// </summary>
         private void BtnGuardarClasificacionAutomatica_Click(object sender, RoutedEventArgs e)
         {
             if (idLoteSeleccionado <= 0)
@@ -380,6 +357,7 @@ namespace loginavicola.View
                 {
                     MessageBox.Show($"✅ Sesión terminada y guardada.\nLote: {nombreLoteSeleccionado}\nTotal: {total} huevos", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
 
+                    // Reinicia los contadores para el siguiente lote
                     contadorJumbo = 0;
                     contadorAAA = 0;
                     contadorAA = 0;
@@ -387,7 +365,6 @@ namespace loginavicola.View
                     contadorB = 0;
                     contadorC = 0;
                     horaInicioLote = DateTime.Now;
-                    lblCategoria.Text = "-";
                     ActualizarResumenUI();
 
                     CargarHistorial();
@@ -409,6 +386,10 @@ namespace loginavicola.View
             Dispatcher.InvokeAsync(() => txtEstadoCamara.Text = msg);
         }
 
+        // =====================================================================
+        // NUEVA INTEGRACIÓN: PETICIONES HTTP A LA API FLASK EN PYTHON 🚀
+        // =====================================================================
+
         private async Task ConsultarDatosHuevo()
         {
             try
@@ -417,12 +398,14 @@ namespace loginavicola.View
                 if (response.IsSuccessStatusCode)
                 {
                     string jsonResponse = await response.Content.ReadAsStringAsync();
-                    DatosHuevo datos = JsonSerializer.Deserialize<DatosHuevo>(jsonResponse, jsonOptions);
+                    var opciones = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    DatosHuevo datos = JsonSerializer.Deserialize<DatosHuevo>(jsonResponse, opciones);
 
                     this.pesoGramos = datos.Peso;
 
                     Dispatcher.Invoke(() => {
                         lblPesoReal.Text = $"{datos.Peso} g";
+                        lblCategoria.Text = string.IsNullOrEmpty(datos.Categoria) ? "-" : datos.Categoria;
                         lblVolumen.Text = $"{datos.Volumen:F1} cm³";
                     });
                 }
@@ -430,19 +413,20 @@ namespace loginavicola.View
             catch (Exception ex)
             {
                 Dispatcher.Invoke(() => {
-                    txtEstadoCamara.Text = $"⚠️ Sin conexión a API datos: {ex.Message}";
+                    txtEstadoCamara.Text = $"⚠️ Sin conexión a la API Python (datos): {ex.Message}";
                 });
             }
         }
 
         private async Task ConsultarFrameCamara()
         {
-            if (!camaraActiva || !semaphoreCamara.Wait(0)) return;
-
             try
             {
                 byte[] frameBytes = await client.GetByteArrayAsync("http://localhost:5001/frame.jpg");
 
+                // Si Python aun no tiene un frame listo, /frame.jpg devuelve cuerpo vacio (204).
+                // Evita intentar decodificar un arreglo vacio como imagen (eso causaba el
+                // "NotSupportedException: no se encontro componente de procesamiento de imagenes").
                 if (frameBytes == null || frameBytes.Length == 0) return;
 
                 using (var ms = new MemoryStream(frameBytes))
@@ -455,31 +439,22 @@ namespace loginavicola.View
                     bitmap.Freeze();
 
                     Dispatcher.Invoke(() => {
-                        if (camaraActiva)
-                        {
-                            imgCamara.Source = bitmap;
-                            imgCamara.Opacity = 1.0;
-                            txtEstadoCamara.Text = "Sistema Listo";
-                            txtEstadoCamara.Foreground = new SolidColorBrush(Colors.LightGreen);
-                        }
+                        imgCamara.Source = bitmap;
+                        imgCamara.Opacity = 1.0;
+                        txtEstadoCamara.Text = "Sistema Listo";
+                        txtEstadoCamara.Foreground = new SolidColorBrush(Colors.LightGreen);
                     });
                 }
             }
             catch (Exception ex)
             {
                 Dispatcher.Invoke(() => {
-                    if (camaraActiva)
-                    {
-                        txtEstadoCamara.Text = $"⚠️ Error streaming: {ex.Message}";
-                    }
+                    txtEstadoCamara.Text = $"⚠️ Sin conexión a la API Python (video): {ex.Message}";
                 });
-            }
-            finally
-            {
-                semaphoreCamara.Release();
             }
         }
 
+        // Clase Modelo para deserializar la respuesta JSON de Python
         public class DatosHuevo
         {
             [JsonPropertyName("largo")]
@@ -497,5 +472,207 @@ namespace loginavicola.View
             [JsonPropertyName("categoria")]
             public string Categoria { get; set; }
         }
+
+        #region CONFIGURACIÓN DE HARDWARE (BÁSCULA Y CÁMARA)
+
+        public class PuertoInfo
+        {
+            [JsonPropertyName("puerto")]
+            public string Puerto { get; set; }
+
+            [JsonPropertyName("descripcion")]
+            public string Descripcion { get; set; }
+        }
+
+        public class CamaraInfo
+        {
+            [JsonPropertyName("id")]
+            public int Id { get; set; }
+
+            [JsonPropertyName("nombre")]
+            public string Nombre { get; set; }
+        }
+
+        public class DispositivosResponse
+        {
+            [JsonPropertyName("puertos")]
+            public List<PuertoInfo> Puertos { get; set; }
+
+            [JsonPropertyName("camaras")]
+            public List<CamaraInfo> Camaras { get; set; }
+        }
+
+        public class EstadoConfiguracionResponse
+        {
+            [JsonPropertyName("puerto_bascula")]
+            public string PuertoBascula { get; set; }
+
+            [JsonPropertyName("camara_index")]
+            public int CamaraIndex { get; set; }
+
+            [JsonPropertyName("camara_nombre")]
+            public string CamaraNombre { get; set; }
+
+            [JsonPropertyName("configurado")]
+            public bool Configurado { get; set; }
+
+            [JsonPropertyName("conectado")]
+            public bool Conectado { get; set; }
+        }
+
+        private void ActualizarBadgeEstadoHardware(bool conectado, string mensaje)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                txtEstadoConexionHardware.Text = mensaje;
+                if (mensaje.Contains("Buscando") || mensaje.Contains("Conectando"))
+                {
+                    brdEstadoConexion.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FEF3C7"));
+                    txtEstadoConexionHardware.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D97706"));
+                }
+                else if (conectado)
+                {
+                    brdEstadoConexion.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DCFCE7"));
+                    txtEstadoConexionHardware.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#16A34A"));
+                }
+                else
+                {
+                    brdEstadoConexion.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FEE2E2"));
+                    txtEstadoConexionHardware.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DC2626"));
+                }
+            });
+        }
+
+        private async Task CargarConfiguracionYDispositivosAsync()
+        {
+            ActualizarBadgeEstadoHardware(false, "⏳ Buscando...");
+            btnConectarHardware.IsEnabled = false;
+
+            try
+            {
+                await CargarDispositivosDisponiblesAsync();
+
+                string json = await client.GetStringAsync("http://localhost:5001/estado-configuracion");
+                var config = JsonSerializer.Deserialize<EstadoConfiguracionResponse>(json,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (config != null && config.Configurado)
+                {
+                    if (!string.IsNullOrEmpty(config.PuertoBascula))
+                    {
+                        cmbPuertos.SelectedValue = config.PuertoBascula;
+                    }
+
+                    cmbCamaras.SelectedValue = config.CamaraIndex;
+
+                    ActualizarBadgeEstadoHardware(config.Conectado, config.Conectado ? "🟢 Conectado" : "🔴 Desconectado");
+                }
+                else
+                {
+                    ActualizarBadgeEstadoHardware(false, "🔴 Desconectado");
+                    Dispatcher.Invoke(() =>
+                    {
+                        txtEstadoCamara.Text = "Hardware no configurado. Elige cámara y puerto arriba.";
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error al consultar estado de configuración: {ex.Message}");
+                ActualizarBadgeEstadoHardware(false, "🔴 Desconectado");
+            }
+            finally
+            {
+                btnConectarHardware.IsEnabled = true;
+            }
+        }
+
+        private async Task CargarDispositivosDisponiblesAsync()
+        {
+            try
+            {
+                string json = await client.GetStringAsync("http://localhost:5001/dispositivos-disponibles");
+                var datos = JsonSerializer.Deserialize<DispositivosResponse>(json,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                var puertos = datos?.Puertos ?? new List<PuertoInfo>();
+                var camaras = datos?.Camaras ?? new List<CamaraInfo>();
+
+                cmbPuertos.ItemsSource = puertos;
+                cmbPuertos.DisplayMemberPath = "Descripcion";
+                cmbPuertos.SelectedValuePath = "Puerto";
+
+                cmbCamaras.ItemsSource = camaras;
+                cmbCamaras.DisplayMemberPath = "Nombre";
+                cmbCamaras.SelectedValuePath = "Id";
+
+                if (cmbPuertos.SelectedIndex < 0 && cmbPuertos.Items.Count > 0)
+                    cmbPuertos.SelectedIndex = 0;
+
+                if (cmbCamaras.SelectedIndex < 0 && cmbCamaras.Items.Count > 0)
+                    cmbCamaras.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error al cargar dispositivos disponibles: {ex.Message}");
+            }
+        }
+
+        private async Task ConectarHardwareAsync()
+        {
+            if (cmbPuertos.SelectedValue is not string puerto || string.IsNullOrEmpty(puerto))
+            {
+                MessageBox.Show("Por favor selecciona un puerto para la báscula.", "Falta Información", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (cmbCamaras.SelectedValue == null)
+            {
+                MessageBox.Show("Por favor selecciona una cámara.", "Falta Información", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            int camaraId = Convert.ToInt32(cmbCamaras.SelectedValue);
+
+            btnConectarHardware.IsEnabled = false;
+            ActualizarBadgeEstadoHardware(false, "⏳ Conectando...");
+
+            try
+            {
+                var payload = JsonSerializer.Serialize(new
+                {
+                    puerto_bascula = puerto,
+                    camara_index = camaraId
+                });
+
+                var contenido = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
+                var respuesta = await client.PostAsync("http://localhost:5001/guardar-configuracion", contenido);
+
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    string jsonResult = await respuesta.Content.ReadAsStringAsync();
+                    using var doc = JsonDocument.Parse(jsonResult);
+                    bool conectado = doc.RootElement.TryGetProperty("conectado", out var prop) && prop.GetBoolean();
+
+                    ActualizarBadgeEstadoHardware(conectado, conectado ? "🟢 Conectado" : "🔴 Desconectado");
+                }
+                else
+                {
+                    ActualizarBadgeEstadoHardware(false, "🔴 Error al Conectar");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al conectar hardware: {ex.Message}", "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
+                ActualizarBadgeEstadoHardware(false, "🔴 Desconectado");
+            }
+            finally
+            {
+                btnConectarHardware.IsEnabled = true;
+            }
+        }
+
+        #endregion
+
     }
 }

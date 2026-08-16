@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Configuration;
 using System.Data;
 using System.Threading.Tasks;
@@ -36,20 +36,7 @@ namespace loginavicola
                 return;
             }
 
-            // 3. Validar si el equipo actual ya tiene configurados puerto COM y Cámara
-            if (!PythonProcessManager.EstaConfigurado())
-            {
-                var ventanaConfig = new ConfiguracionHardwareWindow();
-                bool? resultado = ventanaConfig.ShowDialog();
-
-                if (resultado != true)
-                {
-                    Shutdown();
-                    return;
-                }
-            }
-
-            // A partir de aquí continúa el flujo normal configurado en StartupUri (o Login Window)
+            // El hardware ahora se configura directamente en produccionView.xaml.cs sin bloquear el inicio.
         }
 
         protected override void OnExit(ExitEventArgs e)
