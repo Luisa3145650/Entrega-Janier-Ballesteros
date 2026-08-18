@@ -1,3 +1,7 @@
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
+sys.stderr.reconfigure(encoding='utf-8')
+
 from flask import Flask, jsonify, Response, request
 from flask_cors import CORS
 import cv2
@@ -369,6 +373,42 @@ def guardar_config():
         "camara_index": CAMARA_INDEX,
         "camara_nombre": CAMARA_NOMBRE,
         "conectado": esta_conectado
+    })
+
+@app.route('/desconectar-hardware', methods=['POST'])
+def desconectar_hardware():
+    global cap, bascula, CONFIGURADO, pausa_vision, frame_actual
+    pausa_vision = True
+    time.sleep(0.15)
+
+    with lock_hardware:
+        if cap:
+            try:
+                if cap.isOpened():
+                    cap.release()
+            except Exception as ex:
+                print(f"Error liberando cámara al desconectar: {ex}")
+            cap = None
+
+        if bascula:
+            try:
+                if bascula.is_open:
+                    bascula.close()
+            except Exception as ex:
+                print(f"Error cerrando báscula al desconectar: {ex}")
+            bascula = None
+
+        with lock_frame:
+            frame_actual = None
+
+        CONFIGURADO = False
+
+    pausa_vision = False
+
+    return jsonify({
+        "status": "ok",
+        "message": "Hardware desconectado correctamente",
+        "conectado": False
     })
 
 @app.route('/shutdown', methods=['POST'])

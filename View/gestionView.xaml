@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="loginavicola.View.gestionView"
+<UserControl x:Class="loginavicola.View.gestionView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -288,12 +288,17 @@
                         <TextBlock Text="Administra accesos, roles y permisos de la Unidad Avícola." FontSize="14" Foreground="#6B7280" Margin="0,4,0,0"/>
                     </StackPanel>
 
-                    <Button Content="NUEVO USUARIO" 
-                            x:Name="BtnAgregarUsuario"
-                            Click="BtnAgregarUsuario_Click"
-                            Style="{StaticResource ActionButtonStyle}"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Button Content="💾 Respaldar Ahora" 
+                                x:Name="BtnRespaldarAhora"
+                                Click="BtnRespaldarAhora_Click"
+                                Style="{StaticResource ActionButtonStyle}"
+                                Margin="0,0,10,0"/>
+                        <Button Content="NUEVO USUARIO" 
+                                x:Name="BtnAgregarUsuario"
+                                Click="BtnAgregarUsuario_Click"
+                                Style="{StaticResource ActionButtonStyle}"/>
+                    </StackPanel>
                 </Grid>
 
                 <!-- ==================== -->

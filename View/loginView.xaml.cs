@@ -1,4 +1,4 @@
-﻿using loginavicola.Database;
+using loginavicola.Database;
 using loginavicola.Model;
 using loginavicola.View;
 using System;
@@ -10,11 +10,38 @@ namespace loginavicola.View
     public partial class loginView : Window
     {
         private UsuarioDatabase db;
+        private bool _iniciandoSesionExitosamente = false;
+        private bool _isShuttingDown = false;
 
         public loginView()
         {
             InitializeComponent();
             db = new UsuarioDatabase();
+            this.Closing += Window_Closing;
+        }
+
+        private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (_iniciandoSesionExitosamente || _isShuttingDown)
+            {
+                return;
+            }
+
+            e.Cancel = true;
+            _isShuttingDown = true;
+
+            try
+            {
+                await Helpers.PythonProcessManager.DetenerAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error durante el apagado en loginView: {ex.Message}");
+            }
+            finally
+            {
+                Application.Current.Shutdown();
+            }
         }
 
         private void Window_MouseDown(object sender, MouseEventArgs e)
@@ -30,7 +57,7 @@ namespace loginavicola.View
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
-            Application.Current.Shutdown();
+            this.Close();
         }
 
         private void BtnLogin_Click(object sender, RoutedEventArgs e)
@@ -54,6 +81,7 @@ namespace loginavicola.View
                     UserSession.EsVisitante = false;
                     MessageBox.Show($"¡Bienvenido {usuarioLogeado.Nombres}!");
 
+                    _iniciandoSesionExitosamente = true;
                     MainWindow main = new MainWindow();
                     main.Show();
                     this.Close();
@@ -88,6 +116,7 @@ namespace loginavicola.View
 
             MessageBox.Show("Bienvenido como visitante. Solo podrás ver el Dashboard y Producción.");
 
+            _iniciandoSesionExitosamente = true;
             MainWindow main = new MainWindow();
             main.Show();
             this.Close();

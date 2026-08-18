@@ -1,4 +1,4 @@
-﻿using loginavicola.Model;
+using loginavicola.Model;
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
@@ -17,10 +17,9 @@ namespace loginavicola.Database
 
         public LoteDatabase()
         {
-            // Usar la misma base de datos que ConsumoDatabase
-            dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sistema_avicola.db");
-     
-            connectionString = $"Data Source={dbPath};Version=3;";
+            DatabaseHelper.Inicializar();
+            dbPath = DatabaseHelper.DbPath;
+            connectionString = DatabaseHelper.ConnectionString;
 
             CrearBaseDeDatos();
             CrearTablaLote();

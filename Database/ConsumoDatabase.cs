@@ -1,4 +1,4 @@
-﻿using Emgu.CV.Face;
+using Emgu.CV.Face;
 using loginavicola.Model;
 using System.Windows;
 using System;
@@ -16,12 +16,11 @@ namespace loginavicola.Database
     {
         private readonly string connectionString;
         private readonly string dbPath;
-        private string cadena = "Data Source=.db;Version=3;";
-
         public ConsumoDatabase()
         {
-            dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sistema_avicola.db");
-            connectionString = $"Data Source={dbPath};Version=3;";
+            DatabaseHelper.Inicializar();
+            dbPath = DatabaseHelper.DbPath;
+            connectionString = DatabaseHelper.ConnectionString;
 
             CrearBaseDeDatos();
             EliminarFKDeConsumo();
@@ -586,7 +585,7 @@ namespace loginavicola.Database
         public List<ConsumoGrafica> ObtenerDatosParaGrafica()
         {
             var lista = new List<ConsumoGrafica>();
-            using (var conexion = new SQLiteConnection(cadena))
+            using (var conexion = new SQLiteConnection(connectionString))
             {
                 conexion.Open();
                 // Consultamos los últimos 7 días de consumo

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -43,8 +43,20 @@ namespace loginavicola.ViewModel
 
             PaginaAnteriorCommand = new RelayCommand(_ => CambiarPagina(-1), _ => PaginaActual > 1);
             PaginaSiguienteCommand = new RelayCommand(_ => CambiarPagina(1), _ => PaginaActual < TotalPaginas);
+            VerDetalleAlertasCommand = new RelayCommand(_ => AbrirModalAlertas());
 
             CargarDatos();
+        }
+
+        private void AbrirModalAlertas()
+        {
+            var alertas = loginavicola.Helpers.AlertasService.ObtenerAlertasActivas();
+            var modal = new loginavicola.View.AlertasModalWindow(alertas);
+            if (Application.Current != null && Application.Current.MainWindow != null)
+            {
+                modal.Owner = Application.Current.MainWindow;
+            }
+            modal.ShowDialog();
         }
 
         // ── Propiedades de Paginación ────────────────────────────────────
@@ -178,6 +190,7 @@ namespace loginavicola.ViewModel
         public ICommand AjustarStockCommand { get; }
         public ICommand PaginaAnteriorCommand { get; }
         public ICommand PaginaSiguienteCommand { get; }
+        public ICommand VerDetalleAlertasCommand { get; }
 
         // ── Métodos ──────────────────────────────────────────────────────
         public void CargarDatos()

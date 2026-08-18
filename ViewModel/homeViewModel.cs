@@ -1,4 +1,4 @@
-﻿using loginavicola.Database;
+using loginavicola.Database;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -67,6 +67,11 @@ namespace loginavicola.ViewModel
             set { _etiquetasDiasSemana = value; OnPropertyChanged(); }
         }
 
+        private int _totalAlertas;
+        public int TotalAlertas { get => _totalAlertas; set { _totalAlertas = value; OnPropertyChanged(); } }
+
+        public System.Windows.Input.ICommand VerDetalleAlertasCommand { get; }
+
         public homeViewModel()
         {
             // Inicializar con valores vacíos
@@ -74,8 +79,21 @@ namespace loginavicola.ViewModel
             ValoresProduccionSemanal = new ChartValues<int>();
             EtiquetasDias = new string[0];
 
+            VerDetalleAlertasCommand = new loginavicola.Helpers.RelayCommand(_ => AbrirModalAlertas());
+
             ActualizarCards();
             IniciarTimer();
+        }
+
+        private void AbrirModalAlertas()
+        {
+            var alertas = loginavicola.Helpers.AlertasService.ObtenerAlertasActivas();
+            var modal = new loginavicola.View.AlertasModalWindow(alertas);
+            if (System.Windows.Application.Current != null && System.Windows.Application.Current.MainWindow != null)
+            {
+                modal.Owner = System.Windows.Application.Current.MainWindow;
+            }
+            modal.ShowDialog();
         }
 
         private void IniciarTimer()
@@ -90,6 +108,7 @@ namespace loginavicola.ViewModel
             TotalLotes = database.ObtenerTotalLotes();
             TotalAves = database.ObtenerTotalAves();
             TotalHuevosHoy = _produccionDb.ObtenerProduccionHoy();
+            TotalAlertas = loginavicola.Helpers.AlertasService.ObtenerAlertasActivas().Count;
 
             CargarGraficaSalud();
             CargarGraficaProduccion();

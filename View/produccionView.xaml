@@ -8,7 +8,7 @@
              Background="#F1F5F9">
 
     <UserControl.Resources>
-        <!-- EstStyle de Tarjeta (Sombra más suave y limpia) -->
+        <!-- Estilo de Tarjeta (Sombra más suave y limpia) -->
         <Style x:Key="CardStyle" TargetType="Border">
             <Setter Property="Background" Value="White" />
             <Setter Property="CornerRadius" Value="12" />
@@ -146,7 +146,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- SECCIÓN: SELECCIÓN DE LOTE (obligatoria antes de clasificar) -->
+            <!-- SECCIÓN: SELECCIÓN DE LOTE Y USUARIO -->
             <Border Grid.Row="0" Style="{StaticResource CardStyle}">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -154,16 +154,30 @@
                         <ColumnDefinition Width="320"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Grid.Column="0" Text="📦 Lote activo:" FontSize="15" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center" Margin="0,0,12,0"/>
 
-                    <ComboBox x:Name="cmbLote" Grid.Column="1" Height="38" FontSize="13" VerticalContentAlignment="Center" Padding="8,0"/>
+                    <ComboBox x:Name="cmbLote" Grid.Column="1" Height="38" FontSize="13" VerticalContentAlignment="Center" Padding="8,0"
+                              ItemsSource="{Binding LotesDisponibles}"
+                              SelectedItem="{Binding LoteSeleccionado}"
+                              DisplayMemberPath="Display"
+                              SelectedValuePath="IdLote"/>
 
-                    <TextBlock x:Name="txtEstadoLote" Grid.Column="2" Text="⚠️ Selecciona un lote para comenzar a clasificar"
-                               Foreground="#DC2626" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                    <TextBlock x:Name="txtEstadoLote" Grid.Column="2" Text="{Binding TextoEstadoLote}"
+                               Foreground="{Binding ColorEstadoLote}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Margin="16,0,0,0"/>
 
-                    <Button x:Name="btnRefrescarLotes" Grid.Column="3" Content="🔄" Width="38" Height="38"
+                    <!-- Muestra el usuario en sesión activa -->
+                    <Border Grid.Column="3" Background="#F1F5F9" CornerRadius="8" Padding="10,6" Margin="0,0,12,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="👤 Usuario: " FontSize="12" FontWeight="SemiBold" Foreground="#64748B"/>
+                            <TextBlock Text="{Binding UsuarioActualNombre}" FontSize="12" FontWeight="Bold" Foreground="#0F172A"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Button x:Name="btnRefrescarLotes" Grid.Column="4" Content="🔄" Width="38" Height="38"
+                            Command="{Binding RefrescarLotesCommand}"
                             Style="{StaticResource SecondaryButton}" ToolTip="Recargar lista de lotes"/>
                 </Grid>
             </Border>
@@ -189,8 +203,8 @@
                         <Grid Grid.Row="0" Margin="0,0,0,10">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="BÁSCULA Y CÁMARA" FontSize="15" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center" FontFamily="Segoe UI"/>
-                                <Border x:Name="brdEstadoConexion" Background="#FEE2E2" CornerRadius="12" Padding="8,3" Margin="10,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock x:Name="txtEstadoConexionHardware" Text="🔴 Desconectado" FontSize="11" FontWeight="Bold" Foreground="#DC2626"/>
+                                <Border x:Name="brdEstadoConexion" Background="{Binding FondoEstadoConexion}" CornerRadius="12" Padding="8,3" Margin="10,0,0,0" VerticalAlignment="Center">
+                                    <TextBlock x:Name="txtEstadoConexionHardware" Text="{Binding TextoEstadoConexionHardware}" FontSize="11" FontWeight="Bold" Foreground="{Binding TextoColorEstadoConexion}"/>
                                 </Border>
                             </StackPanel>
 
@@ -202,17 +216,29 @@
                             <WrapPanel VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal" Margin="0,2,12,2">
                                     <TextBlock Text="📷 Cámara:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <ComboBox x:Name="cmbCamaras" Width="145" Height="30" FontSize="12" VerticalContentAlignment="Center"/>
+                                    <ComboBox x:Name="cmbCamaras" Width="145" Height="30" FontSize="12" VerticalContentAlignment="Center"
+                                              ItemsSource="{Binding CamarasDisponibles}"
+                                              SelectedItem="{Binding CamaraSeleccionada}"
+                                              DisplayMemberPath="Nombre"
+                                              SelectedValuePath="Id"/>
                                 </StackPanel>
 
                                 <StackPanel Orientation="Horizontal" Margin="0,2,12,2">
                                     <TextBlock Text="⚖️ Báscula:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <ComboBox x:Name="cmbPuertos" Width="145" Height="30" FontSize="12" VerticalContentAlignment="Center"/>
+                                    <ComboBox x:Name="cmbPuertos" Width="145" Height="30" FontSize="12" VerticalContentAlignment="Center"
+                                              ItemsSource="{Binding PuertosDisponibles}"
+                                              SelectedItem="{Binding PuertoSeleccionado}"
+                                              DisplayMemberPath="Descripcion"
+                                              SelectedValuePath="Puerto"/>
                                 </StackPanel>
 
                                 <StackPanel Orientation="Horizontal" Margin="0,2,0,2">
-                                    <Button x:Name="btnConectarHardware" Content="🔌 Conectar" Style="{StaticResource BlueButton}" Height="30" Padding="12,0" Margin="0,0,4,0"/>
-                                    <Button x:Name="btnRefrescarHardware" Content="🔄" Width="30" Height="30" Style="{StaticResource SecondaryButton}" Padding="0" ToolTip="Buscar dispositivos disponibles"/>
+                                    <Button x:Name="btnConectarHardware" Content="🔌 Conectar" Style="{StaticResource BlueButton}" Height="30" Padding="12,0" Margin="0,0,4,0"
+                                            Command="{Binding ConectarHardwareCommand}"/>
+                                    <Button x:Name="btnDesconectarHardware" Content="❌ Desconectar" Style="{StaticResource SecondaryButton}" Height="30" Padding="12,0" Margin="0,0,4,0"
+                                            Command="{Binding DesconectarHardwareCommand}"/>
+                                    <Button x:Name="btnRefrescarHardware" Content="🔄" Width="30" Height="30" Style="{StaticResource SecondaryButton}" Padding="0" ToolTip="Buscar dispositivos disponibles"
+                                            Command="{Binding RefrescarHardwareCommand}"/>
                                 </StackPanel>
                             </WrapPanel>
                         </Border>
@@ -220,11 +246,11 @@
                         <!-- Display de Peso -->
                         <Border Grid.Row="2" Background="#0F172A" CornerRadius="10" MinHeight="190" Padding="20">
                             <Grid>
-                                <Image x:Name="imgCamara" Stretch="Uniform" Opacity="1"/>
+                                <Image x:Name="imgCamara" Source="{Binding CameraFrame}" Stretch="Uniform" Opacity="1"/>
 
                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                                     <TextBlock Text="PESO ACTUAL" Foreground="#94A3B8" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                    <TextBlock x:Name="lblPesoReal" Text="0.0 g" Foreground="White" FontSize="68" FontWeight="Black" HorizontalAlignment="Center" Margin="0,2"/>
+                                    <TextBlock x:Name="lblPesoReal" Text="{Binding PesoRealTexto}" Foreground="White" FontSize="68" FontWeight="Black" HorizontalAlignment="Center" Margin="0,2"/>
                                     <Border Background="#334155" Padding="12,6" CornerRadius="15" HorizontalAlignment="Center" Margin="0,5,0,0">
                                         <TextBlock Text="Presiona ESPACIO para clasificar" Foreground="#CBD5E1" FontSize="11" FontWeight="SemiBold"/>
                                     </Border>
@@ -236,9 +262,9 @@
                         <Grid Grid.Row="3" Margin="0,12,0,0">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="Volumen estimado: " FontSize="13" Foreground="#64748B"/>
-                                <TextBlock x:Name="lblVolumen" Text="-" FontSize="13" FontWeight="Bold" Foreground="#0F172A"/>
+                                <TextBlock x:Name="lblVolumen" Text="{Binding VolumenTexto}" FontSize="13" FontWeight="Bold" Foreground="#0F172A"/>
                             </StackPanel>
-                            <TextBlock x:Name="txtEstadoCamara" Text="Sistema Listo" Foreground="#39A900" FontWeight="SemiBold" FontSize="12" 
+                            <TextBlock x:Name="txtEstadoCamara" Text="{Binding TextoEstadoCamara}" Foreground="{Binding TextoColorEstadoCamara}" FontWeight="SemiBold" FontSize="12" 
                                    HorizontalAlignment="Right" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300" TextAlignment="Right"/>
                         </Grid>
                     </Grid>
@@ -258,7 +284,7 @@
                             <TextBlock Text="RESUMEN DE PRODUCCIÓN" FontSize="16" FontWeight="Bold" Foreground="Black" FontFamily="Segoe UI" VerticalAlignment="Center"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <TextBlock Text="Cat:" FontSize="12" Foreground="#64748B" VerticalAlignment="Center"/>
-                                <TextBlock x:Name="lblCategoria" Text="-" FontSize="24" FontWeight="Black" Foreground="#39A900" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="lblCategoria" Text="{Binding CategoriaActual}" FontSize="24" FontWeight="Black" Foreground="#39A900" Margin="4,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Grid>
 
@@ -272,34 +298,34 @@
                             <StackPanel Grid.Column="0" Margin="0,0,12,0">
                                 <Grid Margin="0,6">
                                     <TextBlock Text="🔵 Jumbo" Foreground="Black" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="lblResumenJumbo" Text="0" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right"/>
+                                    <TextBlock x:Name="lblResumenJumbo" Text="{Binding ContadorJumbo}" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right"/>
                                 </Grid>
                                 <Separator Background="#E2E8F0"/>
                                 <Grid Margin="0,6">
                                     <TextBlock Text="🟡 AA" Foreground="Black" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="lblResumenAA" Text="0" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right"/>
+                                    <TextBlock x:Name="lblResumenAA" Text="{Binding ContadorAA}" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right"/>
                                 </Grid>
                                 <Separator Background="#E2E8F0"/>
                                 <Grid Margin="0,6">
                                     <TextBlock Text="🟠 B" Foreground="Black" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="lblResumenB" Text="0" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right"/>
+                                    <TextBlock x:Name="lblResumenB" Text="{Binding ContadorB}" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right"/>
                                 </Grid>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Margin="12,0,0,0">
                                 <Grid Margin="0,6">
                                     <TextBlock Text="⚫ AAA" Foreground="Black" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="lblResumenAAA" Text="0" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right"/>
+                                    <TextBlock x:Name="lblResumenAAA" Text="{Binding ContadorAAA}" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right"/>
                                 </Grid>
                                 <Separator Background="#E2E8F0"/>
                                 <Grid Margin="0,6">
                                     <TextBlock Text="🟢 A" Foreground="Black" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="lblResumenA" Text="0" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right"/>
+                                    <TextBlock x:Name="lblResumenA" Text="{Binding ContadorA}" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right"/>
                                 </Grid>
                                 <Separator Background="#E2E8F0"/>
                                 <Grid Margin="0,6">
                                     <TextBlock Text="🔴 C" Foreground="Black" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="lblResumenC" Text="0" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right"/>
+                                    <TextBlock x:Name="lblResumenC" Text="{Binding ContadorC}" FontWeight="Bold" FontSize="15" HorizontalAlignment="Right"/>
                                 </Grid>
                             </StackPanel>
                         </Grid>
@@ -308,12 +334,12 @@
                         <Grid Grid.Row="2" Margin="0,15,0,0">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="TOTAL LOTE: " FontSize="12" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center"/>
-                                <TextBlock x:Name="lblTotalResumen" Text="0" FontSize="18" FontWeight="Black" Foreground="#39A900" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="lblTotalResumen" Text="{Binding TotalResumen}" FontSize="18" FontWeight="Black" Foreground="#39A900" Margin="4,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
 
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <Button x:Name="btnClasificacionManual" Content="Manual" Style="{StaticResource SecondaryButton}" Height="34" Padding="12,0" Margin="0,0,4,0" IsEnabled="False"/>
-                                <Button x:Name="btnGuardar" Content="💾 Guardar" Style="{StaticResource ProButton}" Height="34" Padding="14,0" IsEnabled="False"/>
+                                <Button x:Name="btnClasificacionManual" Content="Manual" Style="{StaticResource SecondaryButton}" Height="34" Padding="12,0" Margin="0,0,4,0" IsEnabled="{Binding BtnClasificacionManualEnabled}"/>
+                                <Button x:Name="btnGuardar" Content="💾 Guardar" Style="{StaticResource ProButton}" Height="34" Padding="14,0" Command="{Binding GuardarClasificacionCommand}"/>
                             </StackPanel>
                         </Grid>
                     </Grid>
@@ -329,17 +355,54 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Título Historial -->
-                    <TextBlock Grid.Row="0" Text="📋 Historial Reciente" FontSize="18" FontWeight="Bold" Foreground="Black" Margin="0,0,0,16" FontFamily="Segoe UI"/>
+                    <!-- Título Historial y Barra de Búsqueda -->
+                    <Grid Grid.Row="0" Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="📋 Historial Reciente" FontSize="18" FontWeight="Bold" Foreground="Black" VerticalAlignment="Center" FontFamily="Segoe UI"/>
 
-                    <!-- DataGrid Adaptado con Binding -->
-                    <DataGrid x:Name="dgHistorial" Grid.Row="1" Height="400" ItemsSource="{Binding HistorialPaginado}" AutoGenerateColumns="True" HeadersVisibility="Column" 
+                        <!-- Search Box -->
+                        <Border Grid.Column="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Width="380" Height="36" Padding="10,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="🔍" FontSize="13" VerticalAlignment="Center" Foreground="#64748B" Margin="0,0,6,0"/>
+                                <TextBox Grid.Column="1" Text="{Binding TextoBusqueda, UpdateSourceTrigger=PropertyChanged}"
+                                         BorderThickness="0" Background="Transparent" VerticalAlignment="Center" FontSize="13" Foreground="#0F172A"
+                                         ToolTip="Buscar por recolector, lote, tipo o fecha..."/>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <!-- DataGrid Adaptado con Binding y Columnas Explícitas (Usuario y Lote) -->
+                    <DataGrid x:Name="dgHistorial" Grid.Row="1" Height="400" ItemsSource="{Binding HistorialPaginado}" AutoGenerateColumns="False" HeadersVisibility="Column" 
                           Background="White" RowBackground="White" AlternatingRowBackground="#F8FAFC"
                           BorderBrush="#E2E8F0" HorizontalGridLinesBrush="#E2E8F0" VerticalGridLinesBrush="Transparent"
                           IsReadOnly="True" FontSize="13" Foreground="Black" RowHeight="38" FontFamily="Segoe UI"
                           SelectionUnit="FullRow" GridLinesVisibility="Horizontal" BorderThickness="0"
                           CellStyle="{StaticResource ModernCellStyle}" ColumnHeaderStyle="{StaticResource ModernHeaderStyle}"
                           CanUserAddRows="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Binding="{Binding IdClasificacion}" Width="50"/>
+                            <DataGridTextColumn Header="Lote #" Binding="{Binding IdLote}" Width="70"/>
+                            <DataGridTextColumn Header="Usuario / Recolector" Binding="{Binding Recolector}" Width="150"/>
+                            <DataGridTextColumn Header="Fecha" Binding="{Binding Fecha, StringFormat=\{0:dd/MM/yyyy\}}" Width="90"/>
+                            <DataGridTextColumn Header="Inicio" Binding="{Binding HoraInicio}" Width="75"/>
+                            <DataGridTextColumn Header="Fin" Binding="{Binding HoraFin}" Width="75"/>
+                            <DataGridTextColumn Header="Tipo" Binding="{Binding TipoClasificacion}" Width="100"/>
+                            <DataGridTextColumn Header="Jumbo" Binding="{Binding Jumbo}" Width="60"/>
+                            <DataGridTextColumn Header="AAA" Binding="{Binding AAA}" Width="55"/>
+                            <DataGridTextColumn Header="AA" Binding="{Binding AA}" Width="55"/>
+                            <DataGridTextColumn Header="A" Binding="{Binding A}" Width="55"/>
+                            <DataGridTextColumn Header="B" Binding="{Binding B}" Width="55"/>
+                            <DataGridTextColumn Header="C" Binding="{Binding C}" Width="55"/>
+                            <DataGridTextColumn Header="Total" Binding="{Binding Total}" Width="70"/>
+                            <DataGridTextColumn Header="Observaciones" Binding="{Binding Observaciones}" Width="*"/>
+                        </DataGrid.Columns>
                     </DataGrid>
 
                     <!-- BARRA DE PAGINACIÓN -->
@@ -350,7 +413,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Selector de filas corregido con sys:Int32 -->
+                        <!-- Selector de filas -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="Mostrar:" Foreground="#64748B" VerticalAlignment="Center" FontSize="13" Margin="0,0,6,0" FontFamily="Segoe UI"/>
                             <ComboBox SelectedValue="{Binding ElementosPorPagina, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Content" Width="65" Padding="6,4">

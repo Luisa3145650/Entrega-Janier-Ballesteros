@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -14,8 +14,8 @@ namespace loginavicola.Database
 
         public ClasificacionProduccionDatabase()
         {
-            string dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sistema_avicola.db");
-            connectionString = $"Data Source={dbPath};Version=3;Journal Mode=WAL;BusyTimeout=5000;";
+            DatabaseHelper.Inicializar();
+            connectionString = DatabaseHelper.ConnectionString;
             CrearTabla();
         }
 
@@ -162,11 +162,12 @@ namespace loginavicola.Database
                                 lista.Add(new ClasificacionProduccion
                                 {
                                     IdClasificacion = Convert.ToInt32(reader["IdClasificacion"]),
+                                    IdLote = reader["IdLote"] != DBNull.Value ? Convert.ToInt32(reader["IdLote"]) : 0,
                                     Fecha = Convert.ToDateTime(reader["Fecha"]),
                                     HoraInicio = reader["HoraInicio"]?.ToString() ?? string.Empty,
                                     HoraFin = reader["HoraFin"]?.ToString() ?? string.Empty,
-                                    Recolector = reader["Recolector"].ToString(),
-                                    TipoClasificacion = reader["TipoClasificacion"].ToString(),
+                                    Recolector = reader["Recolector"]?.ToString() ?? string.Empty,
+                                    TipoClasificacion = reader["TipoClasificacion"]?.ToString() ?? string.Empty,
                                     Total = Convert.ToInt32(reader["Total"]),
                                     Jumbo = Convert.ToInt32(reader["Jumbo"]),
                                     AAA = Convert.ToInt32(reader["AAA"]),

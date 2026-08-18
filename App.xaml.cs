@@ -16,6 +16,10 @@ namespace loginavicola
 
             try
             {
+                // 0. Inicializar BD en %APPDATA% y generar respaldo automático inicial
+                Database.DatabaseHelper.Inicializar();
+                Database.DatabaseHelper.GenerarRespaldo(esManual: false);
+
                 // 1. Iniciar el proceso en segundo plano de Python
                 PythonProcessManager.Iniciar();
 

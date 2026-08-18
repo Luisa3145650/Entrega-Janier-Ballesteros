@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("loginavicola")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8ec92f8a2cefba4339e13ed449bb3ec58d8cb723")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d17e52bf01f3bbae059c7a2a2e799cbeeebc10fb")]
 [assembly: System.Reflection.AssemblyProductAttribute("loginavicola")]
 [assembly: System.Reflection.AssemblyTitleAttribute("loginavicola")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

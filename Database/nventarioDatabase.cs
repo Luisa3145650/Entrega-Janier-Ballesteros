@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,9 +17,9 @@ namespace loginavicola.Database
 
         public InventarioDatabase()
         {
-            // Usar la misma base de datos
-            dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sistema_avicola.db");
-            connectionString = $"Data Source={dbPath};Version=3;";
+            DatabaseHelper.Inicializar();
+            dbPath = DatabaseHelper.DbPath;
+            connectionString = DatabaseHelper.ConnectionString;
 
             CrearTablaInventario();
         }

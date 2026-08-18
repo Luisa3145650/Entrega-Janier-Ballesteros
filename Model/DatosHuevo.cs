@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +13,7 @@ namespace loginavicola.Model
         public double Peso { get; set; }
         public double Elipsoide { get; set; }
         public double Revolucion { get; set; }
-        public string Bascula { get; set; } // Ajustar a double si Python envía un número puro
+        public double Bascula { get; set; }
         public double Volumen_Real { get; set; }
         public string Categoria { get; set; }
     }

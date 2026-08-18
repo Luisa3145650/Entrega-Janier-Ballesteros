@@ -136,12 +136,14 @@ C:\Users\ferna\OneDrive\Documentos\Janier-repositorio\Janier-repositorio\loginav
 C:\Users\ferna\OneDrive\Documentos\Janier-repositorio\Janier-repositorio\loginavicola\obj\Debug\net8.0-windows\estilos\ButtonStylesxaml.baml
 C:\Users\ferna\OneDrive\Documentos\Janier-repositorio\Janier-repositorio\loginavicola\obj\Debug\net8.0-windows\estilos\MainStyles.baml
 C:\Users\ferna\OneDrive\Documentos\Janier-repositorio\Janier-repositorio\loginavicola\obj\Debug\net8.0-windows\estilos\UIColors.baml
+C:\Users\ferna\OneDrive\Documentos\Janier-repositorio\Janier-repositorio\loginavicola\obj\Debug\net8.0-windows\View\AlertasModalWindow.baml
 C:\Users\ferna\OneDrive\Documentos\Janier-repositorio\Janier-repositorio\loginavicola\obj\Debug\net8.0-windows\View\Configuracionhardwarewindow.baml
 C:\Users\ferna\OneDrive\Documentos\Janier-repositorio\Janier-repositorio\loginavicola\obj\Debug\net8.0-windows\View\ConfirmExitView.baml
 C:\Users\ferna\OneDrive\Documentos\Janier-repositorio\Janier-repositorio\loginavicola\obj\Debug\net8.0-windows\View\homeView.baml
 C:\Users\ferna\OneDrive\Documentos\Janier-repositorio\Janier-repositorio\loginavicola\obj\Debug\net8.0-windows\View\ManualView.baml
 C:\Users\ferna\OneDrive\Documentos\Janier-repositorio\Janier-repositorio\loginavicola\obj\Debug\net8.0-windows\View\produccionView.baml
 C:\Users\ferna\OneDrive\Documentos\Janier-repositorio\Janier-repositorio\loginavicola\obj\Debug\net8.0-windows\MainWindow.g.cs
+C:\Users\ferna\OneDrive\Documentos\Janier-repositorio\Janier-repositorio\loginavicola\obj\Debug\net8.0-windows\View\AlertasModalWindow.g.cs
 C:\Users\ferna\OneDrive\Documentos\Janier-repositorio\Janier-repositorio\loginavicola\obj\Debug\net8.0-windows\View\alimentacionView.g.cs
 C:\Users\ferna\OneDrive\Documentos\Janier-repositorio\Janier-repositorio\loginavicola\obj\Debug\net8.0-windows\View\Configuracionhardwarewindow.g.cs
 C:\Users\ferna\OneDrive\Documentos\Janier-repositorio\Janier-repositorio\loginavicola\obj\Debug\net8.0-windows\View\ConfirmExitView.g.cs

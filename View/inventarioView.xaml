@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="loginavicola.View.inventarioView"
+<UserControl x:Class="loginavicola.View.inventarioView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -176,8 +176,11 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- Tarjeta 2: Stock Bajo -->
-                    <Border Grid.Column="1" Style="{StaticResource StatCardStyle}" BorderBrush="#EF4444" Background="#FEF2F2">
+                    <!-- Tarjeta 2: Stock Bajo (Clicable) -->
+                    <Border Grid.Column="1" Style="{StaticResource StatCardStyle}" BorderBrush="#EF4444" Background="#FEF2F2" Cursor="Hand" ToolTip="Ver detalle de alertas de stock e insumos">
+                        <Border.InputBindings>
+                            <MouseBinding MouseAction="LeftClick" Command="{Binding VerDetalleAlertasCommand}"/>
+                        </Border.InputBindings>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>

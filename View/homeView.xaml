@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="loginavicola.View.homeView"
+<UserControl x:Class="loginavicola.View.homeView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -151,15 +151,18 @@
                 </StackPanel>
             </Border>
 
-            <!-- Tarjeta 4: ALERTAS STOCK (con badge de alerta) -->
-            <Border Grid.Column="3" Style="{StaticResource CardAlertasStyle}">
+            <!-- Tarjeta 4: ALERTAS ACTIVAS (clicable) -->
+            <Border Grid.Column="3" Style="{StaticResource CardAlertasStyle}" Cursor="Hand" ToolTip="Ver detalle de alertas activas">
+                <Border.InputBindings>
+                    <MouseBinding MouseAction="LeftClick" Command="{Binding VerDetalleAlertasCommand}"/>
+                </Border.InputBindings>
                 <Grid>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="ALERTAS STOCK (&lt; 15)" 
+                        <TextBlock Text="ALERTAS ACTIVAS" 
                                    Style="{StaticResource CardTitleStyle}" 
                                    Foreground="#DC2626"/>
-                        <TextBlock x:Name="LotesValue" 
-                                   Text="{Binding TotalLotes}" 
+                        <TextBlock x:Name="AlertasValue" 
+                                   Text="{Binding TotalAlertas}" 
                                    Style="{StaticResource BigValueStyle}" 
                                    Foreground="#DC2626"/>
                     </StackPanel>
