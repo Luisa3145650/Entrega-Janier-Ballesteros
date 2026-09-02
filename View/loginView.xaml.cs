@@ -1,4 +1,4 @@
-﻿using loginavicola.Database;
+using loginavicola.Database;
 using loginavicola.Model;
 using loginavicola.View;
 using System;
@@ -82,6 +82,7 @@ namespace loginavicola.View
                 PermisoProduccion = true,  // Solo producción visible
                 PermisoAlimentacion = false,
                 PermisoDiagnostico = false,
+                PermisoExportarDatos = false,
                 PermisoInventario = false
             };
             UserSession.EsVisitante = true;

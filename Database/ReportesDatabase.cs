@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
@@ -18,7 +18,7 @@ namespace loginavicola.Database
             connectionString = $"Data Source={dbPath};Version=3;";
         }
 
-        // 1. INVENTARIO (Tabla real: Alimento)
+        // 1. INVENTARIO (Tabla real: Inventario)
         public List<ItemInventario> ObtenerInventario()
         {
             var lista = new List<ItemInventario>();
@@ -27,7 +27,7 @@ namespace loginavicola.Database
                 using (var conn = new SQLiteConnection(connectionString))
                 {
                     conn.Open();
-                    string sql = "SELECT * FROM Alimento ORDER BY Nombre ASC";
+                    string sql = "SELECT * FROM Inventario ORDER BY Nombre ASC";
                     using (var cmd = new SQLiteCommand(sql, conn))
                     using (var reader = cmd.ExecuteReader())
                     {
@@ -35,10 +35,16 @@ namespace loginavicola.Database
                         {
                             lista.Add(new ItemInventario
                             {
-                                IdItem = reader["IdAlimento"] != DBNull.Value ? Convert.ToInt32(reader["IdAlimento"]) : 0,
+                                IdItem = reader["IdItem"] != DBNull.Value ? Convert.ToInt32(reader["IdItem"]) : 0,
                                 Nombre = reader["Nombre"]?.ToString() ?? "",
-                                Categoria = "Alimento",
-                                CantidadStock = reader["StockDisponible"] != DBNull.Value ? Convert.ToInt32(reader["StockDisponible"]) : 0
+                                Categoria = reader["Categoria"]?.ToString() ?? "",
+                                CostoUnitario = reader["CostoUnitario"] != DBNull.Value ? Convert.ToDecimal(reader["CostoUnitario"]) : 0,
+                                Ubicacion = reader["Ubicacion"]?.ToString() ?? "",
+                                FechaCaducidad = reader["FechaCaducidad"] != DBNull.Value ? Convert.ToDateTime(reader["FechaCaducidad"]) : (DateTime?)null,
+                                StockMinimo = reader["StockMinimo"] != DBNull.Value ? Convert.ToInt32(reader["StockMinimo"]) : 0,
+                                StockMaximo = reader["StockMaximo"] != DBNull.Value ? Convert.ToInt32(reader["StockMaximo"]) : 0,
+                                CantidadStock = reader["CantidadStock"] != DBNull.Value ? Convert.ToInt32(reader["CantidadStock"]) : 0,
+                                Observaciones = reader["Observaciones"]?.ToString() ?? ""
                             });
                         }
                     }
@@ -146,6 +152,69 @@ namespace loginavicola.Database
                 }
             }
             catch (Exception ex) { MessageBox.Show("Error Lotes: " + ex.Message); }
+            return lista;
+        }
+
+        // 5. USUARIOS
+        public List<Usuario> ObtenerUsuarios()
+        {
+            var lista = new List<Usuario>();
+            try
+            {
+                using (var conn = new SQLiteConnection(connectionString))
+                {
+                    conn.Open();
+                    string sql = "SELECT * FROM Usuario ORDER BY IdUsuario ASC";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            bool permisoExportar = false;
+                            try
+                            {
+                                int colExp = reader.GetOrdinal("PermisoExportarDatos");
+                                if (colExp >= 0 && !reader.IsDBNull(colExp))
+                                    permisoExportar = Convert.ToBoolean(reader.GetValue(colExp));
+                            }
+                            catch
+                            {
+                                try
+                                {
+                                    int colEnt = reader.GetOrdinal("PermisoEntregas");
+                                    if (colEnt >= 0 && !reader.IsDBNull(colEnt))
+                                        permisoExportar = Convert.ToBoolean(reader.GetValue(colEnt));
+                                }
+                                catch { }
+                            }
+
+                            lista.Add(new Usuario
+                            {
+                                IdUsuario = reader["IdUsuario"] != DBNull.Value ? Convert.ToInt32(reader["IdUsuario"]) : 0,
+                                Nombres = reader["Nombres"]?.ToString() ?? "",
+                                Apellidos = reader["Apellidos"]?.ToString() ?? "",
+                                Username = reader["Username"]?.ToString() ?? "",
+                                Documento = reader["Documento"]?.ToString() ?? "",
+                                Telefono = reader["Telefono"]?.ToString() ?? "",
+                                Direccion = reader["Direccion"]?.ToString() ?? "",
+                                Email = reader["Email"]?.ToString() ?? "",
+                                Rol = reader["Rol"]?.ToString() ?? "Usuario",
+                                Activo = reader["Activo"] != DBNull.Value && Convert.ToBoolean(reader["Activo"]),
+                                FechaCreacion = reader["FechaCreacion"] != DBNull.Value ? Convert.ToDateTime(reader["FechaCreacion"]) : DateTime.Now,
+                                PermisoInicio = reader["PermisoInicio"] != DBNull.Value && Convert.ToBoolean(reader["PermisoInicio"]),
+                                PermisoLotes = reader["PermisoLotes"] != DBNull.Value && Convert.ToBoolean(reader["PermisoLotes"]),
+                                PermisoProduccion = reader["PermisoProduccion"] != DBNull.Value && Convert.ToBoolean(reader["PermisoProduccion"]),
+                                PermisoAlimentacion = reader["PermisoAlimentacion"] != DBNull.Value && Convert.ToBoolean(reader["PermisoAlimentacion"]),
+                                PermisoExportarDatos = permisoExportar,
+                                PermisoDiagnostico = reader["PermisoDiagnostico"] != DBNull.Value && Convert.ToBoolean(reader["PermisoDiagnostico"]),
+                                PermisoInventario = reader["PermisoInventario"] != DBNull.Value && Convert.ToBoolean(reader["PermisoInventario"]),
+                                PermisoGestionUsuarios = reader["PermisoGestionUsuarios"] != DBNull.Value && Convert.ToBoolean(reader["PermisoGestionUsuarios"])
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) { MessageBox.Show("Error Usuarios: " + ex.Message); }
             return lista;
         }
     }

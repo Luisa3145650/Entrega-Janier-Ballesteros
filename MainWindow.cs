@@ -130,7 +130,7 @@ namespace loginavicola
                 Btnalimentacion.Visibility = user.PermisoAlimentacion ? Visibility.Visible : Visibility.Collapsed;
                 Btndiagnostico.Visibility = user.PermisoDiagnostico ? Visibility.Visible : Visibility.Collapsed;
                 Btninventario.Visibility = user.PermisoInventario ? Visibility.Visible : Visibility.Collapsed;
-                Btnreportes.Visibility = user.PermisoInventario ? Visibility.Visible : Visibility.Collapsed;
+                Btnreportes.Visibility = user.PermisoExportarDatos ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -208,9 +208,9 @@ namespace loginavicola
 
         private void Btnreportes_Click(object sender, RoutedEventArgs e)
         {
-            if (UserSession.EsVisitante)
+            if (UserSession.EsVisitante || !(UserSession.UsuarioActual?.PermisoExportarDatos ?? false))
             {
-                MessageBox.Show("Acceso denegado. Los visitantes no pueden exportar datos.", "Permiso denegado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Acceso denegado. No tienes permisos para exportar datos.", "Permiso denegado", MessageBoxButton.OK, MessageBoxImage.Warning);
                 Btndashboar.IsChecked = true;
                 return;
             }

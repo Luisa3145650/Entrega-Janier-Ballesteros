@@ -383,7 +383,7 @@
                             <!-- Título de la página -->
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="25,0,0,0">
                                 <fa:IconImage x:Name="imgTitleIcon" Icon="Home" Height="22" Width="22" Foreground="White" Margin="0,0,12,0"/>
-                                <TextBlock x:Name="txtWindowTitle" Text="Dashboard" Foreground="White" FontSize="18" FontWeight="Medium" VerticalAlignment="Center" FontFamily="Segoe UI"/>
+                                <TextBlock x:Name="txtWindowTitle" Text="Inicio" Foreground="White" FontSize="18" FontWeight="Medium" VerticalAlignment="Center" FontFamily="Segoe UI"/>
                             </StackPanel>
 
                             <!-- Controles de ventana + Usuario con menú desplegable -->

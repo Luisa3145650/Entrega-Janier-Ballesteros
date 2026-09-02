@@ -98,13 +98,13 @@
                 <!-- ==================== -->
                 <UniformGrid Columns="3" VerticalAlignment="Top" Margin="0,0,0,20">
 
-                    <!-- Tarjeta 1: Clasificación (Amarilla) -->
+                    <!-- Tarjeta 1: Reporte de Usuarios (Amarilla) -->
                     <Border Style="{StaticResource StatCardStyle}" BorderBrush="#FACC15">
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="📋" FontSize="28" Margin="0,0,0,10"/>
-                            <TextBlock Text="Clasificación" FontSize="16" FontWeight="Bold" Foreground="#111827"/>
-                            <TextBlock Text="Registros de categorización de huevos." FontSize="12" Foreground="#6B7280" Margin="0,4,0,16" TextWrapping="Wrap"/>
-                            <Button Content="DESCARGAR CSV" Style="{StaticResource ExportButtonStyle}" Click="BtnExportarClasificacion_Click"/>
+                            <TextBlock Text="👥" FontSize="28" Margin="0,0,0,10"/>
+                            <TextBlock Text="Reporte de Usuarios" FontSize="16" FontWeight="Bold" Foreground="#111827"/>
+                            <TextBlock Text="Registros de personal, roles y accesos." FontSize="12" Foreground="#6B7280" Margin="0,4,0,16" TextWrapping="Wrap"/>
+                            <Button Content="DESCARGAR CSV" Style="{StaticResource ExportButtonStyle}" Click="BtnExportarUsuarios_Click"/>
                         </StackPanel>
                     </Border>
 

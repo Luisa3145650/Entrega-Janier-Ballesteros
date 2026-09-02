@@ -130,7 +130,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
@@ -365,16 +365,16 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="0" Background="#10B981">
+                    <Grid Grid.Row="0" Background="#FFFFFF">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="20,12">
-                            <TextBlock Text="Configuración de Accesos" FontSize="16" FontWeight="Bold" Foreground="White"/>
-                            <TextBlock Text="Activa o desactiva los módulos permitidos." FontSize="11" Foreground="White" Opacity="0.8" Margin="0,2,0,0"/>
+                        <StackPanel Grid.Column="0" Margin="24,16,20,8">
+                            <TextBlock Text="Configuración de Accesos" FontSize="16" FontWeight="Bold" Foreground="#111827"/>
+                            <TextBlock Text="Activa o desactiva los módulos permitidos." FontSize="11" Foreground="#6B7280" Margin="0,2,0,0"/>
                         </StackPanel>
-                        <Button Grid.Column="1" Content="✕" x:Name="BtnCerrarModalPermisos" Click="BtnCerrarModalPermisos_Click" Background="Transparent" Foreground="White" BorderThickness="0" FontSize="18" FontWeight="Bold" Padding="15,10" Cursor="Hand" ToolTip="Cerrar"/>
+                        <Button Grid.Column="1" Content="✕" x:Name="BtnCerrarModalPermisos" Click="BtnCerrarModalPermisos_Click" Background="Transparent" Foreground="#111827" BorderThickness="0" FontSize="18" FontWeight="Bold" Padding="15,10" Cursor="Hand" ToolTip="Cerrar"/>
                     </Grid>
 
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,16">
@@ -417,10 +417,10 @@
                             </Border>
 
                             <Border Background="#F8FAFC" CornerRadius="8" Padding="14,12" Margin="6" BorderBrush="#E5E7EB" BorderThickness="1">
-                                <CheckBox IsChecked="{Binding PermisoEntregas}" Style="{StaticResource ModernToggleStyle}">
+                                <CheckBox IsChecked="{Binding PermisoExportarDatos}" Style="{StaticResource ModernToggleStyle}">
                                     <StackPanel Margin="6,0,0,0">
-                                        <TextBlock Text="Entregas" FontWeight="Bold" Foreground="#111827" FontSize="13"/>
-                                        <TextBlock Text="Salida de pedidos" Foreground="#6B7280" FontSize="11"/>
+                                        <TextBlock Text="Exportar Datos" FontWeight="Bold" Foreground="#111827" FontSize="13"/>
+                                        <TextBlock Text="Reportes y descargas" Foreground="#6B7280" FontSize="11"/>
                                     </StackPanel>
                                 </CheckBox>
                             </Border>
@@ -454,15 +454,15 @@
                         </UniformGrid>
                     </ScrollViewer>
 
-                    <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="#E5E7EB" Padding="30,15">
+                    <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="#E5E7EB" Padding="30,16">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="15"/>
+                                <ColumnDefinition Width="16"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" Content="APLICAR CAMBIOS" x:Name="BtnGuardarPermisos" Click="BtnGuardarPermisos_Click" Style="{StaticResource ModalButtonStyle}" Background="#10B981" Foreground="White"/>
-                            <Button Grid.Column="2" Content="DESCARTAR" x:Name="BtnCancelarPermisos" Click="BtnCerrarModalPermisos_Click" Style="{StaticResource ModalButtonStyle}" Background="#E5E7EB" Foreground="#374151"/>
+                            <Button Grid.Column="0" Content="Aplicar" x:Name="BtnGuardarPermisos" Click="BtnGuardarPermisos_Click" Style="{StaticResource ModalButtonStyle}" Background="#00823B" Foreground="#FFFFFF"/>
+                            <Button Grid.Column="2" Content="Descartar" x:Name="BtnCancelarPermisos" Click="BtnCerrarModalPermisos_Click" Style="{StaticResource ModalButtonStyle}" Background="#E5E7EB" Foreground="#4B5563"/>
                         </Grid>
                     </Border>
                 </Grid>
