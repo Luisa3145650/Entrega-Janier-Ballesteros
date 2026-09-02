@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -76,38 +76,6 @@ namespace loginavicola.View
                 MessageBox.Show("Permisos actualizados exitosamente", "Éxito",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 ModalPermisosOverlay.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void BtnRespaldarAhora_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                bool exito = Database.DatabaseHelper.GenerarRespaldo(esManual: true);
-                if (exito)
-                {
-                    MessageBox.Show(
-                        "El respaldo manual de la base de datos se ha generado exitosamente.",
-                        "Respaldo Exitoso",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "No se pudo generar el respaldo manual de la base de datos.",
-                        "Error de Respaldo",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"Ocurrió un error al generar el respaldo: {ex.Message}",
-                    "Error de Respaldo",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
             }
         }
     }

@@ -14,8 +14,8 @@ namespace loginavicola.Database
 
         public ClasificacionProduccionDatabase()
         {
-            DatabaseHelper.Inicializar();
-            connectionString = DatabaseHelper.ConnectionString;
+            string dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sistema_avicola.db");
+            connectionString = $"Data Source={dbPath};Version=3;Journal Mode=WAL;BusyTimeout=5000;";
             CrearTabla();
         }
 
@@ -79,8 +79,11 @@ namespace loginavicola.Database
                         command.Parameters.AddWithValue("@IdLote", c.IdLote > 0 ? c.IdLote : 1);
                         command.Parameters.AddWithValue("@Fecha", c.Fecha != default ? c.Fecha.ToString("yyyy-MM-dd") : DateTime.Now.ToString("yyyy-MM-dd"));
                         command.Parameters.AddWithValue("@HoraInicio", string.IsNullOrEmpty(c.HoraInicio) ? DateTime.Now.ToString("HH:mm:ss") : c.HoraInicio);
-                        command.Parameters.AddWithValue("@HoraFin", DateTime.Now.ToString("HH:mm:ss"));
-                        command.Parameters.AddWithValue("@Recolector", string.IsNullOrEmpty(c.Recolector) ? "Sistema Visión" : c.Recolector);
+                        command.Parameters.AddWithValue("@HoraFin", string.IsNullOrEmpty(c.HoraFin) ? DateTime.Now.ToString("HH:mm:ss") : c.HoraFin);
+                        string defaultUser = UserSession.UsuarioActual?.NombreCompleto 
+                            ?? UserSession.UsuarioActual?.Username 
+                            ?? (UserSession.EsVisitante ? "Visitante" : "Operador");
+                        command.Parameters.AddWithValue("@Recolector", string.IsNullOrEmpty(c.Recolector) ? defaultUser : c.Recolector);
                         command.Parameters.AddWithValue("@Tipo", string.IsNullOrEmpty(c.TipoClasificacion) ? "Automática" : c.TipoClasificacion);
                         command.Parameters.AddWithValue("@Jumbo", c.Jumbo);
                         command.Parameters.AddWithValue("@AAA", c.AAA);
@@ -166,8 +169,8 @@ namespace loginavicola.Database
                                     Fecha = Convert.ToDateTime(reader["Fecha"]),
                                     HoraInicio = reader["HoraInicio"]?.ToString() ?? string.Empty,
                                     HoraFin = reader["HoraFin"]?.ToString() ?? string.Empty,
-                                    Recolector = reader["Recolector"]?.ToString() ?? string.Empty,
-                                    TipoClasificacion = reader["TipoClasificacion"]?.ToString() ?? string.Empty,
+                                    Recolector = reader["Recolector"].ToString(),
+                                    TipoClasificacion = reader["TipoClasificacion"].ToString(),
                                     Total = Convert.ToInt32(reader["Total"]),
                                     Jumbo = Convert.ToInt32(reader["Jumbo"]),
                                     AAA = Convert.ToInt32(reader["AAA"]),

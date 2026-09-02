@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -13,7 +13,7 @@
   <PropertyGroup>
     <NoWarn>NU1701</NoWarn>
     <PlatformTarget>x64</PlatformTarget>
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+     <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +24,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="imagenes\gallinas.jpg" />
+    <None Remove="imagenes\gallinasilueta.png" />
+    <None Remove="imagenes\logo-sena.png" />
+    <None Remove="imagenes\user_icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Accord.Video" Version="3.8.0" />
+    <PackageReference Include="Accord.Video.DirectShow" Version="3.8.0" />
+    <PackageReference Include="AForge" Version="2.2.5" />
+    <PackageReference Include="AForge.Video" Version="2.2.5" />
+    <PackageReference Include="AForge.Video.DirectShow" Version="2.2.5" />
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="DataGridExtensions" Version="2.8.0" />
@@ -43,12 +55,13 @@
     <PackageReference Include="Tesseract.Drawing" Version="5.2.0" />
   </ItemGroup>
 
-   <ItemGroup>
-  <Resource Include="imagenes\**\*.jpg" />
-  <Resource Include="imagenes\**\*.png" />
-  <Resource Include="imagenes\**\*.jpeg" />
-  <Resource Include="imagenes\**\*.ico" />
-</ItemGroup>
+  <ItemGroup>
+    <Resource Include="imagenes\gallinas.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="imagenes\logo-sena.png" />
+    <Resource Include="imagenes\user_icon.png" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Update="tessdata\eng.traineddata">
@@ -56,9 +69,6 @@
     </None>
     <None Update="tessdata\ssd.traineddata">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="servidor_api.py">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

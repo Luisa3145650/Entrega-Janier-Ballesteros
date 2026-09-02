@@ -28,10 +28,26 @@ namespace loginavicola.ViewModel
     public class PuertoInfo
     {
         [JsonPropertyName("puerto")]
-        public string Puerto { get; set; }
+        public string Puerto { get; set; } = string.Empty;
 
         [JsonPropertyName("descripcion")]
-        public string Descripcion { get; set; }
+        public string Descripcion { get; set; } = string.Empty;
+
+        [JsonPropertyName("id")]
+        public string Id
+        {
+            get => !string.IsNullOrEmpty(Puerto) ? Puerto : _id;
+            set { _id = value ?? string.Empty; if (string.IsNullOrEmpty(Puerto)) Puerto = _id; }
+        }
+        private string _id = string.Empty;
+
+        [JsonPropertyName("nombre")]
+        public string Nombre
+        {
+            get => !string.IsNullOrEmpty(Descripcion) ? Descripcion : _nombre;
+            set { _nombre = value ?? string.Empty; if (string.IsNullOrEmpty(Descripcion)) Descripcion = _nombre; }
+        }
+        private string _nombre = string.Empty;
     }
 
     public class CamaraInfo
@@ -40,16 +56,19 @@ namespace loginavicola.ViewModel
         public int Id { get; set; }
 
         [JsonPropertyName("nombre")]
-        public string Nombre { get; set; }
+        public string Nombre { get; set; } = string.Empty;
     }
 
     public class DispositivosResponse
     {
-        [JsonPropertyName("puertos")]
-        public List<PuertoInfo> Puertos { get; set; }
-
         [JsonPropertyName("camaras")]
-        public List<CamaraInfo> Camaras { get; set; }
+        public List<CamaraInfo> Camaras { get; set; } = new();
+
+        [JsonPropertyName("basculas")]
+        public List<PuertoInfo> Basculas { get; set; } = new();
+
+        [JsonPropertyName("puertos")]
+        public List<PuertoInfo> Puertos { get; set; } = new();
     }
 
     public class EstadoConfiguracionResponse
@@ -96,6 +115,9 @@ namespace loginavicola.ViewModel
 
         [ObservableProperty]
         private string volumenTexto = "-";
+
+        [ObservableProperty]
+        private bool huevoDetectado = false;
 
         // ──────────────────────────────────────────────────────────────
         // Contadores en memoria de la sesión activa
@@ -208,6 +230,12 @@ namespace loginavicola.ViewModel
         [ObservableProperty]
         private int elementosPorPagina = 10;
 
+        partial void OnElementosPorPaginaChanged(int value)
+        {
+            PaginaActual = 1;
+            AplicarPaginacionHistorial();
+        }
+
         // ──────────────────────────────────────────────────────────────
         // Servicios de Base de Datos y Cliente HTTP
         // ──────────────────────────────────────────────────────────────
@@ -215,7 +243,7 @@ namespace loginavicola.ViewModel
         private readonly DetalleClasificacionDatabase dbDetalle = new();
         private readonly LoteDatabase dbLote = new();
 
-        private static readonly HttpClient httpClient = new HttpClient();
+        private static readonly HttpClient httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(8) };
         private bool leyendoBascula = false;
 
         private DateTime horaInicioLote = DateTime.Now;
@@ -238,14 +266,14 @@ namespace loginavicola.ViewModel
             RefrescarUsuarioActual();
             horaInicioLote = DateTime.Now;
 
-            GuardarClasificacionCommand = new RelayCommand(async _ => await GuardarClasificacionAutomaticaAsync(), _ => BtnGuardarEnabled && TotalResumen > 0);
+            GuardarClasificacionCommand = new RelayCommand(async _ => await GuardarClasificacionAutomaticaAsync());
             RefrescarLotesCommand = new RelayCommand(async _ => await CargarLotesAsync());
             ConectarHardwareCommand = new RelayCommand(async _ => await ConectarHardwareAsync(), _ => BtnConectarHardwareEnabled);
             DesconectarHardwareCommand = new RelayCommand(async _ => await DesconectarHardwareAsync(), _ => BtnDesconectarHardwareEnabled);
             RefrescarHardwareCommand = new RelayCommand(async _ => await CargarDispositivosDisponiblesAsync());
             RegistrarHuevoManualCommand = new RelayCommand(_ => RegistrarHuevoManual());
-            PaginaAnteriorCommand = new RelayCommand(_ => CambiarPagina(-1), _ => PaginaActual > 1);
-            PaginaSiguienteCommand = new RelayCommand(_ => CambiarPagina(1), _ => PaginaActual < TotalPaginas);
+            PaginaAnteriorCommand = new RelayCommand(_ => CambiarPagina(-1));
+            PaginaSiguienteCommand = new RelayCommand(_ => CambiarPagina(1));
 
             _ = CargarLotesAsync();
             _ = CargarHistorialAsync();
@@ -255,8 +283,12 @@ namespace loginavicola.ViewModel
 
         public void CambiarPagina(int delta)
         {
-            PaginaActual += delta;
-            AplicarPaginacionHistorial();
+            var nueva = PaginaActual + delta;
+            if (nueva >= 1 && nueva <= TotalPaginas)
+            {
+                PaginaActual = nueva;
+                AplicarPaginacionHistorial();
+            }
         }
 
 
@@ -297,7 +329,8 @@ namespace loginavicola.ViewModel
         {
             try
             {
-                HttpResponseMessage response = await httpClient.GetAsync("http://localhost:5001/datos-huevo");
+                using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(3));
+                HttpResponseMessage response = await httpClient.GetAsync("http://localhost:5001/datos-huevo", cts.Token);
                 if (response.IsSuccessStatusCode)
                 {
                     string jsonResponse = await response.Content.ReadAsStringAsync();
@@ -306,8 +339,10 @@ namespace loginavicola.ViewModel
 
                     if (datos != null)
                     {
+                        System.Diagnostics.Debug.WriteLine($"[Datos Huevo OK] Peso: {datos.Peso}g, Categoría: {datos.Categoria}, Detectado: {datos.HuevoDetectado}");
                         Application.Current?.Dispatcher?.Invoke(() =>
                         {
+                            HuevoDetectado = datos.HuevoDetectado || datos.EsValido;
                             PesoGramos = datos.Peso;
                             PesoRealTexto = $"{datos.Peso} g";
                             CategoriaActual = string.IsNullOrEmpty(datos.Categoria) ? "-" : datos.Categoria;
@@ -330,7 +365,11 @@ namespace loginavicola.ViewModel
         {
             try
             {
-                byte[] frameBytes = await httpClient.GetByteArrayAsync("http://localhost:5001/frame.jpg");
+                using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(3));
+                HttpResponseMessage response = await httpClient.GetAsync("http://localhost:5001/frame.jpg", cts.Token);
+                if (!response.IsSuccessStatusCode) return;
+
+                byte[] frameBytes = await response.Content.ReadAsByteArrayAsync();
 
                 if (frameBytes == null || frameBytes.Length == 0) return;
 
@@ -343,6 +382,7 @@ namespace loginavicola.ViewModel
                     bitmap.EndInit();
                     bitmap.Freeze();
 
+                    System.Diagnostics.Debug.WriteLine($"[Video Frame OK] {frameBytes.Length} bytes decodificados correctamente para CameraFrame.");
                     Application.Current?.Dispatcher?.Invoke(() =>
                     {
                         CameraFrame = bitmap;
@@ -395,7 +435,11 @@ namespace loginavicola.ViewModel
             {
                 await CargarDispositivosDisponiblesAsync();
 
-                string json = await httpClient.GetStringAsync("http://localhost:5001/estado-configuracion");
+                using var ctsConfig = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(5));
+                var responseConfig = await httpClient.GetAsync("http://localhost:5001/estado-configuracion", ctsConfig.Token);
+                if (!responseConfig.IsSuccessStatusCode) return;
+
+                string json = await responseConfig.Content.ReadAsStringAsync();
                 var config = JsonSerializer.Deserialize<EstadoConfiguracionResponse>(json,
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
@@ -411,6 +455,12 @@ namespace loginavicola.ViewModel
                         CamaraSeleccionada = CamarasDisponibles?.FirstOrDefault(c => c.Id == config.CamaraIndex);
 
                         ActualizarBadgeEstadoHardware(config.Conectado, config.Conectado ? "🟢 Conectado" : "🔴 Desconectado");
+
+                        if (config.Conectado && !leyendoBascula)
+                        {
+                            System.Diagnostics.Debug.WriteLine("🟢 Hardware ya conectado al arrancar. Iniciando bucles de polling...");
+                            IniciarBuclesPolling();
+                        }
                     }
                     else
                     {
@@ -432,31 +482,77 @@ namespace loginavicola.ViewModel
 
         public async Task CargarDispositivosDisponiblesAsync()
         {
+            var puertos = new List<PuertoInfo>();
+            var camaras = new List<CamaraInfo>();
+
             try
             {
-                string json = await httpClient.GetStringAsync("http://localhost:5001/dispositivos-disponibles");
-                var datos = JsonSerializer.Deserialize<DispositivosResponse>(json,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                var puertos = datos?.Puertos ?? new List<PuertoInfo>();
-                var camaras = datos?.Camaras ?? new List<CamaraInfo>();
-
-                Application.Current.Dispatcher.Invoke(() =>
+                using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(4));
+                var response = await httpClient.GetAsync("http://localhost:5001/dispositivos-disponibles", cts.Token);
+                if (response.IsSuccessStatusCode)
                 {
-                    PuertosDisponibles = new ObservableCollection<PuertoInfo>(puertos);
-                    CamarasDisponibles = new ObservableCollection<CamaraInfo>(camaras);
+                    string json = await response.Content.ReadAsStringAsync();
+                    var datos = JsonSerializer.Deserialize<DispositivosResponse>(json,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                    if (PuertoSeleccionado == null && PuertosDisponibles.Count > 0)
-                        PuertoSeleccionado = PuertosDisponibles[0];
+                    if (datos?.Basculas != null && datos.Basculas.Count > 0)
+                        puertos = datos.Basculas;
+                    else if (datos?.Puertos != null && datos.Puertos.Count > 0)
+                        puertos = datos.Puertos;
 
-                    if (CamaraSeleccionada == null && CamarasDisponibles.Count > 0)
-                        CamaraSeleccionada = CamarasDisponibles[0];
-                });
+                    if (datos?.Camaras != null && datos.Camaras.Count > 0)
+                        camaras = datos.Camaras;
+                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error al cargar dispositivos disponibles: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error al cargar dispositivos disponibles desde API: {ex.Message}");
             }
+
+            // Fallback nativo de puertos COM si no vinieron desde la API
+            if (puertos.Count == 0)
+            {
+                try
+                {
+                    var portNames = System.IO.Ports.SerialPort.GetPortNames();
+                    foreach (var port in portNames)
+                    {
+                        puertos.Add(new PuertoInfo
+                        {
+                            Puerto = port,
+                            Descripcion = $"{port} - Báscula POS",
+                            Id = port,
+                            Nombre = $"{port} - Báscula POS"
+                        });
+                    }
+                }
+                catch { }
+
+                if (puertos.Count == 0)
+                {
+                    puertos.Add(new PuertoInfo { Puerto = "COM7", Descripcion = "COM7 - Báscula POS (Predeterminada)", Id = "COM7", Nombre = "COM7 - Báscula POS" });
+                    puertos.Add(new PuertoInfo { Puerto = "COM1", Descripcion = "COM1 - Puerto Serie", Id = "COM1", Nombre = "COM1" });
+                }
+            }
+
+            // Fallback de cámaras si no vinieron desde la API
+            if (camaras.Count == 0)
+            {
+                camaras.Add(new CamaraInfo { Id = 0, Nombre = "Cámara 0 (Principal)" });
+                camaras.Add(new CamaraInfo { Id = 1, Nombre = "Cámara 1 (Secundaria)" });
+            }
+
+            Application.Current?.Dispatcher?.Invoke(() =>
+            {
+                PuertosDisponibles = new ObservableCollection<PuertoInfo>(puertos);
+                CamarasDisponibles = new ObservableCollection<CamaraInfo>(camaras);
+
+                if (PuertoSeleccionado == null && PuertosDisponibles.Count > 0)
+                    PuertoSeleccionado = PuertosDisponibles[0];
+
+                if (CamaraSeleccionada == null && CamarasDisponibles.Count > 0)
+                    CamaraSeleccionada = CamarasDisponibles[0];
+            });
         }
 
         public async Task ConectarHardwareAsync()
@@ -485,7 +581,8 @@ namespace loginavicola.ViewModel
                 });
 
                 var contenido = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
-                var respuesta = await httpClient.PostAsync("http://localhost:5001/guardar-configuracion", contenido);
+                using var ctsConnect = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(8));
+                var respuesta = await httpClient.PostAsync("http://localhost:5001/guardar-configuracion", contenido, ctsConnect.Token);
 
                 if (respuesta.IsSuccessStatusCode)
                 {
@@ -528,7 +625,8 @@ namespace loginavicola.ViewModel
             {
                 DetenerBuclesPolling();
 
-                var respuesta = await httpClient.PostAsync("http://localhost:5001/desconectar-hardware", null);
+                using var ctsDisconnect = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(5));
+                var respuesta = await httpClient.PostAsync("http://localhost:5001/desconectar-hardware", null, ctsDisconnect.Token);
                 if (respuesta.IsSuccessStatusCode)
                 {
                     ActualizarBadgeEstadoHardware(false, "🔴 Desconectado");
@@ -650,6 +748,8 @@ namespace loginavicola.ViewModel
         {
             if (item != null)
             {
+                if (IdLoteSeleccionado == item.IdLote && LoteSeleccionado == item) return;
+
                 LoteSeleccionado = item;
                 IdLoteSeleccionado = item.IdLote;
                 NombreLoteSeleccionado = item.Display;
@@ -660,7 +760,7 @@ namespace loginavicola.ViewModel
                 BtnGuardarEnabled = true;
                 BtnClasificacionManualEnabled = true;
 
-                // Reiniciar contadores del lote anterior
+                // Reiniciar contadores solo cuando realmente cambia de lote
                 ContadorJumbo = 0;
                 ContadorAAA = 0;
                 ContadorAA = 0;
@@ -672,6 +772,8 @@ namespace loginavicola.ViewModel
             }
             else
             {
+                if (IdLoteSeleccionado == 0 && LoteSeleccionado == null) return;
+
                 IdLoteSeleccionado = 0;
                 NombreLoteSeleccionado = "";
                 LoteSeleccionado = null;
@@ -686,11 +788,11 @@ namespace loginavicola.ViewModel
 
         public string ClasificarHuevo(double peso)
         {
-            if (peso >= 78) return "Jumbo";
-            if (peso >= 67) return "AAA";
-            if (peso >= 60) return "AA";
-            if (peso >= 53) return "A";
-            if (peso >= 46) return "B";
+            if (peso >= 78.0) return "Jumbo";
+            if (peso >= 67.0) return "AAA";
+            if (peso >= 60.0) return "AA";
+            if (peso >= 53.0) return "A";
+            if (peso >= 45.0) return "B";
             return "C";
         }
 
@@ -720,19 +822,28 @@ namespace loginavicola.ViewModel
                 return;
             }
 
-            if (PesoGramos <= 0)
+            if (PesoGramos <= 2.0)
             {
-                TextoEstadoCamara = "⚠️ Báscula en 0. Pon un huevo.";
+                TextoEstadoCamara = "⚠️ Báscula sin peso (> 2.0g). Pon un huevo.";
                 TextoColorEstadoCamara = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DC2626"));
                 return;
             }
 
-            if ((DateTime.Now - ultimaDeteccion).TotalSeconds < 1.2) return;
+            // VALIDACIÓN CRUZADA: Cámara + Báscula
+            if (!HuevoDetectado)
+            {
+                TextoEstadoCamara = "⚠️ Objeto no reconocido por el sistema de visión.";
+                TextoColorEstadoCamara = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DC2626"));
+                MessageBox.Show("El sistema de visión no reconoce el objeto en la báscula como un huevo válido. Por favor, retire el objeto.", "Alerta de Seguridad", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if ((DateTime.Now - ultimaDeteccion).TotalSeconds < 0.6) return;
 
             ultimaDeteccion = DateTime.Now;
             string categoria = ClasificarHuevo(PesoGramos);
             ContarHuevoEnMemoria(categoria);
-            TextoEstadoCamara = $"✅ Contabilizado: {PesoGramos}g - {categoria}";
+            TextoEstadoCamara = $"✅ Contabilizado: {PesoGramos:F1}g - {categoria}";
             TextoColorEstadoCamara = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#39A900"));
         }
 
@@ -742,12 +853,35 @@ namespace loginavicola.ViewModel
 
         public async Task<bool> GuardarClasificacionAutomaticaAsync()
         {
-            if (IdLoteSeleccionado <= 0 || TotalResumen <= 0) return false;
+            if (IdLoteSeleccionado <= 0)
+            {
+                MessageBox.Show("Por favor selecciona un lote antes de guardar.", "Lote Requerido", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            // Si no hay huevos acumulados pero hay peso en la báscula, validar y contabilizarlo inmediatamente
+            if (TotalResumen <= 0 && PesoGramos > 2.0)
+            {
+                if (!HuevoDetectado)
+                {
+                    MessageBox.Show("El sistema de visión no reconoce el objeto en la báscula como un huevo válido. Por favor, retire el objeto.", "Alerta de Seguridad", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return false;
+                }
+
+                string cat = ClasificarHuevo(PesoGramos);
+                ContarHuevoEnMemoria(cat);
+            }
+
+            if (TotalResumen <= 0)
+            {
+                MessageBox.Show("No hay huevos contabilizados en este lote todavía. Presiona ESPACIO para contabilizar o coloca un huevo en la báscula.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
 
             try
             {
                 RefrescarUsuarioActual();
-                string usuarioRecolector = string.IsNullOrEmpty(UsuarioActualNombre) ? "Sistema Visión" : UsuarioActualNombre;
+                string usuarioRecolector = UsuarioActualNombre;
 
                 var clasificacion = new ClasificacionProduccion
                 {
@@ -771,6 +905,8 @@ namespace loginavicola.ViewModel
 
                 if (exito)
                 {
+                    MessageBox.Show($"✅ Sesión de producción guardada exitosamente.\nLote: {NombreLoteSeleccionado}\nTotal: {TotalResumen} huevos", "Guardado Exitoso", MessageBoxButton.OK, MessageBoxImage.Information);
+
                     ContadorJumbo = 0;
                     ContadorAAA = 0;
                     ContadorAA = 0;
@@ -784,11 +920,15 @@ namespace loginavicola.ViewModel
                     await ActualizarEstadisticasAsync();
                     return true;
                 }
-                return false;
+                else
+                {
+                    MessageBox.Show("No se pudo guardar el registro en la base de datos.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return false;
+                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error al guardar clasificación: {ex.Message}");
+                MessageBox.Show($"Error al guardar clasificación: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
         }
@@ -801,6 +941,7 @@ namespace loginavicola.ViewModel
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     HistorialProduccion = new ObservableCollection<ClasificacionProduccion>(datos);
+                    PaginaActual = 1;
                     AplicarPaginacionHistorial();
                 });
             }

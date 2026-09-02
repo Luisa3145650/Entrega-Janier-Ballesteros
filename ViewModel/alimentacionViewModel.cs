@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -66,8 +66,8 @@ namespace loginavicola.ViewModel
 
             OpcionesTamanoPagina = new ObservableCollection<int> { 5, 10, 15, 20, 50 };
 
-            PaginaAnteriorCommand = new RelayCommand(param => { PaginaActual--; }, param => PaginaActual > 1);
-            PaginaSiguienteCommand = new RelayCommand(param => { PaginaActual++; }, param => PaginaActual < TotalPaginas);
+            PaginaAnteriorCommand = new RelayCommand(param => { if (PaginaActual > 1) PaginaActual--; });
+            PaginaSiguienteCommand = new RelayCommand(param => { if (PaginaActual < TotalPaginas) PaginaActual++; });
 
             CargarDatos();
         }
@@ -237,6 +237,19 @@ namespace loginavicola.ViewModel
             var itemsInventario = inventarioDatabase.ObtenerTodosItems()
                 .Where(i => i.Categoria.ToLower().Contains("alimento") && i.CantidadStock > 0)
                 .ToList();
+
+            if (itemsInventario.Count == 0)
+            {
+                var todosItems = inventarioDatabase.ObtenerTodosItems();
+                string detalleItems = todosItems.Any()
+                    ? string.Join("\n", todosItems.Select(i => $"• {i.Nombre} | Categoría: '{i.Categoria}' | Stock: {i.CantidadStock}"))
+                    : "No hay productos registrados en inventario.";
+
+                MessageBox.Show(
+                    $"No se encontraron alimentos disponibles.\n\nProductos en inventario:\n{detalleItems}",
+                    "Sin Alimentos Disponibles", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
             foreach (var item in itemsInventario)
             {

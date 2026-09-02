@@ -179,7 +179,7 @@
                     <!-- Tarjeta 2: Stock Bajo (Clicable) -->
                     <Border Grid.Column="1" Style="{StaticResource StatCardStyle}" BorderBrush="#EF4444" Background="#FEF2F2" Cursor="Hand" ToolTip="Ver detalle de alertas de stock e insumos">
                         <Border.InputBindings>
-                            <MouseBinding MouseAction="LeftClick" Command="{Binding VerDetalleAlertasCommand}"/>
+                            <MouseBinding MouseAction="LeftClick" Command="{Binding FiltrarAlertasCommand}"/>
                         </Border.InputBindings>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -234,7 +234,7 @@
                         </Grid>
                     </Border>
 
-                    <Button Grid.Column="1" Content="REGISTRAR PRODUCTO" x:Name="BtnRegistrarProducto" Click="BtnRegistrarProducto_Click" Style="{StaticResource GreenButtonStyle}"/>
+                    <Button Grid.Column="1" Content="✚ REGISTRAR PRODUCTO" x:Name="BtnRegistrarProducto" Click="BtnRegistrarProducto_Click" Style="{StaticResource BotonPrimarioSENA}"/>
                 </Grid>
 
                 <!-- TABLA DE DATOS -->

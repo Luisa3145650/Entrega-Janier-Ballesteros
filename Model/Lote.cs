@@ -89,7 +89,7 @@ namespace loginavicola.Model
             }
         }
 
-        public int SemanasEdad => FechaIncorporacion != DateTime.MinValue ? Math.Max(0, (int)Math.Floor((DateTime.Now - FechaIncorporacion).TotalDays / 7.0)) : 0;
+        public int SemanasEdad => (int)Math.Max(0, (DateTime.Now - FechaIncorporacion).TotalDays / 7);
 
         public event PropertyChangedEventHandler PropertyChanged;
 

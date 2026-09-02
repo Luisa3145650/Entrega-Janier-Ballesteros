@@ -35,6 +35,11 @@ namespace loginavicola.ViewModel
         private int _totalHuevosHoy;
         public int TotalHuevosHoy { get => _totalHuevosHoy; set { _totalHuevosHoy = value; OnPropertyChanged(); } }
 
+        private int _totalAlertasStock;
+        public int TotalAlertasStock { get => _totalAlertasStock; set { _totalAlertasStock = value; OnPropertyChanged(); } }
+
+        public System.Windows.Input.ICommand FiltrarAlertasCommand { get; }
+
         private SeriesCollection _estadoAvesSeries;
         public SeriesCollection EstadoAvesSeries { get => _estadoAvesSeries; set { _estadoAvesSeries = value; OnPropertyChanged(); } }
 
@@ -67,11 +72,6 @@ namespace loginavicola.ViewModel
             set { _etiquetasDiasSemana = value; OnPropertyChanged(); }
         }
 
-        private int _totalAlertas;
-        public int TotalAlertas { get => _totalAlertas; set { _totalAlertas = value; OnPropertyChanged(); } }
-
-        public System.Windows.Input.ICommand VerDetalleAlertasCommand { get; }
-
         public homeViewModel()
         {
             // Inicializar con valores vacíos
@@ -79,21 +79,25 @@ namespace loginavicola.ViewModel
             ValoresProduccionSemanal = new ChartValues<int>();
             EtiquetasDias = new string[0];
 
-            VerDetalleAlertasCommand = new loginavicola.Helpers.RelayCommand(_ => AbrirModalAlertas());
+            FiltrarAlertasCommand = new Helpers.RelayCommand(_ =>
+            {
+                var lowStockItems = inventarioDb.ObtenerTodosItems()
+                    .Where(i => i.CantidadStock <= i.StockMinimo)
+                    .ToList();
+
+                if (lowStockItems.Any())
+                {
+                    string detalle = string.Join("\n", lowStockItems.Select(i => $"• {i.Nombre} (Stock Actual: {i.CantidadStock}, Mínimo: {i.StockMinimo})"));
+                    System.Windows.MessageBox.Show($"⚠️ Productos con Stock Crítico en Inventario:\n\n{detalle}", "Alertas de Stock Crítico", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show("✅ No hay alertas de stock bajo. Todos los productos superan el stock mínimo.", "Inventario Óptimo", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                }
+            });
 
             ActualizarCards();
             IniciarTimer();
-        }
-
-        private void AbrirModalAlertas()
-        {
-            var alertas = loginavicola.Helpers.AlertasService.ObtenerAlertasActivas();
-            var modal = new loginavicola.View.AlertasModalWindow(alertas);
-            if (System.Windows.Application.Current != null && System.Windows.Application.Current.MainWindow != null)
-            {
-                modal.Owner = System.Windows.Application.Current.MainWindow;
-            }
-            modal.ShowDialog();
         }
 
         private void IniciarTimer()
@@ -108,7 +112,7 @@ namespace loginavicola.ViewModel
             TotalLotes = database.ObtenerTotalLotes();
             TotalAves = database.ObtenerTotalAves();
             TotalHuevosHoy = _produccionDb.ObtenerProduccionHoy();
-            TotalAlertas = loginavicola.Helpers.AlertasService.ObtenerAlertasActivas().Count;
+            TotalAlertasStock = inventarioDb.ObtenerStockBajo();
 
             CargarGraficaSalud();
             CargarGraficaProduccion();

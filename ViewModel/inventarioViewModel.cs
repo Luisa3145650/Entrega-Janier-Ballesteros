@@ -41,22 +41,17 @@ namespace loginavicola.ViewModel
             EliminarItemCommand = new RelayCommand(EliminarItem);
             AjustarStockCommand = new RelayCommand(AjustarStock);
 
-            PaginaAnteriorCommand = new RelayCommand(_ => CambiarPagina(-1), _ => PaginaActual > 1);
-            PaginaSiguienteCommand = new RelayCommand(_ => CambiarPagina(1), _ => PaginaActual < TotalPaginas);
-            VerDetalleAlertasCommand = new RelayCommand(_ => AbrirModalAlertas());
+            PaginaAnteriorCommand = new RelayCommand(_ => CambiarPagina(-1));
+            PaginaSiguienteCommand = new RelayCommand(_ => CambiarPagina(1));
+
+            FiltrarAlertasCommand = new RelayCommand(_ =>
+            {
+                SoloAlertas = !SoloAlertas;
+                CargarDatos();
+            });
+            VerDetalleAlertasCommand = FiltrarAlertasCommand;
 
             CargarDatos();
-        }
-
-        private void AbrirModalAlertas()
-        {
-            var alertas = loginavicola.Helpers.AlertasService.ObtenerAlertasActivas();
-            var modal = new loginavicola.View.AlertasModalWindow(alertas);
-            if (Application.Current != null && Application.Current.MainWindow != null)
-            {
-                modal.Owner = Application.Current.MainWindow;
-            }
-            modal.ShowDialog();
         }
 
         // ── Propiedades de Paginación ────────────────────────────────────
@@ -183,6 +178,13 @@ namespace loginavicola.ViewModel
         }
 
         private bool _esEdicion;
+        private bool _soloAlertas = false;
+
+        public bool SoloAlertas
+        {
+            get => _soloAlertas;
+            set { _soloAlertas = value; OnPropertyChanged(nameof(SoloAlertas)); }
+        }
 
         // ── Comandos ─────────────────────────────────────────────────────
         public ICommand EditarItemCommand { get; }
@@ -190,12 +192,18 @@ namespace loginavicola.ViewModel
         public ICommand AjustarStockCommand { get; }
         public ICommand PaginaAnteriorCommand { get; }
         public ICommand PaginaSiguienteCommand { get; }
+        public ICommand FiltrarAlertasCommand { get; }
         public ICommand VerDetalleAlertasCommand { get; }
 
         // ── Métodos ──────────────────────────────────────────────────────
         public void CargarDatos()
         {
             var items = database.ObtenerTodosItems();
+
+            if (SoloAlertas)
+            {
+                items = items.Where(i => i.CantidadStock <= i.StockMinimo).ToList();
+            }
 
             _todosLosFiltrados = string.IsNullOrWhiteSpace(TextoBusqueda)
                 ? items

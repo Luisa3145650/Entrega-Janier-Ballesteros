@@ -151,18 +151,18 @@
                 </StackPanel>
             </Border>
 
-            <!-- Tarjeta 4: ALERTAS ACTIVAS (clicable) -->
-            <Border Grid.Column="3" Style="{StaticResource CardAlertasStyle}" Cursor="Hand" ToolTip="Ver detalle de alertas activas">
+            <!-- Tarjeta 4: ALERTAS STOCK (con badge de alerta) -->
+            <Border Grid.Column="3" Style="{StaticResource CardAlertasStyle}" Cursor="Hand" ToolTip="Ver detalle de alertas de stock crítico">
                 <Border.InputBindings>
-                    <MouseBinding MouseAction="LeftClick" Command="{Binding VerDetalleAlertasCommand}"/>
+                    <MouseBinding MouseAction="LeftClick" Command="{Binding FiltrarAlertasCommand}"/>
                 </Border.InputBindings>
                 <Grid>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="ALERTAS ACTIVAS" 
+                        <TextBlock Text="ALERTAS STOCK (&lt; MIN)" 
                                    Style="{StaticResource CardTitleStyle}" 
                                    Foreground="#DC2626"/>
-                        <TextBlock x:Name="AlertasValue" 
-                                   Text="{Binding TotalAlertas}" 
+                        <TextBlock x:Name="LotesValue" 
+                                   Text="{Binding TotalAlertasStock, FallbackValue=0}" 
                                    Style="{StaticResource BigValueStyle}" 
                                    Foreground="#DC2626"/>
                     </StackPanel>

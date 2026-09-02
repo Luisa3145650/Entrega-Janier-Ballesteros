@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
@@ -14,8 +14,8 @@ namespace loginavicola.Database
 
         public ReportesDatabase()
         {
-            DatabaseHelper.Inicializar();
-            connectionString = DatabaseHelper.ConnectionString;
+            string dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sistema_avicola.db");
+            connectionString = $"Data Source={dbPath};Version=3;";
         }
 
         // 1. INVENTARIO (Tabla real: Alimento)

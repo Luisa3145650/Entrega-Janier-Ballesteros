@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -41,8 +41,8 @@ namespace loginavicola.ViewModel
             RegistrarCommand = new RelayCommand(RegistrarLote);
             EditarCommand = new RelayCommand(EditarLote);
             EliminarCommand = new RelayCommand(EliminarLote);
-            PaginaAnteriorCommand = new RelayCommand(_ => CambiarPagina(-1), _ => PaginaActual > 1);
-            PaginaSiguienteCommand = new RelayCommand(_ => CambiarPagina(1), _ => PaginaActual < TotalPaginas);
+            PaginaAnteriorCommand = new RelayCommand(_ => CambiarPagina(-1));
+            PaginaSiguienteCommand = new RelayCommand(_ => CambiarPagina(1));
 
             CargarDatos();
         }

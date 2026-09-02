@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using loginavicola.Database;
 using loginavicola.Model;
@@ -66,7 +66,10 @@ namespace loginavicola.View
                     IdLote = _idLote,
                     Fecha = dpFecha.SelectedDate.Value.Date,
                     HoraInicio = DateTime.Now.ToString("HH:mm:ss"),
-                    Recolector = _recolectorActual,
+                    HoraFin = DateTime.Now.ToString("HH:mm:ss"),
+                    Recolector = string.IsNullOrEmpty(_recolectorActual) 
+                        ? (UserSession.UsuarioActual?.NombreCompleto ?? UserSession.UsuarioActual?.Username ?? "Operador") 
+                        : _recolectorActual,
                     TipoClasificacion = "Manual",
                     Jumbo = jumbo,
                     AAA = aaa,

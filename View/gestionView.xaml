@@ -18,6 +18,8 @@
         <!-- ========================================= -->
         <!-- ESTILOS PARA TARJETAS                     -->
         <!-- ========================================= -->
+
+        <!-- Base para tarjetas de usuario -->
         <Style x:Key="UserCardStyle" TargetType="Border">
             <Setter Property="Background" Value="White"/>
             <Setter Property="CornerRadius" Value="10"/>
@@ -43,10 +45,12 @@
         </Style>
 
         <!-- ========================================= -->
-        <!-- ESTILOS PARA BOTONES DE LA VISTA         -->
+        <!-- ESTILOS PARA BOTONES                      -->
         <!-- ========================================= -->
+
+        <!-- Botón de acción principal (verde) -->
         <Style x:Key="ActionButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#00872E"/>
+            <Setter Property="Background" Value="#10B981"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="20,12"/>
@@ -72,6 +76,7 @@
             </Style.Triggers>
         </Style>
 
+        <!-- Botón de configuración de permisos -->
         <Style x:Key="PermisosButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#F3F4F6"/>
             <Setter Property="Foreground" Value="#374151"/>
@@ -100,29 +105,56 @@
         </Style>
 
         <!-- ========================================= -->
-        <!-- ESTILOS REDISEÑADOS PARA MODAL (IMAGEN)   -->
+        <!-- ESTILOS PARA MODAL                        -->
         <!-- ========================================= -->
 
-        <!-- Inputs suaves y redondeados -->
-        <Style x:Key="ModalInputStyle" TargetType="Control">
-            <Setter Property="Height" Value="42"/>
-            <Setter Property="Background" Value="#FAFAFA"/>
-            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+        <Style x:Key="ModalTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="Margin" Value="0,0,0,16"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Foreground" Value="#1E293B"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+        </Style>
+
+        <Style x:Key="ModalComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+        </Style>
+
+        <Style x:Key="ModalButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="30,12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="Control">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10">
-                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Center"/>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModalPasswordBoxStyle" TargetType="PasswordBox">
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsKeyboardFocused" Value="true">
                                 <Setter TargetName="border" Property="BorderBrush" Value="#10B981"/>
-                                <Setter TargetName="border" Property="Background" Value="#FFFFFF"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -130,123 +162,7 @@
             </Setter>
         </Style>
 
-        <!-- ComboBox estilo Modal (con dropdown funcional) -->
-        <Style x:Key="ModalComboBoxStyle" TargetType="ComboBox">
-            <Setter Property="Height" Value="42"/>
-            <Setter Property="Background" Value="#FAFAFA"/>
-            <Setter Property="BorderBrush" Value="#E2E8F0"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="Margin" Value="0,0,0,16"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Foreground" Value="#1E293B"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ComboBox">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="30"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Border x:Name="border" Grid.ColumnSpan="2"
-                                    Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="10"/>
-
-                            <!-- Texto del item seleccionado -->
-                            <ContentPresenter Grid.Column="0"
-                                               Margin="{TemplateBinding Padding}"
-                                               VerticalAlignment="Center"
-                                               Content="{TemplateBinding SelectionBoxItem}"
-                                               ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
-                                               IsHitTestVisible="False"/>
-
-                            <!-- Flechita -->
-                            <TextBlock Grid.Column="1" Text="▾" FontSize="12" Foreground="#64748B"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                                       IsHitTestVisible="False"/>
-
-                            <!-- Área clickeable que abre el desplegable -->
-                            <ToggleButton x:Name="ToggleButton" Grid.ColumnSpan="2"
-                                          Background="Transparent" BorderThickness="0"
-                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
-                                          ClickMode="Press">
-                                <ToggleButton.Template>
-                                    <ControlTemplate TargetType="ToggleButton">
-                                        <Border Background="Transparent"/>
-                                    </ControlTemplate>
-                                </ToggleButton.Template>
-                            </ToggleButton>
-
-                            <!-- Popup con la lista de items -->
-                            <Popup x:Name="Popup" Placement="Bottom"
-                                   IsOpen="{TemplateBinding IsDropDownOpen}"
-                                   AllowsTransparency="True" Focusable="False"
-                                   PopupAnimation="Slide">
-                                <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
-                                        CornerRadius="8" MinWidth="{TemplateBinding ActualWidth}"
-                                        MaxHeight="200" Margin="0,4,0,0">
-                                    <Border.Effect>
-                                        <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.15"/>
-                                    </Border.Effect>
-                                    <ScrollViewer SnapsToDevicePixels="True">
-                                        <ItemsPresenter/>
-                                    </ScrollViewer>
-                                </Border>
-                            </Popup>
-                        </Grid>
-
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsDropDownOpen" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#10B981"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Botón Guardar (Verde) -->
-        <Style x:Key="ModalPrimaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#00A86B"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Height" Value="44"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="12">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Botón Cancelar (Gris) -->
-        <Style x:Key="ModalSecondaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#CBD5E1"/>
-            <Setter Property="Foreground" Value="#334155"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Height" Value="44"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="12">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Toggle Switch para Permisos -->
+        <!-- Estilo para Toggle Switch (CheckBox) -->
         <Style x:Key="ModernToggleStyle" TargetType="CheckBox">
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
@@ -288,17 +204,12 @@
                         <TextBlock Text="Administra accesos, roles y permisos de la Unidad Avícola." FontSize="14" Foreground="#6B7280" Margin="0,4,0,0"/>
                     </StackPanel>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                        <Button Content="💾 Respaldar Ahora" 
-                                x:Name="BtnRespaldarAhora"
-                                Click="BtnRespaldarAhora_Click"
-                                Style="{StaticResource ActionButtonStyle}"
-                                Margin="0,0,10,0"/>
-                        <Button Content="NUEVO USUARIO" 
-                                x:Name="BtnAgregarUsuario"
-                                Click="BtnAgregarUsuario_Click"
-                                Style="{StaticResource ActionButtonStyle}"/>
-                    </StackPanel>
+                    <Button Content="✚ NUEVO USUARIO" 
+                            x:Name="BtnAgregarUsuario"
+                            Click="BtnAgregarUsuario_Click"
+                            Style="{StaticResource BotonPrimarioSENA}"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"/>
                 </Grid>
 
                 <!-- ==================== -->
@@ -355,13 +266,13 @@
             </StackPanel>
         </ScrollViewer>
 
-        <!-- ========================================= -->
-        <!-- MODAL: REGISTRO/EDICIÓN (ESTILO IMAGEN)   -->
-        <!-- ========================================= -->
-        <Grid x:Name="ModalRegistroOverlay" Background="#66000000" Visibility="Collapsed" IsHitTestVisible="True">
-            <Border Background="White" CornerRadius="24" Width="480" MaxHeight="720" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="28">
+        <!-- ==================== -->
+        <!-- MODAL: REGISTRO DE USUARIO (ESTANDARIZADO) -->
+        <!-- ==================== -->
+        <Grid x:Name="ModalRegistroOverlay" Background="#80000000" Visibility="Collapsed" IsHitTestVisible="True">
+            <Border Background="White" CornerRadius="8" MaxWidth="560" MaxHeight="720" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Border.Effect>
-                    <DropShadowEffect BlurRadius="30" ShadowDepth="5" Opacity="0.15" Color="#000000"/>
+                    <DropShadowEffect BlurRadius="25" ShadowDepth="5" Opacity="0.2" Color="#000000"/>
                 </Border.Effect>
 
                 <Grid>
@@ -371,70 +282,69 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- ENCABEZADO -->
-                    <Grid Grid.Row="0" Margin="0,0,0,16">
+                    <!-- Cabecera del modal -->
+                    <Grid Grid.Row="0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-
-                        <TextBlock Grid.Column="0" Text="Registro de Usuario" FontSize="22" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center"/>
-                        <Button Grid.Column="1" Content="✕" x:Name="BtnCerrarModalRegistro" Click="BtnCerrarModalRegistro_Click" 
-                                Background="Transparent" Foreground="#94A3B8" BorderThickness="0" FontSize="18" FontWeight="Bold" Cursor="Hand"/>
+                        <TextBlock Grid.Column="0" Text="Registro de Usuario" FontSize="20" FontWeight="Bold" Foreground="#1E293B" Margin="30,25,20,15" VerticalAlignment="Center"/>
+                        <Button Grid.Column="1" Content="✕" x:Name="BtnCerrarModalRegistro" Click="BtnCerrarModalRegistro_Click" Background="Transparent" Foreground="#64748B" BorderThickness="0" FontSize="16" FontWeight="Bold" Padding="15,10" Margin="15,15,20,0" Cursor="Hand" ToolTip="Cerrar"/>
                     </Grid>
 
-                    <!-- FORMULARIO -->
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,-10,16" Padding="0,0,10,0">
+                    <!-- Formulario -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="30,5,30,20">
                         <StackPanel>
-                            <!-- Badge verde estilo ID -->
-                            <Border Background="#ECFDF5" CornerRadius="12" Padding="14,10" Margin="0,0,0,20">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="📦" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="ID Usuario: 0" FontSize="13" FontWeight="Bold" Foreground="#047857" VerticalAlignment="Center"/>
+                            <Grid Margin="0,0,0,15">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="15"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Nombres" Foreground="#475569" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6"/>
+                                    <TextBox Text="{Binding UsuarioActual.Nombres}" Style="{StaticResource ModalTextBoxStyle}"/>
                                 </StackPanel>
-                            </Border>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Apellidos" Foreground="#475569" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6"/>
+                                    <TextBox Text="{Binding UsuarioActual.Apellidos}" Style="{StaticResource ModalTextBoxStyle}"/>
+                                </StackPanel>
+                            </Grid>
 
-                            <TextBlock Text="Nombres" FontWeight="SemiBold" FontSize="13" Foreground="#475569" Margin="0,0,0,6"/>
-                            <TextBox Text="{Binding UsuarioActual.Nombres}" Style="{StaticResource ModalInputStyle}"/>
+                            <TextBlock Text="Documento de Identidad" Foreground="#475569" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding UsuarioActual.Documento}" Style="{StaticResource ModalTextBoxStyle}"/>
 
-                            <TextBlock Text="Apellidos" FontWeight="SemiBold" FontSize="13" Foreground="#475569" Margin="0,0,0,6"/>
-                            <TextBox Text="{Binding UsuarioActual.Apellidos}" Style="{StaticResource ModalInputStyle}"/>
+                            <TextBlock Text="Número de Teléfono" Foreground="#475569" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding UsuarioActual.Telefono}" Style="{StaticResource ModalTextBoxStyle}"/>
 
-                            <TextBlock Text="Documento de Identidad" FontWeight="SemiBold" FontSize="13" Foreground="#475569" Margin="0,0,0,6"/>
-                            <TextBox Text="{Binding UsuarioActual.Documento}" Style="{StaticResource ModalInputStyle}"/>
+                            <TextBlock Text="Dirección de Residencia" Foreground="#475569" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding UsuarioActual.Direccion}" Style="{StaticResource ModalTextBoxStyle}"/>
 
-                            <TextBlock Text="Número de Teléfono" FontWeight="SemiBold" FontSize="13" Foreground="#475569" Margin="0,0,0,6"/>
-                            <TextBox Text="{Binding UsuarioActual.Telefono}" Style="{StaticResource ModalInputStyle}"/>
+                            <TextBlock Text="Correo Electrónico" Foreground="#475569" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding UsuarioActual.Email}" Style="{StaticResource ModalTextBoxStyle}"/>
 
-                            <TextBlock Text="Correo Electrónico" FontWeight="SemiBold" FontSize="13" Foreground="#475569" Margin="0,0,0,6"/>
-                            <TextBox Text="{Binding UsuarioActual.Email}" Style="{StaticResource ModalInputStyle}"/>
-
-                            <TextBlock Text="Asignación de Rol" FontWeight="SemiBold" FontSize="13" Foreground="#475569" Margin="0,0,0,6"/>
+                            <TextBlock Text="Asignación de Rol" Foreground="#475569" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6"/>
                             <ComboBox SelectedValuePath="Content" SelectedValue="{Binding UsuarioActual.Rol, Mode=TwoWay}" Style="{StaticResource ModalComboBoxStyle}">
                                 <ComboBoxItem Content="Administrador"/>
                                 <ComboBoxItem Content="Usuario"/>
+                                <ComboBoxItem Content="Visitante"/>
                             </ComboBox>
 
-                            <TextBlock Text="Contraseña del Sistema" FontWeight="SemiBold" FontSize="13" Foreground="#475569" Margin="0,0,0,6"/>
-                            <PasswordBox x:Name="PasswordBox" Style="{StaticResource ModalInputStyle}"/>
+                            <TextBlock Text="Contraseña del Sistema" Foreground="#475569" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6"/>
+                            <PasswordBox x:Name="PasswordBox" Style="{StaticResource ModalPasswordBoxStyle}"/>
 
-                            <TextBlock Text="Confirmar Contraseña" FontWeight="SemiBold" FontSize="13" Foreground="#475569" Margin="0,0,0,6"/>
-                            <PasswordBox x:Name="ConfirmPasswordBox" Style="{StaticResource ModalInputStyle}"/>
-
+                            <TextBlock Text="Confirmar Contraseña" Foreground="#475569" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6"/>
+                            <PasswordBox x:Name="ConfirmPasswordBox" Style="{StaticResource ModalPasswordBoxStyle}"/>
                         </StackPanel>
                     </ScrollViewer>
 
-                    <!-- BOTONES INFERIORES -->
-                    <Grid Grid.Row="2" Margin="0,10,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="12"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <Button Grid.Column="0" Content="Guardar" x:Name="BtnGuardarUsuario" Click="BtnGuardarUsuario_Click" Style="{StaticResource ModalPrimaryButtonStyle}"/>
-                        <Button Grid.Column="2" Content="Cancelar" x:Name="BtnCancelarRegistro" Click="BtnCerrarModalRegistro_Click" Style="{StaticResource ModalSecondaryButtonStyle}"/>
-                    </Grid>
+                    <!-- Acciones del modal (Botones a la derecha: Guardar SENA + Cancelar gris) -->
+                    <Border Grid.Row="2" Padding="30,15,30,25" BorderThickness="0,1,0,0" BorderBrush="#E2E8F0">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="Cancelar" x:Name="BtnCancelarRegistro" Click="BtnCerrarModalRegistro_Click" Style="{StaticResource ModalButtonStyle}" Background="#E2E8F0" Foreground="#475569" Margin="0,0,12,0"/>
+                            <Button Content="Guardar" x:Name="BtnGuardarUsuario" Click="BtnGuardarUsuario_Click" Style="{StaticResource ModalButtonStyle}" Background="#39A900" Foreground="White"/>
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </Border>
         </Grid>
@@ -442,10 +352,10 @@
         <!-- ==================== -->
         <!-- MODAL: PANEL DE PERMISOS -->
         <!-- ==================== -->
-        <Grid x:Name="ModalPermisosOverlay" Background="#66000000" Visibility="Collapsed" IsHitTestVisible="True">
-            <Border Background="White" CornerRadius="20" MaxWidth="520" MaxHeight="600" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="24">
+        <Grid x:Name="ModalPermisosOverlay" Background="#80000000" Visibility="Collapsed" IsHitTestVisible="True">
+            <Border Background="White" CornerRadius="12" MaxWidth="550" MaxHeight="600" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="0">
                 <Border.Effect>
-                    <DropShadowEffect BlurRadius="25" ShadowDepth="4" Opacity="0.15" Color="#000000"/>
+                    <DropShadowEffect BlurRadius="25" ShadowDepth="4" Opacity="0.3" Color="#000000"/>
                 </Border.Effect>
 
                 <Grid>
@@ -455,21 +365,22 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="0" Margin="0,0,0,16">
+                    <Grid Grid.Row="0" Background="#10B981">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Text="Configuración de Accesos" FontSize="18" FontWeight="Bold" Foreground="#1E293B"/>
-                            <TextBlock Text="Activa o desactiva los módulos permitidos." FontSize="12" Foreground="#64748B" Margin="0,2,0,0"/>
+                        <StackPanel Grid.Column="0" Margin="20,12">
+                            <TextBlock Text="Configuración de Accesos" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="Activa o desactiva los módulos permitidos." FontSize="11" Foreground="White" Opacity="0.8" Margin="0,2,0,0"/>
                         </StackPanel>
-                        <Button Grid.Column="1" Content="✕" x:Name="BtnCerrarModalPermisos" Click="BtnCerrarModalPermisos_Click" Background="Transparent" Foreground="#94A3B8" BorderThickness="0" FontSize="18" FontWeight="Bold" Cursor="Hand"/>
+                        <Button Grid.Column="1" Content="✕" x:Name="BtnCerrarModalPermisos" Click="BtnCerrarModalPermisos_Click" Background="Transparent" Foreground="White" BorderThickness="0" FontSize="18" FontWeight="Bold" Padding="15,10" Cursor="Hand" ToolTip="Cerrar"/>
                     </Grid>
 
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,8">
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,16">
                         <UniformGrid Columns="2" VerticalAlignment="Top">
-                            <Border Background="#F8FAFC" CornerRadius="10" Padding="12" Margin="4" BorderBrush="#E2E8F0" BorderThickness="1">
+                            <!-- Permisos -->
+                            <Border Background="#F8FAFC" CornerRadius="8" Padding="14,12" Margin="6" BorderBrush="#E5E7EB" BorderThickness="1">
                                 <CheckBox IsChecked="{Binding PermisoInicio}" Style="{StaticResource ModernToggleStyle}">
                                     <StackPanel Margin="6,0,0,0">
                                         <TextBlock Text="Inicio" FontWeight="Bold" Foreground="#111827" FontSize="13"/>
@@ -478,7 +389,7 @@
                                 </CheckBox>
                             </Border>
 
-                            <Border Background="#F8FAFC" CornerRadius="10" Padding="12" Margin="4" BorderBrush="#E2E8F0" BorderThickness="1">
+                            <Border Background="#F8FAFC" CornerRadius="8" Padding="14,12" Margin="6" BorderBrush="#E5E7EB" BorderThickness="1">
                                 <CheckBox IsChecked="{Binding PermisoLotes}" Style="{StaticResource ModernToggleStyle}">
                                     <StackPanel Margin="6,0,0,0">
                                         <TextBlock Text="Lotes" FontWeight="Bold" Foreground="#111827" FontSize="13"/>
@@ -487,7 +398,7 @@
                                 </CheckBox>
                             </Border>
 
-                            <Border Background="#F8FAFC" CornerRadius="10" Padding="12" Margin="4" BorderBrush="#E2E8F0" BorderThickness="1">
+                            <Border Background="#F8FAFC" CornerRadius="8" Padding="14,12" Margin="6" BorderBrush="#E5E7EB" BorderThickness="1">
                                 <CheckBox IsChecked="{Binding PermisoProduccion}" Style="{StaticResource ModernToggleStyle}">
                                     <StackPanel Margin="6,0,0,0">
                                         <TextBlock Text="Producción" FontWeight="Bold" Foreground="#111827" FontSize="13"/>
@@ -496,7 +407,7 @@
                                 </CheckBox>
                             </Border>
 
-                            <Border Background="#F8FAFC" CornerRadius="10" Padding="12" Margin="4" BorderBrush="#E2E8F0" BorderThickness="1">
+                            <Border Background="#F8FAFC" CornerRadius="8" Padding="14,12" Margin="6" BorderBrush="#E5E7EB" BorderThickness="1">
                                 <CheckBox IsChecked="{Binding PermisoAlimentacion}" Style="{StaticResource ModernToggleStyle}">
                                     <StackPanel Margin="6,0,0,0">
                                         <TextBlock Text="Alimentación" FontWeight="Bold" Foreground="#111827" FontSize="13"/>
@@ -505,16 +416,16 @@
                                 </CheckBox>
                             </Border>
 
-                            <Border Background="#F8FAFC" CornerRadius="10" Padding="12" Margin="4" BorderBrush="#E2E8F0" BorderThickness="1">
-                                <CheckBox IsChecked="{Binding PermisoReportes}" Style="{StaticResource ModernToggleStyle}">
+                            <Border Background="#F8FAFC" CornerRadius="8" Padding="14,12" Margin="6" BorderBrush="#E5E7EB" BorderThickness="1">
+                                <CheckBox IsChecked="{Binding PermisoEntregas}" Style="{StaticResource ModernToggleStyle}">
                                     <StackPanel Margin="6,0,0,0">
-                                        <TextBlock Text="Exportar Datos" FontWeight="Bold" Foreground="#111827" FontSize="13"/>
-                                        <TextBlock Text="Descarga de reportes" Foreground="#6B7280" FontSize="11"/>
+                                        <TextBlock Text="Entregas" FontWeight="Bold" Foreground="#111827" FontSize="13"/>
+                                        <TextBlock Text="Salida de pedidos" Foreground="#6B7280" FontSize="11"/>
                                     </StackPanel>
                                 </CheckBox>
                             </Border>
 
-                            <Border Background="#F8FAFC" CornerRadius="10" Padding="12" Margin="4" BorderBrush="#E2E8F0" BorderThickness="1">
+                            <Border Background="#F8FAFC" CornerRadius="8" Padding="14,12" Margin="6" BorderBrush="#E5E7EB" BorderThickness="1">
                                 <CheckBox IsChecked="{Binding PermisoDiagnostico}" Style="{StaticResource ModernToggleStyle}">
                                     <StackPanel Margin="6,0,0,0">
                                         <TextBlock Text="Diagnóstico" FontWeight="Bold" Foreground="#111827" FontSize="13"/>
@@ -523,7 +434,7 @@
                                 </CheckBox>
                             </Border>
 
-                            <Border Background="#F8FAFC" CornerRadius="10" Padding="12" Margin="4" BorderBrush="#E2E8F0" BorderThickness="1">
+                            <Border Background="#F8FAFC" CornerRadius="8" Padding="14,12" Margin="6" BorderBrush="#E5E7EB" BorderThickness="1">
                                 <CheckBox IsChecked="{Binding PermisoInventario}" Style="{StaticResource ModernToggleStyle}">
                                     <StackPanel Margin="6,0,0,0">
                                         <TextBlock Text="Inventario" FontWeight="Bold" Foreground="#111827" FontSize="13"/>
@@ -532,7 +443,7 @@
                                 </CheckBox>
                             </Border>
 
-                            <Border Background="#F8FAFC" CornerRadius="10" Padding="12" Margin="4" BorderBrush="#E2E8F0" BorderThickness="1">
+                            <Border Background="#F8FAFC" CornerRadius="8" Padding="14,12" Margin="6" BorderBrush="#E5E7EB" BorderThickness="1">
                                 <CheckBox IsChecked="{Binding PermisoGestionUsuarios}" Style="{StaticResource ModernToggleStyle}">
                                     <StackPanel Margin="6,0,0,0">
                                         <TextBlock Text="Usuarios" FontWeight="Bold" Foreground="#111827" FontSize="13"/>
@@ -543,15 +454,17 @@
                         </UniformGrid>
                     </ScrollViewer>
 
-                    <Grid Grid.Row="2" Margin="0,16,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="12"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" Content="Aplicar" x:Name="BtnGuardarPermisos" Click="BtnGuardarPermisos_Click" Style="{StaticResource ModalPrimaryButtonStyle}"/>
-                        <Button Grid.Column="2" Content="Descartar" x:Name="BtnCancelarPermisos" Click="BtnCerrarModalPermisos_Click" Style="{StaticResource ModalSecondaryButtonStyle}"/>
-                    </Grid>
+                    <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="#E5E7EB" Padding="30,15">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="15"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Content="APLICAR CAMBIOS" x:Name="BtnGuardarPermisos" Click="BtnGuardarPermisos_Click" Style="{StaticResource ModalButtonStyle}" Background="#10B981" Foreground="White"/>
+                            <Button Grid.Column="2" Content="DESCARTAR" x:Name="BtnCancelarPermisos" Click="BtnCerrarModalPermisos_Click" Style="{StaticResource ModalButtonStyle}" Background="#E5E7EB" Foreground="#374151"/>
+                        </Grid>
+                    </Border>
                 </Grid>
             </Border>
         </Grid>

@@ -1,4 +1,4 @@
-using loginavicola.Database;
+﻿using loginavicola.Database;
 using loginavicola.Model;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -118,10 +118,10 @@ namespace loginavicola.ViewModel
             set { UsuarioSeleccionado.PermisoAlimentacion = value; OnPropertyChanged(); }
         }
 
-        public bool PermisoReportes
+        public bool PermisoEntregas
         {
-            get => UsuarioSeleccionado?.PermisoReportes ?? false;
-            set { UsuarioSeleccionado.PermisoReportes = value; OnPropertyChanged(); }
+            get => UsuarioSeleccionado?.PermisoEntregas ?? false;
+            set { UsuarioSeleccionado.PermisoEntregas = value; OnPropertyChanged(); }
         }
 
         public bool PermisoDiagnostico
@@ -148,7 +148,7 @@ namespace loginavicola.ViewModel
             OnPropertyChanged(nameof(PermisoLotes));
             OnPropertyChanged(nameof(PermisoProduccion));
             OnPropertyChanged(nameof(PermisoAlimentacion));
-            OnPropertyChanged(nameof(PermisoReportes));
+            OnPropertyChanged(nameof(PermisoEntregas));
             OnPropertyChanged(nameof(PermisoDiagnostico));
             OnPropertyChanged(nameof(PermisoInventario));
             OnPropertyChanged(nameof(PermisoGestionUsuarios));
